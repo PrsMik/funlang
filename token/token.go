@@ -9,19 +9,26 @@ const (
 	LET
 	FN
 	RETURN
+	TRUE
+	FALSE
+	IF
+	ELSE
 
 	// идентификаторы и литералы
 	IDENT
 	INT
+	BOOL
 
 	// операторы
 	// присваивание
 	ASSIGN
+	LARROW
+	RARROW
 	// математика (+, -, *, /)
 	PLUS
 	MINUS
-	MUL
-	DIV
+	ASTERISK
+	SLASH
 	// сравнение (== и !=)
 	EQUAL
 	NOT_EQUAL
@@ -33,7 +40,7 @@ const (
 	// булева алгебра (&&, ||, !)
 	AND
 	OR
-	NOT
+	BANG
 
 	// спецсимволы
 	COMMA
@@ -46,6 +53,7 @@ const (
 
 	// типы
 	INT_TYPE
+	BOOL_TYPE
 )
 
 type Token struct {
@@ -58,17 +66,24 @@ var keywords = map[string]TokenType{
 	"let":    LET,
 	"fn":     FN,
 	"return": RETURN,
+	"if":     IF,
+	"else":   ELSE,
+	"true":   TRUE,
+	"false":  FALSE,
 }
 
 var operators = map[string]TokenType{
 	// операторы
 	// присваивание
-	"=": ASSIGN,
+	"=":  ASSIGN,
+	"<-": LARROW,
+	"->": RARROW,
+
 	// математика (+, -, *, /)
 	"+": PLUS,
 	"-": MINUS,
-	"*": MUL,
-	"/": DIV,
+	"*": ASTERISK,
+	"/": SLASH,
 	// сравнение (== и !=)
 	"==": EQUAL,
 	"!=": NOT_EQUAL,
@@ -80,7 +95,7 @@ var operators = map[string]TokenType{
 	// булева алгебра (&&, ||, !)
 	"&&": AND,
 	"||": OR,
-	"!":  NOT,
+	"!":  BANG,
 }
 
 var symbols = map[string]TokenType{
@@ -96,7 +111,8 @@ var symbols = map[string]TokenType{
 
 var types = map[string]TokenType{
 	// типы
-	"int": INT_TYPE,
+	"int":  INT_TYPE,
+	"bool": BOOL_TYPE,
 }
 
 func LookupIdentifier(identifier string) TokenType {
@@ -111,4 +127,58 @@ func LookupType(identifier string) (TokenType, bool) {
 		return tokenType, true
 	}
 	return IDENT, false
+}
+
+func LookupOperator(literal string) (TokenType, bool) {
+	if tokenType, ok := operators[literal]; ok {
+		return tokenType, true
+	}
+	return ILLEGAL, false
+}
+
+func LookupString(tokenType TokenType) (string, bool) {
+	if tokenString, ok := tokenStrings[tokenType]; ok {
+		return tokenString, true
+	}
+	return "UNKNOWN_TOKEN", false
+}
+
+var tokenStrings = map[TokenType]string{
+	ILLEGAL:          "ILLEGAL",
+	EOF:              "EOF",
+	LET:              "LET",
+	FN:               "FN",
+	RETURN:           "RETURN",
+	TRUE:             "TRUE",
+	FALSE:            "FALSE",
+	IF:               "IF",
+	ELSE:             "ELSE",
+	IDENT:            "IDENT",
+	INT:              "INT",
+	BOOL:             "BOOL",
+	ASSIGN:           "ASSIGN",
+	LARROW:           "LARROW",
+	RARROW:           "RARROW",
+	PLUS:             "PLUS",
+	MINUS:            "MINUS",
+	ASTERISK:         "ASTERISK",
+	SLASH:            "SLASH",
+	EQUAL:            "EQUAL",
+	NOT_EQUAL:        "NOTEQAL",
+	LESS:             "LESS",
+	GREATER:          "GREATER",
+	LESS_OR_EQUAL:    "LESS_OR_EQUAL",
+	GREATER_OR_EQUAL: "GREATER_OR_EQUAL",
+	AND:              "AND",
+	OR:               "OR",
+	BANG:             "BANG",
+	COMMA:            "COMMA",
+	COLON:            "COLON",
+	SEMICOLON:        "SEMICOLON",
+	LPAREN:           "LPAREN",
+	RPAREN:           "RPAREN",
+	LBRACE:           "LBRACE",
+	RBRACE:           "RBRACE",
+	INT_TYPE:         "INT_TYPE",
+	BOOL_TYPE:        "BOOL_TYPE",
 }

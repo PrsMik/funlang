@@ -20,15 +20,45 @@ func (lexer *Lexer) NextToken() token.Token {
 	lexer.skipWhitespace()
 	switch lexer.curChar {
 	case '=':
-		nextTok = newToken(token.ASSIGN, '=')
+		var ok bool
+		nextTok, ok = newTwoCharToken(lexer, token.EQUAL)
+		if !ok {
+			nextTok = newToken(token.ASSIGN, '=')
+		}
 	case '+':
 		nextTok = newToken(token.PLUS, '+')
 	case '-':
-		nextTok = newToken(token.MINUS, '-')
+		var ok bool
+		nextTok, ok = newTwoCharToken(lexer, token.RARROW)
+		if !ok {
+			nextTok = newToken(token.MINUS, '-')
+		}
 	case '*':
-		nextTok = newToken(token.MUL, '*')
+		nextTok = newToken(token.ASTERISK, '*')
 	case '/':
-		nextTok = newToken(token.DIV, '/')
+		nextTok = newToken(token.SLASH, '/')
+	case '<':
+		var ok bool
+		nextTok, ok = newTwoCharToken(lexer, token.LESS_OR_EQUAL)
+		if !ok {
+			if nextTok.Literal == "<-" {
+				nextTok.Type = token.LARROW
+			} else {
+				nextTok = newToken(token.LESS, '<')
+			}
+		}
+	case '>':
+		var ok bool
+		nextTok, ok = newTwoCharToken(lexer, token.GREATER_OR_EQUAL)
+		if !ok {
+			nextTok = newToken(token.GREATER, '>')
+		}
+	case '!':
+		var ok bool
+		nextTok, ok = newTwoCharToken(lexer, token.NOT_EQUAL)
+		if !ok {
+			nextTok = newToken(token.BANG, '!')
+		}
 	case ',':
 		nextTok = newToken(token.COMMA, ',')
 	case ':':
@@ -76,8 +106,28 @@ func (lexer *Lexer) readChar() {
 	lexer.readPos++
 }
 
+func (lexer *Lexer) peekChar() byte {
+	if lexer.readPos >= len(lexer.input) {
+		return 0
+	} else {
+		return lexer.input[lexer.readPos]
+	}
+}
+
 func newToken(tokenType token.TokenType, tokenChar byte) token.Token {
 	return token.Token{Type: tokenType, Literal: string(tokenChar)}
+}
+
+func newTwoCharToken(lexer *Lexer, tokenType token.TokenType) (token.Token, bool) {
+	char := lexer.curChar
+	lexer.readChar()
+	literal := string(char) + string(lexer.curChar)
+	wantType, ok := token.LookupOperator(literal)
+	if !ok || wantType != tokenType {
+		return token.Token{Type: token.ILLEGAL, Literal: literal}, false
+	}
+	token := token.Token{Type: tokenType, Literal: literal}
+	return token, true
 }
 
 func (lexer *Lexer) readIdentifier() string {
@@ -87,6 +137,7 @@ func (lexer *Lexer) readIdentifier() string {
 	}
 	return lexer.input[startPos:lexer.curPos]
 }
+
 func isLetter(ch byte) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
 }

@@ -1,7 +1,3 @@
-let five: int = 5;
-let ten: int = 10;
-let add = fn(x: int, y: int): int {
-        return x + y;
+let add = fn(x: int, y: int) -> int {
+        return if (x <- y);
     };
-let result: int = add(five, ten);
-let main: int = print(result)

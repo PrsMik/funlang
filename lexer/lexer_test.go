@@ -9,7 +9,7 @@ import (
 )
 
 func TestLexer_NextToken(t *testing.T) {
-	data, err := os.ReadFile("D:/Repo/funlang/main.funlang")
+	data, err := os.ReadFile("D:/Repo/funlang/main2.txt")
 	if err != nil {
 		fmt.Println("Ошибка при чтении файла:", err)
 		return
@@ -32,13 +32,16 @@ func TestLexer_NextToken(t *testing.T) {
 		{token.COLON, ":"},
 		{token.INT_TYPE, "int"},
 		{token.RPAREN, ")"},
-		{token.COLON, ":"},
+		{token.RARROW, "->"},
 		{token.INT_TYPE, "int"},
 		{token.LBRACE, "{"},
 		{token.RETURN, "return"},
+		{token.IF, "if"},
+		{token.LPAREN, "("},
 		{token.IDENT, "x"},
-		{token.PLUS, "+"},
+		{token.LARROW, "<-"},
 		{token.IDENT, "y"},
+		{token.RPAREN, ")"},
 		{token.SEMICOLON, ";"},
 		{token.RBRACE, "}"},
 		{token.SEMICOLON, ";"},
