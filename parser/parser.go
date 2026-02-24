@@ -6,25 +6,71 @@ import (
 	"funlang/token"
 )
 
+const (
+	_ int = iota
+	LOWEST
+	EQUALS      // ==
+	LESSGREATER // >, <
+	SUM         // +
+	PRODUCT     // *
+	PREFIX      // -X, !X
+	CALL        // myFunction(X)
+)
+
+var precedences = map[token.TokenType]int{
+	token.EQUAL:            EQUALS,
+	token.NOT_EQUAL:        EQUALS,
+	token.LESS:             LESSGREATER,
+	token.GREATER:          LESSGREATER,
+	token.LESS_OR_EQUAL:    LESSGREATER,
+	token.GREATER_OR_EQUAL: LESSGREATER,
+	token.PLUS:             SUM,
+	token.MINUS:            SUM,
+	token.SLASH:            PRODUCT,
+	token.ASTERISK:         PRODUCT,
+}
+
 type Parser struct {
-	lxr *lexer.Lexer
+	lxr    *lexer.Lexer
+	errors []string
 
 	curToken  token.Token
 	peekToken token.Token
+
+	prefixParseFns map[token.TokenType]prefixParseFn
+	infixParseFns  map[token.TokenType]infixParseFn
 }
 
 func New(lxr *lexer.Lexer) *Parser {
-	prs := &Parser{lxr: lxr}
+	prs := &Parser{lxr: lxr, errors: []string{}}
+
+	prs.prefixParseFns = make(map[token.TokenType]prefixParseFn)
+
+	prs.registerPrefix(token.IDENT, prs.parseIdentifier)
+	prs.registerPrefix(token.INT, prs.parseIntegerLiteral)
+
+	prs.registerPrefix(token.BANG, prs.parsePrefixExpression)
+	prs.registerPrefix(token.MINUS, prs.parsePrefixExpression)
+
+	prs.infixParseFns = make(map[token.TokenType]infixParseFn)
+	prs.registerInfix(token.EQUAL, prs.parseInfixExpression)
+	prs.registerInfix(token.NOT_EQUAL, prs.parseInfixExpression)
+
+	prs.registerInfix(token.LESS, prs.parseInfixExpression)
+	prs.registerInfix(token.GREATER, prs.parseInfixExpression)
+	prs.registerInfix(token.LESS_OR_EQUAL, prs.parseInfixExpression)
+	prs.registerInfix(token.GREATER_OR_EQUAL, prs.parseInfixExpression)
+
+	prs.registerInfix(token.PLUS, prs.parseInfixExpression)
+	prs.registerInfix(token.MINUS, prs.parseInfixExpression)
+
+	prs.registerInfix(token.SLASH, prs.parseInfixExpression)
+	prs.registerInfix(token.ASTERISK, prs.parseInfixExpression)
 
 	prs.nextToken()
 	prs.nextToken()
 
 	return prs
-}
-
-func (prs *Parser) nextToken() {
-	prs.curToken = prs.peekToken
-	prs.peekToken = prs.lxr.NextToken()
 }
 
 func (prs *Parser) ParseProgram() *ast.Program {
@@ -42,67 +88,16 @@ func (prs *Parser) ParseProgram() *ast.Program {
 	return program
 }
 
-func (prs *Parser) parseStatement() ast.StatementNode {
-	switch prs.curToken.Type {
-	case token.LET:
-		return prs.parseLetStatement()
-	default:
-		return nil
+func (prs *Parser) peekTokenPrecedence() int {
+	if precedence, ok := precedences[prs.peekToken.Type]; ok {
+		return precedence
 	}
+	return LOWEST
 }
 
-func (prs *Parser) parseLetStatement() *ast.LetStatement {
-	statement := &ast.LetStatement{Token: prs.curToken}
-
-	if !prs.expectPeek(token.IDENT) {
-		return nil
+func (prs *Parser) curTokenPrecedence() int {
+	if precedence, ok := precedences[prs.curToken.Type]; ok {
+		return precedence
 	}
-
-	statement.Name = &ast.Identifier{Token: prs.curToken, Value: prs.curToken.Literal}
-
-	if !prs.expectPeek(token.COLON) {
-		return nil
-	}
-
-	prs.nextToken()
-
-	statement.Type = prs.parseType()
-	if statement.Type == nil {
-		return nil
-	}
-
-	if !prs.expectPeek(token.ASSIGN) {
-		return nil
-	}
-
-	for !prs.curTokenIs(token.SEMICOLON) {
-		prs.nextToken()
-	}
-
-	return statement
-}
-
-func (prs *Parser) curTokenIs(tknType token.TokenType) bool {
-	return prs.curToken.Type == tknType
-}
-
-func (prs *Parser) peekTokenIs(tknType token.TokenType) bool {
-	return prs.peekToken.Type == tknType
-}
-
-func (prs *Parser) expectPeek(tknType token.TokenType) bool {
-	if prs.peekTokenIs(tknType) {
-		prs.nextToken()
-		return true
-	} else {
-		return false
-	}
-}
-
-func (prs *Parser) parseType() ast.TypeNode {
-	switch prs.curToken.Type {
-	case token.INT_TYPE, token.BOOL_TYPE:
-		return &ast.SimpleType{Token: prs.curToken, Value: prs.curToken.Literal}
-	}
-	return nil
+	return LOWEST
 }

@@ -1,9 +1,12 @@
 package ast
 
-import "funlang/token"
+import (
+	"funlang/token"
+)
 
 type Node interface {
 	TokenLiteral() string
+	String() string
 }
 
 // узел является инструкцией
@@ -29,29 +32,21 @@ type Program struct {
 	Statements []StatementNode
 }
 
-func (prog *Program) TokenLiteral() string {
-	if len(prog.Statements) > 0 {
-		return prog.Statements[0].TokenLiteral()
+func (prg *Program) TokenLiteral() string {
+	if len(prg.Statements) > 0 {
+		return prg.Statements[0].TokenLiteral()
 	}
 	return ""
 }
-
-// идентификатор - токен и литерал
-type Identifier struct {
-	Token token.Token
-	Value string
-}
-
-func (i *Identifier) expressionNode()      {}
-func (i *Identifier) TokenLiteral() string { return i.Token.Literal }
 
 type SimpleType struct {
 	Token token.Token
 	Value string
 }
 
-func (i *SimpleType) typeNode()            {}
+func (t *SimpleType) typeNode()            {}
 func (t *SimpleType) TokenLiteral() string { return t.Token.Literal }
+func (t *SimpleType) String() string       { return t.Value }
 
 // инструкция let - токен инструкции (Token), идентификатор для корого let (Name),
 // тип идентификатора (Type) и выражение справа от "=" (Value)
@@ -64,3 +59,12 @@ type LetStatement struct {
 
 func (ls *LetStatement) statementNode()       {}
 func (ls *LetStatement) TokenLiteral() string { return ls.Token.Literal }
+
+// инструкция return - токен инструкции (Token), выражение которое возвращает return (ReturnValue),
+type ReturnStatement struct {
+	Token token.Token
+	Value ExpressionNode
+}
+
+func (rs *ReturnStatement) statementNode()       {}
+func (rs *ReturnStatement) TokenLiteral() string { return rs.Token.Literal }

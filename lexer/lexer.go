@@ -120,10 +120,13 @@ func newToken(tokenType token.TokenType, tokenChar byte) token.Token {
 
 func newTwoCharToken(lexer *Lexer, tokenType token.TokenType) (token.Token, bool) {
 	char := lexer.curChar
+	pos := lexer.curPos
 	lexer.readChar()
 	literal := string(char) + string(lexer.curChar)
 	wantType, ok := token.LookupOperator(literal)
 	if !ok || wantType != tokenType {
+		lexer.readPos = lexer.curPos
+		lexer.curPos = pos
 		return token.Token{Type: token.ILLEGAL, Literal: literal}, false
 	}
 	token := token.Token{Type: tokenType, Literal: literal}
