@@ -128,6 +128,51 @@ func (prs *Parser) parseBoolean() ast.ExpressionNode {
 	return &ast.BooleanLiteral{Token: prs.curToken, Value: prs.curTokenIs(token.TRUE)}
 }
 
+func (prs *Parser) parseFunctionLiteral() ast.ExpressionNode {
+	fnLiteral := &ast.FunctionLiteral{Token: prs.curToken}
+
+	if !prs.expectPeek(token.LPAREN) {
+		return nil
+	}
+
+	fnLiteral.Parameters = prs.parseFunctionParameters()
+
+	if !prs.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	fnLiteral.Body = prs.parseBlockStatement()
+
+	return fnLiteral
+}
+
+func (prs *Parser) parseFunctionParameters() []*ast.Identifier {
+	literals := []*ast.Identifier{}
+
+	if prs.peekTokenIs(token.RPAREN) {
+		prs.nextToken()
+		return literals
+	}
+
+	prs.nextToken()
+
+	ident := &ast.Identifier{Token: prs.curToken, Value: prs.curToken.Literal}
+	literals = append(literals, ident)
+
+	for prs.peekTokenIs(token.COMMA) {
+		prs.nextToken()
+		prs.nextToken()
+		ident := &ast.Identifier{Token: prs.curToken, Value: prs.curToken.Literal}
+		literals = append(literals, ident)
+	}
+
+	if !prs.expectPeek(token.RPAREN) {
+		return nil
+	}
+
+	return literals
+}
+
 func (prs *Parser) noPrefixParseFnError(tknType token.TokenType) {
 	tknStr, _ := token.LookupString(tknType)
 	msg := fmt.Sprintf("no prefix parse function for %s found", tknStr)

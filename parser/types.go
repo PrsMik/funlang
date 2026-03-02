@@ -26,9 +26,41 @@ func (prs *Parser) parseFunctionType() ast.TypeNode {
 
 	fnType.ParamsTypes = prs.parseFunctionParamsTypes()
 
+	if !prs.expectPeek(token.RARROW) {
+		return nil
+	}
+
+	prs.nextToken()
+
+	fnType.ReturnType = prs.parseType()
+	if fnType.ReturnType == nil {
+		return nil
+	}
+
 	return fnType
 }
 
 func (prs *Parser) parseFunctionParamsTypes() []ast.TypeNode {
-	return []ast.TypeNode{}
+	params := []ast.TypeNode{}
+
+	if prs.curTokenIs(token.RPAREN) {
+		prs.nextToken()
+		return params
+	}
+
+	prs.nextToken()
+
+	params = append(params, prs.parseType())
+
+	for prs.peekTokenIs(token.COMMA) {
+		prs.nextToken()
+		prs.nextToken()
+		params = append(params, prs.parseType())
+	}
+
+	if !prs.expectPeek(token.RPAREN) {
+		return nil
+	}
+
+	return params
 }

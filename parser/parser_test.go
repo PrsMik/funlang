@@ -197,7 +197,7 @@ func TestBooleanExpression(t *testing.T) {
 }
 
 func TestFunctionLiteralParsing(t *testing.T) {
-	input := `let myFunc: fn(int, int) -> int = fn(x, y) { return x + y; }`
+	input := `let myFunc: fn(int, int) -> int = fn(x, y) { return x + y; };`
 	l := lexer.New(input)
 	p := New(l)
 	program := p.ParseProgram()
@@ -214,9 +214,30 @@ func TestFunctionLiteralParsing(t *testing.T) {
 			program.Statements[0])
 	}
 
+	varType, ok := stmt.Type.(*ast.FunctionType)
+	if !ok {
+		t.Fatalf("stmt.Value is not ast.FunctionLiteral. got=%T", stmt.Type)
+	}
+
+	if len(varType.ParamsTypes) != 2 {
+		t.Fatalf("function literal parameters wrong. want 2, got=%d\n", len(varType.ParamsTypes))
+	}
+
+	if varType.ParamsTypes[0].TokenLiteral() != "int" {
+		t.Errorf("wrong parameter on 1st place want: int; got: %s", varType.ParamsTypes[0].TokenLiteral())
+	}
+
+	if varType.ParamsTypes[1].TokenLiteral() != "int" {
+		t.Errorf("wrong parameter on 2nd place want: int; got: %s", varType.ParamsTypes[1].TokenLiteral())
+	}
+
+	if varType.ReturnType.TokenLiteral() != "int" {
+		t.Errorf("wrong return type: %s", varType.ReturnType.TokenLiteral())
+	}
+
 	function, ok := stmt.Value.(*ast.FunctionLiteral)
 	if !ok {
-		t.Fatalf("stmt.Expression is not ast.FunctionLiteral. got=%T", stmt.Value)
+		t.Fatalf("stmt.Value is not ast.FunctionLiteral. got=%T", stmt.Value)
 	}
 
 	if len(function.Parameters) != 2 {
@@ -239,6 +260,38 @@ func TestFunctionLiteralParsing(t *testing.T) {
 	}
 
 	testInfixExpression(t, bodyStmt.Value, "x", "+", "y")
+}
+
+func TestFunctionParametrsParsing(t *testing.T) {
+	tests := []struct {
+		input          string
+		expectedParams []string
+	}{
+		{
+			"let x: fn(int, int) -> bool = fn(x, y) { return true; };",
+			[]string{"x", "y"},
+		},
+	}
+
+	for _, tt := range tests {
+		lxr := lexer.New(tt.input)
+		prs := New(lxr)
+		prg := prs.ParseProgram()
+		checkParserErrors(t, prs)
+
+		stmt := prg.Statements[0].(*ast.LetStatement)
+		function := stmt.Value.(*ast.FunctionLiteral)
+
+		if len(function.Parameters) != len(tt.expectedParams) {
+			t.Errorf("length parameters wrong. want %d, got=%d\n",
+				len(tt.expectedParams), len(function.Parameters))
+		}
+
+		for i, ident := range tt.expectedParams {
+			testLiteralExpression(t, function.Parameters[i], ident)
+		}
+
+	}
 }
 
 func TestParsingPrefixExpressions(t *testing.T) {
