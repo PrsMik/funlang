@@ -21,3 +21,9 @@ func (prs *Parser) typeError() {
 	msg := fmt.Sprintf("expected type definition got: %s instead", got)
 	prs.errors = append(prs.errors, msg)
 }
+
+func (prs *Parser) stmtError() {
+	got, _ := token.LookupString(prs.curToken.Type)
+	msg := fmt.Sprintf("expected some statement got: %s instead", got)
+	prs.errors = append(prs.errors, msg)
+}

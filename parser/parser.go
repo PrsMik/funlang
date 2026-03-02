@@ -52,6 +52,13 @@ func New(lxr *lexer.Lexer) *Parser {
 	prs.registerPrefix(token.BANG, prs.parsePrefixExpression)
 	prs.registerPrefix(token.MINUS, prs.parsePrefixExpression)
 
+	prs.registerPrefix(token.TRUE, prs.parseBoolean)
+	prs.registerPrefix(token.FALSE, prs.parseBoolean)
+
+	prs.registerPrefix(token.LPAREN, prs.parseGroupedExpression)
+
+	prs.registerPrefix(token.IF, prs.parseIfExpression)
+
 	prs.infixParseFns = make(map[token.TokenType]infixParseFn)
 	prs.registerInfix(token.EQUAL, prs.parseInfixExpression)
 	prs.registerInfix(token.NOT_EQUAL, prs.parseInfixExpression)

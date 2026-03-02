@@ -12,6 +12,7 @@ func (prs *Parser) parseStatement() ast.StatementNode {
 	case token.RETURN:
 		return prs.parseReturnStatement()
 	default:
+		prs.stmtError()
 		return nil
 	}
 }
@@ -33,7 +34,6 @@ func (prs *Parser) parseLetStatement() *ast.LetStatement {
 
 	statement.Type = prs.parseType()
 	if statement.Type == nil {
-		prs.typeError()
 		return nil
 	}
 
@@ -57,11 +57,28 @@ func (prs *Parser) parseReturnStatement() *ast.ReturnStatement {
 
 	prs.nextToken()
 
-	statement.Value = prs.parseExpression(int(token.IDENT))
+	statement.Value = prs.parseExpression(LOWEST)
 
 	for !prs.curTokenIs(token.SEMICOLON) {
 		prs.nextToken()
 	}
 
 	return statement
+}
+
+func (prs *Parser) parseBlockStatement() *ast.BlockStatement {
+	block := &ast.BlockStatement{Token: prs.curToken}
+	block.Statements = []ast.StatementNode{}
+
+	prs.nextToken()
+
+	for !prs.curTokenIs(token.RBRACE) && !prs.curTokenIs(token.EOF) {
+		stmt := prs.parseStatement()
+		if stmt != nil {
+			block.Statements = append(block.Statements, stmt)
+		}
+		prs.nextToken()
+	}
+
+	return block
 }

@@ -15,6 +15,8 @@ func (prs *Parser) peekTokenIs(tknType token.TokenType) bool {
 	return prs.peekToken.Type == tknType
 }
 
+// проверяет следующий токен
+// и сдвигается на него если тип совпадает
 func (prs *Parser) expectPeek(tknType token.TokenType) bool {
 	if prs.peekTokenIs(tknType) {
 		prs.nextToken()

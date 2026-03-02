@@ -21,14 +21,16 @@ func (prs *Parser) registerInfix(tokenType token.TokenType, fn infixParseFn) {
 
 func (prs *Parser) parseExpression(precedence int) ast.ExpressionNode {
 	prefix := prs.prefixParseFns[prs.curToken.Type]
+	var leftExp ast.ExpressionNode
 	if prefix == nil {
 		prs.noPrefixParseFnError(prs.curToken.Type)
 		return nil
 	}
-	leftExp := prefix()
+	leftExp = prefix()
 
 	for !prs.peekTokenIs(token.SEMICOLON) && precedence < prs.peekTokenPrecedence() {
 		infix := prs.infixParseFns[prs.peekToken.Type]
+
 		if infix == nil {
 			return nil
 		}
@@ -61,6 +63,49 @@ func (prs *Parser) parseInfixExpression(left ast.ExpressionNode) ast.ExpressionN
 	return expression
 }
 
+func (prs *Parser) parseIfExpression() ast.ExpressionNode {
+	expr := &ast.IfExpression{Token: prs.curToken}
+
+	if !prs.expectPeek(token.LPAREN) {
+		return nil
+	}
+
+	prs.nextToken()
+	expr.Condition = prs.parseExpression(LOWEST)
+
+	if !prs.expectPeek(token.RPAREN) {
+		return nil
+	}
+
+	if !prs.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	expr.Consequence = prs.parseBlockStatement()
+
+	if prs.peekTokenIs(token.ELSE) {
+		prs.nextToken()
+		if !prs.expectPeek(token.LBRACE) {
+			return nil
+		}
+		expr.Alternative = prs.parseBlockStatement()
+	}
+
+	return expr
+}
+
+func (prs *Parser) parseGroupedExpression() ast.ExpressionNode {
+	prs.nextToken()
+
+	expr := prs.parseExpression(LOWEST)
+
+	if !prs.expectPeek(token.RPAREN) {
+		return nil
+	}
+
+	return expr
+}
+
 func (prs *Parser) parseIdentifier() ast.ExpressionNode {
 	return &ast.Identifier{Token: prs.curToken, Value: prs.curToken.Literal}
 }
@@ -77,6 +122,10 @@ func (prs *Parser) parseIntegerLiteral() ast.ExpressionNode {
 
 	intLiteral.Value = int(value)
 	return intLiteral
+}
+
+func (prs *Parser) parseBoolean() ast.ExpressionNode {
+	return &ast.BooleanLiteral{Token: prs.curToken, Value: prs.curTokenIs(token.TRUE)}
 }
 
 func (prs *Parser) noPrefixParseFnError(tknType token.TokenType) {
