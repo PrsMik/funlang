@@ -271,6 +271,14 @@ func TestFunctionParametrsParsing(t *testing.T) {
 			"let x: fn(int, int) -> bool = fn(x, y) { return true; };",
 			[]string{"x", "y"},
 		},
+		{
+			"let x: fn() -> bool = fn() { return true; };",
+			[]string{},
+		},
+		{
+			"let x: fn(int, int, bool) -> bool = fn(x, y, z) { return true; };",
+			[]string{"x", "y", "z"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -292,6 +300,43 @@ func TestFunctionParametrsParsing(t *testing.T) {
 		}
 
 	}
+}
+
+func TestParsingCallExpressions(t *testing.T) {
+	input := "let x: int = add(1, 2 * 3, 4 + 5);"
+
+	lxr := lexer.New(input)
+	prs := New(lxr)
+	prg := prs.ParseProgram()
+	checkParserErrors(t, prs)
+
+	if (len(prg.Statements)) != 1 {
+		t.Fatalf("program.Statements does not contain %d statements. got=%d\n", 1, len(prg.Statements))
+	}
+
+	stmt, ok := prg.Statements[0].(*ast.LetStatement)
+	if !ok {
+		t.Fatalf("stmt is not ast.ExpressionStatement. got=%T",
+			prg.Statements[0])
+	}
+
+	exp, ok := stmt.Value.(*ast.CallExpression)
+	if !ok {
+		t.Fatalf("stmt.Expression is not ast.CallExpression. got=%T", stmt.Value)
+	}
+
+	if !testIdentifierLiteral(t, exp.Function, "add") {
+		return
+	}
+
+	if len(exp.Arguments) != 3 {
+		t.Fatalf("wrong length of arguments. got=%d", len(exp.Arguments))
+	}
+
+	testLiteralExpression(t, exp.Arguments[0], 1)
+	testInfixExpression(t, exp.Arguments[1], 2, "*", 3)
+	testInfixExpression(t, exp.Arguments[2], 4, "+", 5)
+
 }
 
 func TestParsingPrefixExpressions(t *testing.T) {

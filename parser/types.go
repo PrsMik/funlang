@@ -43,7 +43,7 @@ func (prs *Parser) parseFunctionType() ast.TypeNode {
 func (prs *Parser) parseFunctionParamsTypes() []ast.TypeNode {
 	params := []ast.TypeNode{}
 
-	if prs.curTokenIs(token.RPAREN) {
+	if prs.peekTokenIs(token.RPAREN) {
 		prs.nextToken()
 		return params
 	}

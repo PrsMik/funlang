@@ -7,8 +7,8 @@ type SimpleType struct {
 	Value string
 }
 
-func (t *SimpleType) typeNode()            {}
-func (t *SimpleType) TokenLiteral() string { return t.Token.Literal }
+func (simpType *SimpleType) typeNode()            {}
+func (simpType *SimpleType) TokenLiteral() string { return simpType.Token.Literal }
 
 type FunctionType struct {
 	Token       token.Token
@@ -16,5 +16,5 @@ type FunctionType struct {
 	ReturnType  TypeNode
 }
 
-func (t *FunctionType) typeNode()            {}
-func (t *FunctionType) TokenLiteral() string { return t.Token.Literal }
+func (funcType *FunctionType) typeNode()            {}
+func (funcType *FunctionType) TokenLiteral() string { return funcType.Token.Literal }

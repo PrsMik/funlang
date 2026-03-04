@@ -11,8 +11,8 @@ type LetStatement struct {
 	Value ExpressionNode
 }
 
-func (ls *LetStatement) statementNode()       {}
-func (ls *LetStatement) TokenLiteral() string { return ls.Token.Literal }
+func (letStmt *LetStatement) statementNode()       {}
+func (letStmt *LetStatement) TokenLiteral() string { return letStmt.Token.Literal }
 
 // инструкция return - токен инструкции (Token), выражение которое возвращает return (ReturnValue),
 type ReturnStatement struct {
@@ -20,8 +20,8 @@ type ReturnStatement struct {
 	Value ExpressionNode
 }
 
-func (rs *ReturnStatement) statementNode()       {}
-func (rs *ReturnStatement) TokenLiteral() string { return rs.Token.Literal }
+func (returnStmt *ReturnStatement) statementNode()       {}
+func (returnStmt *ReturnStatement) TokenLiteral() string { return returnStmt.Token.Literal }
 
 type BlockStatement struct {
 	Token      token.Token

@@ -15,19 +15,19 @@ func (prg *Program) String() string {
 
 // ----- ТИПЫ -----
 
-func (t *SimpleType) String() string { return t.Value }
+func (simpType *SimpleType) String() string { return simpType.Value }
 
-func (ft *FunctionType) String() string {
+func (funcType *FunctionType) String() string {
 	var out bytes.Buffer
 	params := []string{}
-	for _, p := range ft.ParamsTypes {
+	for _, p := range funcType.ParamsTypes {
 		params = append(params, p.String())
 	}
-	out.WriteString(ft.TokenLiteral())
+	out.WriteString(funcType.TokenLiteral())
 	out.WriteString("(")
 	out.WriteString(strings.Join(params, ", "))
 	out.WriteString(") -> ")
-	out.WriteString(ft.ReturnType.String())
+	out.WriteString(funcType.ReturnType.String())
 	return out.String()
 }
 
@@ -37,42 +37,42 @@ func (intLit *IntegerLiteral) String() string { return intLit.Token.Literal }
 
 func (boolLit *BooleanLiteral) String() string { return boolLit.Token.Literal }
 
-func (fl *FunctionLiteral) String() string {
+func (funcLit *FunctionLiteral) String() string {
 	var out bytes.Buffer
 	params := []string{}
-	for _, p := range fl.Parameters {
+	for _, p := range funcLit.Parameters {
 		params = append(params, p.String())
 	}
-	out.WriteString(fl.TokenLiteral())
+	out.WriteString(funcLit.TokenLiteral())
 	out.WriteString("(")
 	out.WriteString(strings.Join(params, ", "))
 	out.WriteString(") ")
-	out.WriteString(fl.Body.String())
+	out.WriteString(funcLit.Body.String())
 	return out.String()
 }
 
-func (i *Identifier) String() string { return i.Value }
+func (ident *Identifier) String() string { return ident.Value }
 
 // ----- ИНСТРУКЦИИ -----
 
-func (ls *LetStatement) String() string {
+func (letStmt *LetStatement) String() string {
 	var out bytes.Buffer
-	out.WriteString(ls.TokenLiteral() + " ")
-	out.WriteString(ls.Name.String())
-	out.WriteString(": " + ls.Type.String())
+	out.WriteString(letStmt.TokenLiteral() + " ")
+	out.WriteString(letStmt.Name.String())
+	out.WriteString(": " + letStmt.Type.String())
 	out.WriteString(" = ")
-	if ls.Value != nil {
-		out.WriteString(ls.Value.String())
+	if letStmt.Value != nil {
+		out.WriteString(letStmt.Value.String())
 	}
 	out.WriteString(";")
 	return out.String()
 }
 
-func (rs *ReturnStatement) String() string {
+func (returnStmt *ReturnStatement) String() string {
 	var out bytes.Buffer
-	out.WriteString(rs.TokenLiteral() + " ")
-	if rs.Value != nil {
-		out.WriteString(rs.Value.String())
+	out.WriteString(returnStmt.TokenLiteral() + " ")
+	if returnStmt.Value != nil {
+		out.WriteString(returnStmt.Value.String())
 	}
 	out.WriteString(";")
 	return out.String()
@@ -88,21 +88,34 @@ func (blockStmt *BlockStatement) String() string {
 
 // ----- ВЫРАЖЕНИЯ -----
 
-func (pe *PrefixExpression) String() string {
+func (callExpr *CallExpression) String() string {
 	var out bytes.Buffer
+	args := []string{}
+	for _, a := range callExpr.Arguments {
+		args = append(args, a.String())
+	}
+	out.WriteString(callExpr.Function.String())
 	out.WriteString("(")
-	out.WriteString(pe.Operator)
-	out.WriteString(pe.Right.String())
+	out.WriteString(strings.Join(args, ", "))
 	out.WriteString(")")
 	return out.String()
 }
 
-func (ie *InfixExpression) String() string {
+func (prefixExpr *PrefixExpression) String() string {
 	var out bytes.Buffer
 	out.WriteString("(")
-	out.WriteString(ie.Left.String())
-	out.WriteString(" " + ie.Operator + " ")
-	out.WriteString(ie.Right.String())
+	out.WriteString(prefixExpr.Operator)
+	out.WriteString(prefixExpr.Right.String())
+	out.WriteString(")")
+	return out.String()
+}
+
+func (infixExpr *InfixExpression) String() string {
+	var out bytes.Buffer
+	out.WriteString("(")
+	out.WriteString(infixExpr.Left.String())
+	out.WriteString(" " + infixExpr.Operator + " ")
+	out.WriteString(infixExpr.Right.String())
 	out.WriteString(")")
 	return out.String()
 }

@@ -106,6 +106,36 @@ func (prs *Parser) parseGroupedExpression() ast.ExpressionNode {
 	return expr
 }
 
+func (prs *Parser) parseCallExpression(function ast.ExpressionNode) ast.ExpressionNode {
+	expr := &ast.CallExpression{Token: prs.curToken, Function: function}
+	expr.Arguments = prs.parseFunctionArguments()
+	return expr
+}
+
+func (prs *Parser) parseFunctionArguments() []ast.ExpressionNode {
+	args := []ast.ExpressionNode{}
+
+	if prs.peekTokenIs(token.RPAREN) {
+		prs.nextToken()
+		return args
+	}
+
+	prs.nextToken()
+	args = append(args, prs.parseExpression(LOWEST))
+
+	for prs.peekTokenIs(token.COMMA) {
+		prs.nextToken()
+		prs.nextToken()
+		args = append(args, prs.parseExpression(LOWEST))
+	}
+
+	if !prs.expectPeek(token.RPAREN) {
+		return nil
+	}
+
+	return args
+}
+
 func (prs *Parser) parseIdentifier() ast.ExpressionNode {
 	return &ast.Identifier{Token: prs.curToken, Value: prs.curToken.Literal}
 }

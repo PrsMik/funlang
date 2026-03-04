@@ -26,8 +26,8 @@ type FunctionLiteral struct {
 	Body       *BlockStatement
 }
 
-func (funLit *FunctionLiteral) expressionNode()      {}
-func (funLit *FunctionLiteral) TokenLiteral() string { return funLit.Token.Literal }
+func (funcLit *FunctionLiteral) expressionNode()      {}
+func (funcLit *FunctionLiteral) TokenLiteral() string { return funcLit.Token.Literal }
 
 // идентификатор - токен и литерал
 type Identifier struct {
@@ -35,8 +35,17 @@ type Identifier struct {
 	Value string
 }
 
-func (i *Identifier) expressionNode()      {}
-func (i *Identifier) TokenLiteral() string { return i.Token.Literal }
+func (ident *Identifier) expressionNode()      {}
+func (ident *Identifier) TokenLiteral() string { return ident.Token.Literal }
+
+type CallExpression struct {
+	Token     token.Token
+	Function  ExpressionNode
+	Arguments []ExpressionNode
+}
+
+func (callExpr *CallExpression) expressionNode()      {}
+func (callExpr *CallExpression) TokenLiteral() string { return callExpr.Token.Literal }
 
 type PrefixExpression struct {
 	Token    token.Token
@@ -44,8 +53,8 @@ type PrefixExpression struct {
 	Right    ExpressionNode
 }
 
-func (pe *PrefixExpression) expressionNode()      {}
-func (pe *PrefixExpression) TokenLiteral() string { return pe.Token.Literal }
+func (prefixExpr *PrefixExpression) expressionNode()      {}
+func (prefixExpr *PrefixExpression) TokenLiteral() string { return prefixExpr.Token.Literal }
 
 type InfixExpression struct {
 	Token    token.Token
@@ -54,8 +63,8 @@ type InfixExpression struct {
 	Right    ExpressionNode
 }
 
-func (ie *InfixExpression) expressionNode()      {}
-func (ie *InfixExpression) TokenLiteral() string { return ie.Token.Literal }
+func (infixExpr *InfixExpression) expressionNode()      {}
+func (infixExpr *InfixExpression) TokenLiteral() string { return infixExpr.Token.Literal }
 
 type IfExpression struct {
 	Token       token.Token
