@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"funlang/lexer"
 	"funlang/parser"
-	"funlang/token"
 	"io"
 )
 
@@ -17,19 +16,28 @@ func Start(in io.Reader, out io.Writer) {
 	for {
 		fmt.Printf(PROMT)
 		scanned := scanner.Scan()
+
 		if !scanned {
 			return
 		}
+
 		line := scanner.Text()
 		lxr := lexer.New(line)
-		for curToken := lxr.NextToken(); curToken.Type != token.EOF; curToken = lxr.NextToken() {
-			tokenStr, _ := token.LookupString(curToken.Type)
-			fmt.Printf("Token: %s; Literal: %s\n", tokenStr, curToken.Literal)
-		}
-		lxr = lexer.New(line)
 		prs := parser.New(lxr)
 		prg := prs.ParseProgram()
-		output := prg.String()
-		fmt.Println(output)
+
+		if len(prs.Errors()) != 0 {
+			printParserErrors(out, prs.Errors())
+			continue
+		}
+
+		io.WriteString(out, prg.String())
+		io.WriteString(out, "\n")
+	}
+}
+
+func printParserErrors(out io.Writer, errors []string) {
+	for _, msg := range errors {
+		io.WriteString(out, "\t"+msg+"\n")
 	}
 }
