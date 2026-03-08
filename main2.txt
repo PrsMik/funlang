@@ -1,1 +1,1 @@
-let x: int = !5;
+let x: bool = true && false || false;

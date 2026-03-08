@@ -391,6 +391,8 @@ func TestParsingInfixExpressions(t *testing.T) {
 		{"let x: int = 5 < 5;", 5, "<", 5},
 		{"let x: int = false == false;", false, "==", false},
 		{"let x: int = true != true;", true, "!=", true},
+		{"let x: int = true && true;", true, "&&", true},
+		{"let x: int = true || true;", true, "||", true},
 	}
 	for _, tt := range infixTests {
 		l := lexer.New(tt.input)

@@ -22,10 +22,13 @@ func TestLexer_NextToken(t *testing.T) {
 		{token.LET, "let"},
 		{token.IDENT, "x"},
 		{token.COLON, ":"},
-		{token.INT_TYPE, "int"},
+		{token.BOOL_TYPE, "bool"},
 		{token.ASSIGN, "="},
-		{token.BANG, "!"},
-		{token.INT, "5"},
+		{token.TRUE, "true"},
+		{token.AND, "&&"},
+		{token.FALSE, "false"},
+		{token.OR, "||"},
+		{token.FALSE, "false"},
 		{token.SEMICOLON, ";"},
 	}
 	lexer := lexer.New(content)

@@ -73,6 +73,18 @@ func (lexer *Lexer) NextToken() token.Token {
 		nextTok = newToken(token.LBRACE, '{')
 	case '}':
 		nextTok = newToken(token.RBRACE, '}')
+	case '&':
+		var ok bool
+		nextTok, ok = newTwoCharToken(lexer, token.AND)
+		if !ok {
+			nextTok = newToken(token.ILLEGAL, lexer.curChar)
+		}
+	case '|':
+		var ok bool
+		nextTok, ok = newTwoCharToken(lexer, token.OR)
+		if !ok {
+			nextTok = newToken(token.ILLEGAL, lexer.curChar)
+		}
 	case 0:
 		nextTok = token.Token{Type: token.EOF, Literal: ""}
 	default:
