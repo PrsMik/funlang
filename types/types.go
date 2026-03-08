@@ -5,15 +5,20 @@ type Type interface {
 	Signature() string
 }
 
+type IllegalType struct{}
+
+func (t *IllegalType) isType()           {}
+func (t *IllegalType) Signature() string { return "some kind of type error" }
+
 type IntType struct{}
 
 func (t *IntType) isType()           {}
-func (t *IntType) Signature() string { return "int" }
+func (t *IntType) Signature() string { return "<int>" }
 
 type BoolType struct{}
 
 func (t *BoolType) isType()           {}
-func (t *BoolType) Signature() string { return "bool" }
+func (t *BoolType) Signature() string { return "<bool>" }
 
 type FuncType struct {
 	ParamsTypes []Type
@@ -23,10 +28,10 @@ type FuncType struct {
 func (t *FuncType) isType() {}
 func (t *FuncType) Signature() string {
 	if len(t.ParamsTypes) == 0 {
-		return "fn() " + t.ReturnType.Signature()
+		return "<fn() " + t.ReturnType.Signature() + ">"
 	}
 
-	res := "fn("
+	res := "<fn("
 
 	for idx, tp := range t.ParamsTypes {
 		res += tp.Signature()
@@ -35,7 +40,7 @@ func (t *FuncType) Signature() string {
 		}
 	}
 
-	res += ") ->" + t.ReturnType.Signature()
+	res += ") ->" + t.ReturnType.Signature() + ">"
 	return res
 }
 

@@ -5,18 +5,20 @@ import (
 	"funlang/ast"
 )
 
-func (chk *TypeChecker) checkStatement(stmt ast.StatementNode) {
+func (chk *TypeChecker) checkStatement(stmt ast.StatementNode) Type {
 	switch curStmt := stmt.(type) {
 	case *ast.LetStatement:
-		chk.checkLetStatement(curStmt)
+		return chk.checkLetStatement(curStmt)
 	case *ast.ReturnStatement:
+		return chk.checkReturnStatement(curStmt)
 	case *ast.BlockStatement:
-	default:
-		chk.errors = append(chk.errors, fmt.Errorf("unknown statement type"))
+		return chk.checkBlockStatement(curStmt)
 	}
+	chk.errors = append(chk.errors, fmt.Errorf("unknown statement type"))
+	return &IllegalType{}
 }
 
-func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) {
+func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) Type {
 	expectedType := chk.resolveType(stmt.Type)
 
 	actualType := chk.checkExpression(stmt.Value)
@@ -28,4 +30,27 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) {
 	}
 
 	chk.env.Set(stmt.Name.Value, expectedType)
+
+	return actualType
+}
+
+func (chk *TypeChecker) checkReturnStatement(stmt *ast.ReturnStatement) Type {
+	returnType := chk.checkExpression(stmt.Value)
+	return returnType
+}
+
+func (chk *TypeChecker) checkBlockStatement(stmt *ast.BlockStatement) Type {
+	chk.env = NewEnclosedTypeEviroment(chk.env)
+
+	var returnType Type = &IllegalType{}
+
+	for _, stmt := range stmt.Statements {
+		switch stmt.(type) {
+		case *ast.ReturnStatement:
+			returnType = chk.checkStatement(stmt)
+		}
+	}
+
+	chk.env = chk.env.outer
+	return returnType
 }

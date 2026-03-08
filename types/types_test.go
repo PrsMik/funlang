@@ -55,7 +55,58 @@ func TestCheckLetStatement(t *testing.T) {
 			checkCheckerErrors(t, chk)
 		}
 	}
+}
 
+func TestCheckReturnSatement(t *testing.T) {
+	test := []struct {
+		input string
+		want  bool
+	}{
+		{"let x: int = if (2 > 1) { return 5; };", true},
+		{"let x: int = if (2 > 1) { return 5 + 5 * 5; } else { return 1; };", true},
+		{"let x: bool = if (2 > 1) { return true && false || false; }; ", true},
+		{"let x: bool = if (2 > 1) { let x: bool = true && false || false; }; ", false},
+		{"let x: bool = if (2 + 1) { return true && false || false; }; ", false},
+		{"let x: bool = if (2) { return true && false || false; }; ", false},
+	}
+	for _, tt := range test {
+		lxr := lexer.New(tt.input)
+		prs := parser.New(lxr)
+
+		prg := prs.ParseProgram()
+		checkParserErrors(t, prs)
+
+		chk := New(nil)
+		chk.CheckProgram(prg)
+		if len(chk.errors) != 0 && tt.want != false {
+			checkCheckerErrors(t, chk)
+		}
+	}
+
+}
+
+func TestCheckIdentifier(t *testing.T) {
+	test := []struct {
+		input string
+		want  bool
+	}{
+		{"let x: int = 5; let y: int = x + 3;", true},
+		{"let x: bool = true; let y: int = x + 3;", false},
+		{"let y: int = x + 3;", false},
+	}
+	for _, tt := range test {
+		lxr := lexer.New(tt.input)
+		prs := parser.New(lxr)
+
+		prg := prs.ParseProgram()
+		checkParserErrors(t, prs)
+
+		chk := New(nil)
+		chk.CheckProgram(prg)
+		if len(chk.errors) != 0 && tt.want != false {
+			checkCheckerErrors(t, chk)
+		}
+	}
 }
 
 func checkParserErrors(t *testing.T, prs *parser.Parser) {
