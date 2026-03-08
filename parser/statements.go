@@ -44,6 +44,9 @@ func (prs *Parser) parseLetStatement() *ast.LetStatement {
 	prs.nextToken()
 
 	statement.Value = prs.parseExpression(LOWEST)
+	if statement.Value == nil {
+		return nil
+	}
 
 	if !prs.expectPeek(token.SEMICOLON) {
 		// prs.nextToken()
@@ -59,6 +62,9 @@ func (prs *Parser) parseReturnStatement() *ast.ReturnStatement {
 	prs.nextToken()
 
 	statement.Value = prs.parseExpression(LOWEST)
+	if statement.Value == nil {
+		return nil
+	}
 
 	if prs.peekTokenIs(token.SEMICOLON) {
 		prs.nextToken()

@@ -83,13 +83,15 @@ func (prs *Parser) parseIfExpression() ast.ExpressionNode {
 
 	expr.Consequence = prs.parseBlockStatement()
 
-	if prs.peekTokenIs(token.ELSE) {
-		prs.nextToken()
-		if !prs.expectPeek(token.LBRACE) {
-			return nil
-		}
-		expr.Alternative = prs.parseBlockStatement()
+	if !prs.expectPeek(token.ELSE) {
+		return nil
 	}
+
+	if !prs.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	expr.Alternative = prs.parseBlockStatement()
 
 	return expr
 }

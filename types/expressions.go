@@ -102,3 +102,28 @@ func (chk *TypeChecker) checkIfExpression(expr ast.ExpressionNode) Type {
 
 	return conseqType
 }
+
+func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) Type {
+	resFuncType := &FuncType{}
+
+	expectedFuncType := chk.curExpectedType.(*FuncType)
+
+	if len(expectedFuncType.ParamsTypes) != len(expr.(*ast.FunctionLiteral).Parameters) {
+		chk.errors = append(chk.errors, fmt.Errorf("function literal has %d parameters, but expected %d",
+			len(expr.(*ast.FunctionLiteral).Parameters), len(expectedFuncType.ParamsTypes)))
+		return &IllegalType{}
+	}
+
+	chk.env = NewEnclosedTypeEviroment(chk.env)
+
+	for i, param := range expr.(*ast.FunctionLiteral).Parameters {
+		resFuncType.ParamsTypes = append(resFuncType.ParamsTypes, expectedFuncType.ParamsTypes[i])
+		chk.env.Set(param.Value, expectedFuncType.ParamsTypes[i])
+	}
+
+	resFuncType.ReturnType = chk.checkBlockStatement(expr.(*ast.FunctionLiteral).Body)
+
+	chk.env = chk.env.outer
+
+	return resFuncType
+}

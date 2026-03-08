@@ -8,7 +8,7 @@ type Type interface {
 type IllegalType struct{}
 
 func (t *IllegalType) isType()           {}
-func (t *IllegalType) Signature() string { return "some kind of type error" }
+func (t *IllegalType) Signature() string { return "none" }
 
 type IntType struct{}
 
@@ -40,7 +40,7 @@ func (t *FuncType) Signature() string {
 		}
 	}
 
-	res += ") ->" + t.ReturnType.Signature() + ">"
+	res += ") -> " + t.ReturnType.Signature() + ">"
 	return res
 }
 

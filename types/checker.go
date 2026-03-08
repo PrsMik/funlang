@@ -14,6 +14,7 @@ func (chk *TypeChecker) registerExpressionCheckFn(exprType reflect.Type, fn expr
 type TypeChecker struct {
 	env                *TypeEviroment
 	expressionCheckFns map[reflect.Type]expressionCheckFn
+	curExpectedType    Type
 	errors             []error
 }
 
@@ -30,6 +31,8 @@ func New(curEnv *TypeEviroment) *TypeChecker {
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.InfixExpression](), chk.checkInfixExpression)
 
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.IfExpression](), chk.checkIfExpression)
+
+	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.FunctionLiteral](), chk.checkFunctionLiteral)
 
 	return chk
 }

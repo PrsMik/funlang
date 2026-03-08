@@ -65,7 +65,7 @@ func TestCheckReturnSatement(t *testing.T) {
 		{"let x: int = if (2 > 1) { return 5; };", true},
 		{"let x: int = if (2 > 1) { return 5 + 5 * 5; } else { return 1; };", true},
 		{"let x: bool = if (2 > 1) { return true && false || false; }; ", true},
-		{"let x: bool = if (2 > 1) { let x: bool = true && false || false; }; ", false},
+		{"let x: bool = if (2 > 1) { let x: bool = true && false || false; return x; }; ", false},
 		{"let x: bool = if (2 + 1) { return true && false || false; }; ", false},
 		{"let x: bool = if (2) { return true && false || false; }; ", false},
 	}
@@ -91,8 +91,36 @@ func TestCheckIdentifier(t *testing.T) {
 		want  bool
 	}{
 		{"let x: int = 5; let y: int = x + 3;", true},
-		{"let x: bool = true; let y: int = x + 3;", false},
+		{"let x: bool = true; let y: bool = !x;", true},
+		{"let x: bool = true; let z: int = 5; let y: int = if (z > 1) { let x: int = 1; return x + z; } else { return 1; };", true},
 		{"let y: int = x + 3;", false},
+	}
+	for _, tt := range test {
+		lxr := lexer.New(tt.input)
+		prs := parser.New(lxr)
+
+		prg := prs.ParseProgram()
+		checkParserErrors(t, prs)
+
+		chk := New(nil)
+		chk.CheckProgram(prg)
+		if len(chk.errors) != 0 && tt.want != false {
+			checkCheckerErrors(t, chk)
+		}
+	}
+}
+
+func TestCheckFunctionLiteral(t *testing.T) {
+	test := []struct {
+		input string
+		want  bool
+	}{
+		{"let x: fn(int, int) -> int = fn(x, y) { return x + y; };", true},
+		{"let x: fn(int, int) -> bool = fn(x, y) { return x + y; };", false},
+		{"let x: fn(int, int) -> bool = fn() { return x + y; };", false},
+		{"let x: fn(bool, int) -> bool = fn(x, y) { return x + y; };", false},
+		{`let x: fn(bool, bool, int) -> int = fn(x, y, z) { let n: int = z + if (x && y) { return 1; } else { return 0; }; 
+		return z; };`, true},
 	}
 	for _, tt := range test {
 		lxr := lexer.New(tt.input)

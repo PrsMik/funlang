@@ -21,6 +21,8 @@ func (chk *TypeChecker) checkStatement(stmt ast.StatementNode) Type {
 func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) Type {
 	expectedType := chk.resolveType(stmt.Type)
 
+	chk.curExpectedType = expectedType
+
 	actualType := chk.checkExpression(stmt.Value)
 
 	if !Equals(expectedType, actualType) {
@@ -48,9 +50,12 @@ func (chk *TypeChecker) checkBlockStatement(stmt *ast.BlockStatement) Type {
 		switch stmt.(type) {
 		case *ast.ReturnStatement:
 			returnType = chk.checkStatement(stmt)
+		default:
+			chk.checkStatement(stmt)
 		}
 	}
 
 	chk.env = chk.env.outer
+
 	return returnType
 }
