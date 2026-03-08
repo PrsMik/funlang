@@ -1,24 +1,25 @@
-package types
+package type_checker
 
 import (
 	"funlang/ast"
+	"funlang/types"
 	"reflect"
 )
 
-type expressionCheckFn func(ast.ExpressionNode) Type
+type expressionCheckFn func(ast.ExpressionNode) types.Type
 
 func (chk *TypeChecker) registerExpressionCheckFn(exprType reflect.Type, fn expressionCheckFn) {
 	chk.expressionCheckFns[exprType] = fn
 }
 
 type TypeChecker struct {
-	env                *TypeEviroment
+	env                *types.TypeEviroment
 	expressionCheckFns map[reflect.Type]expressionCheckFn
-	curExpectedType    Type
+	curExpectedType    types.Type
 	errors             []error
 }
 
-func New(curEnv *TypeEviroment) *TypeChecker {
+func New(curEnv *types.TypeEviroment) *TypeChecker {
 	chk := &TypeChecker{env: curEnv}
 
 	chk.expressionCheckFns = make(map[reflect.Type]expressionCheckFn)
@@ -33,12 +34,13 @@ func New(curEnv *TypeEviroment) *TypeChecker {
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.IfExpression](), chk.checkIfExpression)
 
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.FunctionLiteral](), chk.checkFunctionLiteral)
+	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.CallExpression](), chk.checkCallExpression)
 
 	return chk
 }
 
 func (chk *TypeChecker) CheckProgram(prog *ast.Program) {
-	chk.env = NewEnclosedTypeEviroment(chk.env)
+	chk.env = types.NewEnclosedTypeEviroment(chk.env)
 	for _, stmt := range prog.Statements {
 		chk.checkStatement(stmt)
 	}

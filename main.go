@@ -7,7 +7,7 @@ import (
 	"funlang/lexer"
 	"funlang/parser"
 	"funlang/repl"
-	"funlang/types"
+	"funlang/type_checker"
 	"io"
 	"os"
 	"os/user"
@@ -17,7 +17,7 @@ func InterpretProgram(program string, out io.Writer) {
 	lxr := lexer.New(program)
 	prs := parser.New(lxr)
 	prg := prs.ParseProgram()
-	chk := types.New(nil)
+	chk := type_checker.New(nil)
 
 	for _, err := range prs.Errors() {
 		fmt.Println(err)

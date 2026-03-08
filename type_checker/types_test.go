@@ -1,27 +1,31 @@
-package types
+package type_checker
 
 import (
 	"funlang/lexer"
 	"funlang/parser"
+	"funlang/types"
 	"testing"
 )
 
 func TestTypesEquals(t *testing.T) {
 	tests := []struct {
 		name string
-		a    Type
-		b    Type
+		a    types.Type
+		b    types.Type
 		want bool
 	}{
-		{"1", &IntType{}, &IntType{}, true},
-		{"2", &IntType{}, &BoolType{}, false},
-		{"3", &IntType{}, &FuncType{}, false},
-		{"4", &FuncType{ParamsTypes: []Type{&IntType{}, &IntType{}}, ReturnType: &BoolType{}}, &FuncType{}, false},
-		{"5", &FuncType{ParamsTypes: []Type{&IntType{}, &IntType{}}, ReturnType: &BoolType{}},
-			&FuncType{ParamsTypes: []Type{&IntType{}, &IntType{}}, ReturnType: &BoolType{}}, true},
+		{"1", &types.IntType{}, &types.IntType{}, true},
+		{"2", &types.IntType{}, &types.BoolType{}, false},
+		{"3", &types.IntType{}, &types.FuncType{}, false},
+		{"4", &types.FuncType{ParamsTypes: []types.Type{&types.IntType{}, &types.IntType{}},
+			ReturnType: &types.BoolType{}}, &types.FuncType{}, false},
+		{"5", &types.FuncType{ParamsTypes: []types.Type{&types.IntType{}, &types.IntType{}},
+			ReturnType: &types.BoolType{}},
+			&types.FuncType{ParamsTypes: []types.Type{&types.IntType{}, &types.IntType{}},
+				ReturnType: &types.BoolType{}}, true},
 	}
 	for _, tt := range tests {
-		if got := Equals(tt.a, tt.b); got != tt.want {
+		if got := types.Equals(tt.a, tt.b); got != tt.want {
 			t.Fatalf("Equals() = %v, want %v", got, tt.want)
 		}
 	}
@@ -30,17 +34,17 @@ func TestTypesEquals(t *testing.T) {
 func TestCheckLetStatement(t *testing.T) {
 	test := []struct {
 		input string
-		tp    Type
+		tp    types.Type
 		want  bool
 	}{
-		{"let x: int = 5;", &IntType{}, true},
-		{"let y: bool = true;", &BoolType{}, true},
-		{"let z: int = true;", &BoolType{}, false},
-		{"let z: int = -5;", &IntType{}, true},
-		{"let z: bool = -5;", &BoolType{}, false},
-		{"let z: int = -true;", &IntType{}, false},
-		{"let z: int = 5 + 5 * 5;", &IntType{}, true},
-		{"let z: bool = false && true || !false;", &IntType{}, true},
+		{"let x: int = 5;", &types.IntType{}, true},
+		{"let y: bool = true;", &types.BoolType{}, true},
+		{"let z: int = true;", &types.BoolType{}, false},
+		{"let z: int = -5;", &types.IntType{}, true},
+		{"let z: bool = -5;", &types.BoolType{}, false},
+		{"let z: int = -true;", &types.IntType{}, false},
+		{"let z: int = 5 + 5 * 5;", &types.IntType{}, true},
+		{"let z: bool = false && true || !false;", &types.IntType{}, true},
 	}
 	for _, tt := range test {
 		lxr := lexer.New(tt.input)
@@ -62,12 +66,12 @@ func TestCheckReturnSatement(t *testing.T) {
 		input string
 		want  bool
 	}{
-		{"let x: int = if (2 > 1) { return 5; };", true},
+		{"let x: int = if (2 > 1) { return 5; } else { return 2; };", true},
 		{"let x: int = if (2 > 1) { return 5 + 5 * 5; } else { return 1; };", true},
-		{"let x: bool = if (2 > 1) { return true && false || false; }; ", true},
-		{"let x: bool = if (2 > 1) { let x: bool = true && false || false; return x; }; ", false},
-		{"let x: bool = if (2 + 1) { return true && false || false; }; ", false},
-		{"let x: bool = if (2) { return true && false || false; }; ", false},
+		{"let x: bool = if (2 > 1) { return true && false || false; } else { return true; }; ", true},
+		{"let x: bool = if (2 > 1) { let x: bool = true && false || false; return x; } else { return true; }; ", true},
+		{"let x: bool = if (2 + 1) { return true && false || false; } else { return true; }; ", false},
+		{"let x: bool = if (2) { return true && false || false; } else { return true; }; ", false},
 	}
 	for _, tt := range test {
 		lxr := lexer.New(tt.input)
@@ -121,6 +125,34 @@ func TestCheckFunctionLiteral(t *testing.T) {
 		{"let x: fn(bool, int) -> bool = fn(x, y) { return x + y; };", false},
 		{`let x: fn(bool, bool, int) -> int = fn(x, y, z) { let n: int = z + if (x && y) { return 1; } else { return 0; }; 
 		return z; };`, true},
+		{"let add: fn(int, int) -> int = fn(x, y) { return add(x, y); };", true},
+		{"let add: fn(int, int) -> int = fn(x, y) { return add(true, y); };", false},
+	}
+	for _, tt := range test {
+		lxr := lexer.New(tt.input)
+		prs := parser.New(lxr)
+
+		prg := prs.ParseProgram()
+		checkParserErrors(t, prs)
+
+		chk := New(nil)
+		chk.CheckProgram(prg)
+		if len(chk.errors) != 0 && tt.want != false {
+			checkCheckerErrors(t, chk)
+		}
+	}
+}
+
+func TestCheckCallExpression(t *testing.T) {
+	test := []struct {
+		input string
+		want  bool
+	}{
+		{"let add: fn(int, int) -> int = fn(x, y) { return x + y; }; let z: int = add(1, 2);", true},
+		{"let add: fn(int, int) -> int = fn(x, y) { return x + y; }; let z: int = 1 + add(1, 2);", true},
+		{"let add: fn(int, int) -> bool = fn(x, y) { return true; }; let z: int = add(1, 2);", false},
+		{"let add: fn(int, int) -> bool = fn(x, y) { return false; }; let z: bool = add(true, 2);", false},
+		{"let add: fn(int, int) -> bool = fn(x, y) { return false; }; let z: bool = add(add(1, 1), 2);", false},
 	}
 	for _, tt := range test {
 		lxr := lexer.New(tt.input)

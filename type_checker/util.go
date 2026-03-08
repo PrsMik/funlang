@@ -1,22 +1,23 @@
-package types
+package type_checker
 
 import (
 	"fmt"
 	"funlang/ast"
 	"funlang/token"
+	"funlang/types"
 )
 
-func (chk *TypeChecker) resolveType(inType ast.TypeNode) Type {
+func (chk *TypeChecker) resolveType(inType ast.TypeNode) types.Type {
 	switch tp := inType.(type) {
 	case *ast.SimpleType:
 		switch tp.Token.Type {
 		case token.INT_TYPE:
-			return &IntType{}
+			return &types.IntType{}
 		case token.BOOL_TYPE:
-			return &BoolType{}
+			return &types.BoolType{}
 		}
 	case *ast.FunctionType:
-		prmTypes := []Type{}
+		prmTypes := []types.Type{}
 
 		for _, prm := range tp.ParamsTypes {
 			resolvedParam := chk.resolveType(prm)
@@ -25,7 +26,7 @@ func (chk *TypeChecker) resolveType(inType ast.TypeNode) Type {
 
 		rtrnType := chk.resolveType(tp.ReturnType)
 
-		return &FuncType{prmTypes, rtrnType}
+		return &types.FuncType{ParamsTypes: prmTypes, ReturnType: rtrnType}
 	}
 	chk.errors = append(chk.errors, fmt.Errorf("unknown type"))
 	return nil

@@ -2,7 +2,7 @@ package types
 
 type TypeEviroment struct {
 	types map[string]Type
-	outer *TypeEviroment
+	Outer *TypeEviroment
 }
 
 func NewTypeEviroment() *TypeEviroment {
@@ -10,14 +10,14 @@ func NewTypeEviroment() *TypeEviroment {
 }
 
 func NewEnclosedTypeEviroment(outer *TypeEviroment) *TypeEviroment {
-	return &TypeEviroment{types: make(map[string]Type), outer: outer}
+	return &TypeEviroment{types: make(map[string]Type), Outer: outer}
 }
 
 func (env *TypeEviroment) Get(name string) (Type, bool) {
 	tp, ok := env.types[name]
 
-	if !ok && env.outer != nil {
-		return env.outer.Get(name)
+	if !ok && env.Outer != nil {
+		return env.Outer.Get(name)
 	}
 
 	return tp, ok

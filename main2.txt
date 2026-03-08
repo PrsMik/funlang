@@ -1,11 +1,10 @@
+let add: fn(bool, bool) -> bool = fn(x, y) { return x && y; };
+
 let compute: fn(int, int) -> int = fn(x, y) {
         let result: int = if (x > y) {
             return x + y;
         } else {
             return x - y;
         };
-        return result;
+        return add(x, y);
     };
-
-let x: int = 20;
-let y: int = 22;
