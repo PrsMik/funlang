@@ -5,6 +5,14 @@ import (
 	"funlang/object"
 )
 
+func evalIdentifier(node *ast.Identifier, env *object.Environment) object.Object {
+	val, ok := env.Get(node.Value)
+	if !ok {
+		return newError("identifier not found: %s", node.Value)
+	}
+	return val
+}
+
 func evalPrefixExpression(operator string, right object.Object) object.Object {
 	switch operator {
 	case "!":
@@ -12,7 +20,7 @@ func evalPrefixExpression(operator string, right object.Object) object.Object {
 	case "-":
 		return evalMinusPrefixOperatorExpression(right)
 	default:
-		return NULL
+		return newError("runtime error. unknown operator: %s for %s", operator, right.Inspect())
 	}
 }
 
@@ -50,7 +58,7 @@ func evalInfixExpression(operator string, left, right object.Object) object.Obje
 		case "/":
 			return &object.Integer{Value: leftVal / rightVal}
 		default:
-			return NULL
+			return newError("runtime error. operator %s for %s", operator, right.Inspect())
 		}
 	case ">", "<", ">=", "<=":
 		leftVal := left.(*object.Integer).Value
@@ -65,7 +73,7 @@ func evalInfixExpression(operator string, left, right object.Object) object.Obje
 		case "<=":
 			return nativeBoolToBooleanObject(leftVal <= rightVal)
 		default:
-			return NULL
+			return newError("runtime error. operator %s for %s", operator, right.Inspect())
 		}
 	case "==", "!=":
 		if left.Type() == object.BOOLEAN_OBJ {
@@ -77,7 +85,7 @@ func evalInfixExpression(operator string, left, right object.Object) object.Obje
 			case "!=":
 				return nativeBoolToBooleanObject(leftVal != rightVal)
 			default:
-				return NULL
+				return newError("runtime error. operator %s for %s", operator, right.Inspect())
 			}
 		} else if left.Type() == object.INTEGER_OBJ {
 			leftVal := left.(*object.Integer).Value
@@ -88,7 +96,7 @@ func evalInfixExpression(operator string, left, right object.Object) object.Obje
 			case "!=":
 				return nativeBoolToBooleanObject(leftVal != rightVal)
 			default:
-				return NULL
+				return newError("runtime error. operator %s for %s", operator, right.Inspect())
 			}
 		}
 	case "&&", "||":
@@ -100,17 +108,17 @@ func evalInfixExpression(operator string, left, right object.Object) object.Obje
 		case "||":
 			return nativeBoolToBooleanObject(leftVal || rightVal)
 		default:
-			return NULL
+			return newError("runtime error. operator %s for %s", operator, right.Inspect())
 		}
 	}
-	return NULL
+	return newError("runtime error. operator %s for %s", operator, right.Inspect())
 }
 
-func evalIfExpression(node *ast.IfExpression) object.Object {
-	condition := Eval(node.Condition)
+func evalIfExpression(node *ast.IfExpression, env *object.Environment) object.Object {
+	condition := Eval(node.Condition, env)
 	if condition == TRUE {
-		return Eval(node.Consequence)
+		return Eval(node.Consequence, env)
 	} else {
-		return Eval(node.Alternative)
+		return Eval(node.Alternative, env)
 	}
 }

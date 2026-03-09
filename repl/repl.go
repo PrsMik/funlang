@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"funlang/evaluator"
 	"funlang/lexer"
+	"funlang/object"
 	"funlang/parser"
 	"funlang/type_checker"
+	"funlang/types"
 	"io"
 )
 
@@ -14,6 +16,7 @@ const PROMT = ">> "
 
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
+	env := object.NewEnviroment()
 
 	for {
 		fmt.Printf(PROMT)
@@ -33,14 +36,15 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		chk := type_checker.New(nil)
+		typeEnv := types.NewTypeEviroment()
+		chk := type_checker.New(typeEnv)
 		chk.CheckProgram(prg)
 		if len(chk.Errors()) != 0 {
 			printCheckerErrors(out, chk.Errors())
 			continue
 		}
 
-		evaluated := evaluator.Eval(prg)
+		evaluated := evaluator.Eval(prg, env)
 		if evaluated != nil {
 			io.WriteString(out, evaluated.Inspect())
 			io.WriteString(out, "\n")

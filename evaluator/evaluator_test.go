@@ -25,6 +25,21 @@ func TestReturnStatements(t *testing.T) {
 	}
 }
 
+func TestLetStatements(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int
+	}{
+		{"let a: int = 5; return a;", 5},
+		{"let a: int = 5 * 5; return a;", 25},
+		{"let a: int = 5; let b: int = a; return b;", 5},
+		{"let a: int = 5; let b: int = a; let c: int = a + b + 5; return c;", 15},
+	}
+	for _, tt := range tests {
+		testIntegerObject(t, testEval(t, tt.input), tt.expected)
+	}
+}
+
 func TestEvalIntegerExpression(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -130,7 +145,9 @@ func testEval(t *testing.T, input string) object.Object {
 	chk.CheckProgram(program)
 	checkCheckerErrors(t, chk)
 
-	return Eval(program)
+	env := object.NewEnviroment()
+
+	return Eval(program, env)
 }
 
 func testIntegerObject(t *testing.T, obj object.Object, expected int) bool {
