@@ -75,7 +75,7 @@ func (chk *TypeChecker) checkInfixExpression(expr ast.ExpressionNode) types.Type
 		}
 	}
 
-	chk.errors = append(chk.errors, fmt.Errorf("type mismatch between: %s %s; for operator %s",
+	chk.errors = append(chk.errors, fmt.Errorf("type mismatch between: %s & %s; for operator %s",
 		leftType.Signature(), rightType.Signature(), op))
 	return &types.IllegalType{}
 }
@@ -133,7 +133,7 @@ func (chk *TypeChecker) checkCallExpression(expr ast.ExpressionNode) types.Type 
 	rawCallType, ok := chk.env.Get(callExpr.Function.String())
 
 	if !ok {
-		chk.errors = append(chk.errors, fmt.Errorf("unknown identifier: %s", callExpr.Function.String()))
+		chk.errors = append(chk.errors, fmt.Errorf("unknown identifier in call expr: %s", callExpr.Function.String()))
 		return &types.IllegalType{}
 	}
 

@@ -130,7 +130,7 @@ func TestCheckFunctionLiteral(t *testing.T) {
 		{"let x: fn(int, int) -> bool = fn(x, y) { return x + y; };", false},
 		{"let x: fn(int, int) -> bool = fn() { return x + y; };", false},
 		{"let x: fn(bool, int) -> bool = fn(x, y) { return x + y; };", false},
-		{`let x: fn(bool, bool, int) -> int = fn(x, y, z) { let n: int = z + if (x && y) { return 1; } else { return 0; }; 
+		{`let x: fn(bool, bool, int) -> int = fn(x, y, z) { let n: int = z + if (x && y) { return 1; } else { return 0; };
 		return z; };`, true},
 		{"let add: fn(int, int) -> int = fn(x, y) { return add(x, y); };", true},
 		{"let add: fn(int, int) -> int = fn(x, y) { return add(true, y); };", false},

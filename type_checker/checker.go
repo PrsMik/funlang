@@ -40,7 +40,6 @@ func New(curEnv *types.TypeEviroment) *TypeChecker {
 }
 
 func (chk *TypeChecker) CheckProgram(prog *ast.Program) {
-	chk.env = types.NewEnclosedTypeEviroment(chk.env)
 	for _, stmt := range prog.Statements {
 		chk.checkStatement(stmt)
 	}

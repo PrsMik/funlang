@@ -5,6 +5,7 @@ import (
 	"funlang/object"
 	"funlang/parser"
 	"funlang/type_checker"
+	"funlang/types"
 	"testing"
 )
 
@@ -135,17 +136,53 @@ func TestBangOperator(t *testing.T) {
 	}
 }
 
+func TestFunctionObject(t *testing.T) {
+	input := "let y: fn(int) -> int = fn(x) { return x + 2; };"
+	evaluated := testEval(t, input)
+	fn, ok := evaluated.(*object.Function)
+	if !ok {
+		t.Fatalf("object is not Function. got=%T (%+v)", evaluated, evaluated)
+	}
+	if len(fn.Parameters) != 1 {
+		t.Fatalf("function has wrong parameters. Parameters=%+v",
+			fn.Parameters)
+	}
+	if fn.Parameters[0].String() != "x" {
+		t.Fatalf("parameter is not 'x'. got=%q", fn.Parameters[0])
+	}
+	expectedBody := "return (x + 2);"
+	if fn.Body.String() != expectedBody {
+		t.Fatalf("body is not %q. got=%q", expectedBody, fn.Body.String())
+	}
+}
+
+func TestFunctionApplication(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int
+	}{
+		{"let identity: fn(int) -> int = fn(x) { return x; }; return identity(5);", 5},
+		{"let double: fn(int) -> int = fn(x) { return x * 2; }; return double(5);", 10},
+		{"let add: fn(int, int) -> int = fn(x, y) { return x + y; }; return add(5, 5);", 10},
+		{"let add: fn(int, int) -> int = fn(x, y) { return x + y; }; return add(5 + 5, add(5, 5));", 20},
+		// {"let y: int = fn(x: int) -> int { return x; }(5); return y;", 5},
+	}
+	for _, tt := range tests {
+		testIntegerObject(t, testEval(t, tt.input), tt.expected)
+	}
+}
+
 func testEval(t *testing.T, input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)
 	program := p.ParseProgram()
 	checkParserErrors(t, p)
-
-	chk := type_checker.New(nil)
+	type_env := types.NewTypeEviroment()
+	chk := type_checker.New(type_env)
 	chk.CheckProgram(program)
 	checkCheckerErrors(t, chk)
 
-	env := object.NewEnviroment()
+	env := object.NewEnvironment()
 
 	return Eval(program, env)
 }

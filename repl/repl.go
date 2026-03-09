@@ -16,7 +16,8 @@ const PROMT = ">> "
 
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
-	env := object.NewEnviroment()
+	typeEnv := types.NewTypeEviroment()
+	env := object.NewEnvironment()
 
 	for {
 		fmt.Printf(PROMT)
@@ -36,10 +37,10 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		typeEnv := types.NewTypeEviroment()
 		chk := type_checker.New(typeEnv)
 		chk.CheckProgram(prg)
 		if len(chk.Errors()) != 0 {
+			fmt.Println("!TYPE CHECKER ERRORS!")
 			printCheckerErrors(out, chk.Errors())
 			continue
 		}
