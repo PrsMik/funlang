@@ -3,8 +3,10 @@ package repl
 import (
 	"bufio"
 	"fmt"
+	"funlang/evaluator"
 	"funlang/lexer"
 	"funlang/parser"
+	"funlang/type_checker"
 	"io"
 )
 
@@ -31,13 +33,31 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		io.WriteString(out, prg.String())
-		io.WriteString(out, "\n")
+		chk := type_checker.New(nil)
+		chk.CheckProgram(prg)
+		if len(chk.Errors()) != 0 {
+			printCheckerErrors(out, chk.Errors())
+			continue
+		}
+
+		evaluated := evaluator.Eval(prg)
+		if evaluated != nil {
+			io.WriteString(out, evaluated.Inspect())
+			io.WriteString(out, "\n")
+		} else {
+			io.WriteString(out, "eval error\n")
+		}
 	}
 }
 
 func printParserErrors(out io.Writer, errors []string) {
 	for _, msg := range errors {
 		io.WriteString(out, "\t"+msg+"\n")
+	}
+}
+
+func printCheckerErrors(out io.Writer, errors []error) {
+	for _, msg := range errors {
+		io.WriteString(out, "\t"+msg.Error()+"\n")
 	}
 }

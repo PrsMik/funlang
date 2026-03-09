@@ -72,6 +72,7 @@ func TestCheckReturnSatement(t *testing.T) {
 		{"let x: bool = if (2 > 1) { let x: bool = true && false || false; return x; } else { return true; }; ", true},
 		{"let x: bool = if (2 + 1) { return true && false || false; } else { return true; }; ", false},
 		{"let x: bool = if (2) { return true && false || false; } else { return true; }; ", false},
+		{"let x: bool = if (true) { return true && false || false; } else { return true; }; ", true},
 	}
 	for _, tt := range test {
 		lxr := lexer.New(tt.input)

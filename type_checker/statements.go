@@ -30,7 +30,10 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 
 	if !types.Equals(expectedType, actualType) {
 		if expectedType != nil && actualType != nil {
-			chk.errors = append(chk.errors, fmt.Errorf("expected type %s, got %s", expectedType.Signature(), actualType.Signature()))
+			if len(chk.errors) == 0 {
+				chk.errors = append(chk.errors, fmt.Errorf("expected type %s, got %s",
+					expectedType.Signature(), actualType.Signature()))
+			}
 		}
 	}
 

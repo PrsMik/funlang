@@ -35,19 +35,18 @@ func (chk *TypeChecker) checkIdentifier(expr ast.ExpressionNode) types.Type {
 
 func (chk *TypeChecker) checkPrefixExpression(expr ast.ExpressionNode) types.Type {
 	op := expr.(*ast.PrefixExpression).Operator
+	rightType := chk.checkExpression(expr.(*ast.PrefixExpression).Right)
 	switch op {
 	case "-":
-		rightType := chk.checkExpression(expr.(*ast.PrefixExpression).Right)
 		if types.Equals(rightType, &types.IntType{}) {
 			return &types.IntType{}
 		}
 	case "!":
-		rightType := chk.checkExpression(expr.(*ast.PrefixExpression).Right)
 		if types.Equals(rightType, &types.BoolType{}) {
 			return &types.BoolType{}
 		}
 	}
-	chk.errors = append(chk.errors, fmt.Errorf("unknown operator: %s", op))
+	chk.errors = append(chk.errors, fmt.Errorf("unknown operator: %s for type %s", op, rightType.Signature()))
 	return &types.IllegalType{}
 }
 

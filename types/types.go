@@ -10,6 +10,11 @@ type IllegalType struct{}
 func (t *IllegalType) isType()           {}
 func (t *IllegalType) Signature() string { return "none" }
 
+type NullType struct{}
+
+func (n *NullType) isType()           {}
+func (n *NullType) Signature() string { return "<null>" }
+
 type IntType struct{}
 
 func (t *IntType) isType()           {}
