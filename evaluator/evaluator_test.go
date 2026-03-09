@@ -8,6 +8,23 @@ import (
 	"testing"
 )
 
+func TestReturnStatements(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int
+	}{
+		{"return 10;", 10},
+		{"return 10; let y: int = 9;", 10},
+		{"return 2 * 5; let y: int = 9;", 10},
+		{"let x: int = 9; return 2 * 5; let y: int = 9;", 10},
+		{"let x: int = if (2 > 1) { let x: int = 1; return 1; return 10; } else { return 2; return 20; };", 1},
+	}
+	for _, tt := range tests {
+		evaluated := testEval(t, tt.input)
+		testIntegerObject(t, evaluated, tt.expected)
+	}
+}
+
 func TestEvalIntegerExpression(t *testing.T) {
 	tests := []struct {
 		input    string
