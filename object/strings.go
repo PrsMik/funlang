@@ -12,6 +12,8 @@ func (i *Integer) Inspect() string { return fmt.Sprintf("%d", i.Value) }
 
 func (b *Boolean) Inspect() string { return fmt.Sprintf("%t", b.Value) }
 
+func (s *String) Inspect() string { return s.Value }
+
 func (r *ReturnValue) Inspect() string { return r.Value.Inspect() }
 
 func (f *Function) Inspect() string {

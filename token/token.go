@@ -18,6 +18,7 @@ const (
 	IDENT
 	INT
 	BOOL
+	STRING
 
 	// операторы
 	// присваивание
@@ -54,6 +55,7 @@ const (
 	// типы
 	INT_TYPE
 	BOOL_TYPE
+	STRING_TYPE
 )
 
 type Token struct {
@@ -111,8 +113,9 @@ var symbols = map[string]TokenType{
 
 var types = map[string]TokenType{
 	// типы
-	"int":  INT_TYPE,
-	"bool": BOOL_TYPE,
+	"int":    INT_TYPE,
+	"bool":   BOOL_TYPE,
+	"string": STRING_TYPE,
 }
 
 func LookupIdentifier(identifier string) TokenType {
@@ -156,6 +159,7 @@ var tokenStrings = map[TokenType]string{
 	IDENT:            "IDENT",
 	INT:              "INT",
 	BOOL:             "BOOL",
+	STRING:           "STRING",
 	ASSIGN:           "ASSIGN",
 	LARROW:           "LARROW",
 	RARROW:           "RARROW",
@@ -181,4 +185,5 @@ var tokenStrings = map[TokenType]string{
 	RBRACE:           "RBRACE",
 	INT_TYPE:         "INT_TYPE",
 	BOOL_TYPE:        "BOOL_TYPE",
+	STRING_TYPE:      "STRING_TYPE",
 }

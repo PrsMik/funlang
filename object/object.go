@@ -14,6 +14,7 @@ const (
 	NULL_OBJ
 	INTEGER_OBJ
 	BOOLEAN_OBJ
+	STRING_OBJ
 	RETURN_VALUE_OBJ
 	FUNCTION_OBJ
 	ERROR_OBJ
@@ -34,6 +35,12 @@ type Boolean struct {
 }
 
 func (b *Boolean) Type() ObjectType { return BOOLEAN_OBJ }
+
+type String struct {
+	Value string
+}
+
+func (s *String) Type() ObjectType { return STRING_OBJ }
 
 type ReturnValue struct {
 	Value Object

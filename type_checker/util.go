@@ -15,6 +15,8 @@ func (chk *TypeChecker) resolveType(inType ast.TypeNode) types.Type {
 			return &types.IntType{}
 		case token.BOOL_TYPE:
 			return &types.BoolType{}
+		case token.STRING_TYPE:
+			return &types.StringType{}
 		}
 	case *ast.FunctionType:
 		prmTypes := []types.Type{}

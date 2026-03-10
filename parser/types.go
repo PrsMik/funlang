@@ -7,7 +7,7 @@ import (
 
 func (prs *Parser) parseType() ast.TypeNode {
 	switch prs.curToken.Type {
-	case token.INT_TYPE, token.BOOL_TYPE:
+	case token.INT_TYPE, token.BOOL_TYPE, token.STRING_TYPE:
 		return &ast.SimpleType{Token: prs.curToken, Value: prs.curToken.Literal}
 	case token.FN:
 		return prs.parseFunctionType()

@@ -25,6 +25,11 @@ type BoolType struct{}
 func (t *BoolType) isType()           {}
 func (t *BoolType) Signature() string { return "<bool>" }
 
+type StringType struct{}
+
+func (t *StringType) isType()           {}
+func (t *StringType) Signature() string { return "<string>" }
+
 type FuncType struct {
 	ParamsTypes []Type
 	ReturnType  Type
@@ -60,6 +65,9 @@ func Equals(rawLeftType, rawRightType Type) bool {
 		return ok
 	case *BoolType:
 		_, ok := rawRightType.(*BoolType)
+		return ok
+	case *StringType:
+		_, ok := rawRightType.(*StringType)
 		return ok
 	case *FuncType:
 		rightType, ok := rawRightType.(*FuncType)

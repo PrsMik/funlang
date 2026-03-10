@@ -56,13 +56,11 @@ func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 
 func evalInfixExpression(operator string, left, right object.Object) object.Object {
 	switch operator {
-	case "-", "+", "*", "/":
+	case "-", "*", "/":
 		leftVal := left.(*object.Integer).Value
 		rightVal := right.(*object.Integer).Value
 
 		switch operator {
-		case "+":
-			return &object.Integer{Value: leftVal + rightVal}
 		case "-":
 			return &object.Integer{Value: leftVal - rightVal}
 		case "*":
@@ -71,6 +69,14 @@ func evalInfixExpression(operator string, left, right object.Object) object.Obje
 			return &object.Integer{Value: leftVal / rightVal}
 		default:
 			return newError("runtime error. operator %s for %s", operator, right.Inspect())
+		}
+	case "+":
+		// TODO: поменять на ADD_INT и CONCAT_STR, добавить поле в node AST
+		switch leftVal := left.(type) {
+		case *object.Integer:
+			return &object.Integer{Value: leftVal.Value + right.(*object.Integer).Value}
+		case *object.String:
+			return &object.String{Value: leftVal.Value + right.(*object.String).Value}
 		}
 	case ">", "<", ">=", "<=":
 		leftVal := left.(*object.Integer).Value

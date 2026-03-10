@@ -37,6 +37,8 @@ func (intLit *IntegerLiteral) String() string { return intLit.Token.Literal }
 
 func (boolLit *BooleanLiteral) String() string { return boolLit.Token.Literal }
 
+func (strLit *StringLiteral) String() string { return strLit.Token.Literal }
+
 func (funcLit *FunctionLiteral) String() string {
 	var out bytes.Buffer
 	params := []string{}

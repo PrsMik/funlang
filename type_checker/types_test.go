@@ -38,6 +38,8 @@ func TestCheckLetStatement(t *testing.T) {
 		want  bool
 	}{
 		{"let x: int = 5;", &types.IntType{}, true},
+		{`let x: string = "hello";`, &types.StringType{}, true},
+		{`let x: string = "hello" + "world!";`, &types.StringType{}, true},
 		{"let y: bool = true;", &types.BoolType{}, true},
 		{"let z: int = true;", &types.BoolType{}, false},
 		{"let z: int = -5;", &types.IntType{}, true},
@@ -127,6 +129,9 @@ func TestCheckFunctionLiteral(t *testing.T) {
 		want  bool
 	}{
 		{"let x: fn(int, int) -> int = fn(x, y) { return x + y; };", true},
+		{"let x: fn(string, string) -> string = fn(x, y) { return x + y; };", true},
+		{"let x: fn(string, string) -> string = fn(x, y) { return x / y; };", false},
+		{"let x: fn(string, int) -> string = fn(x, y) { return x + y; };", false},
 		{"let x: fn(int, int) -> bool = fn(x, y) { return x + y; };", false},
 		{"let x: fn(int, int) -> bool = fn() { return x + y; };", false},
 		{"let x: fn(bool, int) -> bool = fn(x, y) { return x + y; };", false},

@@ -15,13 +15,13 @@ func New(input string) *Lexer {
 	return &lexer
 }
 
-func (lexer *Lexer) NextToken() token.Token {
+func (lxr *Lexer) NextToken() token.Token {
 	var nextTok token.Token
-	lexer.skipWhitespace()
-	switch lexer.curChar {
+	lxr.skipWhitespace()
+	switch lxr.curChar {
 	case '=':
 		var ok bool
-		nextTok, ok = newTwoCharToken(lexer, token.EQUAL)
+		nextTok, ok = newTwoCharToken(lxr, token.EQUAL)
 		if !ok {
 			nextTok = newToken(token.ASSIGN, '=')
 		}
@@ -29,7 +29,7 @@ func (lexer *Lexer) NextToken() token.Token {
 		nextTok = newToken(token.PLUS, '+')
 	case '-':
 		var ok bool
-		nextTok, ok = newTwoCharToken(lexer, token.RARROW)
+		nextTok, ok = newTwoCharToken(lxr, token.RARROW)
 		if !ok {
 			nextTok = newToken(token.MINUS, '-')
 		}
@@ -39,7 +39,7 @@ func (lexer *Lexer) NextToken() token.Token {
 		nextTok = newToken(token.SLASH, '/')
 	case '<':
 		var ok bool
-		nextTok, ok = newTwoCharToken(lexer, token.LESS_OR_EQUAL)
+		nextTok, ok = newTwoCharToken(lxr, token.LESS_OR_EQUAL)
 		if !ok {
 			if nextTok.Literal == "<-" {
 				nextTok.Type = token.LARROW
@@ -49,13 +49,13 @@ func (lexer *Lexer) NextToken() token.Token {
 		}
 	case '>':
 		var ok bool
-		nextTok, ok = newTwoCharToken(lexer, token.GREATER_OR_EQUAL)
+		nextTok, ok = newTwoCharToken(lxr, token.GREATER_OR_EQUAL)
 		if !ok {
 			nextTok = newToken(token.GREATER, '>')
 		}
 	case '!':
 		var ok bool
-		nextTok, ok = newTwoCharToken(lexer, token.NOT_EQUAL)
+		nextTok, ok = newTwoCharToken(lxr, token.NOT_EQUAL)
 		if !ok {
 			nextTok = newToken(token.BANG, '!')
 		}
@@ -75,54 +75,57 @@ func (lexer *Lexer) NextToken() token.Token {
 		nextTok = newToken(token.RBRACE, '}')
 	case '&':
 		var ok bool
-		nextTok, ok = newTwoCharToken(lexer, token.AND)
+		nextTok, ok = newTwoCharToken(lxr, token.AND)
 		if !ok {
-			nextTok = newToken(token.ILLEGAL, lexer.curChar)
+			nextTok = newToken(token.ILLEGAL, lxr.curChar)
 		}
 	case '|':
 		var ok bool
-		nextTok, ok = newTwoCharToken(lexer, token.OR)
+		nextTok, ok = newTwoCharToken(lxr, token.OR)
 		if !ok {
-			nextTok = newToken(token.ILLEGAL, lexer.curChar)
+			nextTok = newToken(token.ILLEGAL, lxr.curChar)
 		}
+	case '"':
+		nextTok.Type = token.STRING
+		nextTok.Literal = lxr.readString()
 	case 0:
 		nextTok = token.Token{Type: token.EOF, Literal: ""}
 	default:
-		if isLetter(lexer.curChar) {
-			nextTok.Literal = lexer.readIdentifier()
+		if isLetter(lxr.curChar) {
+			nextTok.Literal = lxr.readIdentifier()
 			var ok bool
 			nextTok.Type, ok = token.LookupType(nextTok.Literal)
 			if !ok {
 				nextTok.Type = token.LookupIdentifier(nextTok.Literal)
 			}
 			return nextTok
-		} else if isDigit(lexer.curChar) {
-			nextTok.Literal = lexer.readNumber()
+		} else if isDigit(lxr.curChar) {
+			nextTok.Literal = lxr.readNumber()
 			nextTok.Type = token.INT
 			return nextTok
 		} else {
-			nextTok = newToken(token.ILLEGAL, lexer.curChar)
+			nextTok = newToken(token.ILLEGAL, lxr.curChar)
 		}
 	}
-	lexer.readChar()
+	lxr.readChar()
 	return nextTok
 }
 
-func (lexer *Lexer) readChar() {
-	if lexer.readPos >= len(lexer.input) {
-		lexer.curChar = 0
+func (lxr *Lexer) readChar() {
+	if lxr.readPos >= len(lxr.input) {
+		lxr.curChar = 0
 	} else {
-		lexer.curChar = lexer.input[lexer.readPos]
+		lxr.curChar = lxr.input[lxr.readPos]
 	}
-	lexer.curPos = lexer.readPos
-	lexer.readPos++
+	lxr.curPos = lxr.readPos
+	lxr.readPos++
 }
 
-func (lexer *Lexer) peekChar() byte {
-	if lexer.readPos >= len(lexer.input) {
+func (lxr *Lexer) peekChar() byte {
+	if lxr.readPos >= len(lxr.input) {
 		return 0
 	} else {
-		return lexer.input[lexer.readPos]
+		return lxr.input[lxr.readPos]
 	}
 }
 
@@ -145,30 +148,41 @@ func newTwoCharToken(lexer *Lexer, tokenType token.TokenType) (token.Token, bool
 	return token, true
 }
 
-func (lexer *Lexer) readIdentifier() string {
-	startPos := lexer.curPos
-	for isLetter(lexer.curChar) {
-		lexer.readChar()
+func (lxr *Lexer) readIdentifier() string {
+	startPos := lxr.curPos
+	for isLetter(lxr.curChar) {
+		lxr.readChar()
 	}
-	return lexer.input[startPos:lexer.curPos]
+	return lxr.input[startPos:lxr.curPos]
+}
+
+func (lxr *Lexer) readString() string {
+	position := lxr.curPos + 1
+	for {
+		lxr.readChar()
+		if lxr.curChar == '"' || lxr.curChar == 0 {
+			break
+		}
+	}
+	return lxr.input[position:lxr.curPos]
 }
 
 func isLetter(ch byte) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
 }
 
-func (lexer *Lexer) skipWhitespace() {
-	for lexer.curChar == ' ' || lexer.curChar == '\t' || lexer.curChar == '\n' || lexer.curChar == '\r' {
-		lexer.readChar()
+func (lxr *Lexer) skipWhitespace() {
+	for lxr.curChar == ' ' || lxr.curChar == '\t' || lxr.curChar == '\n' || lxr.curChar == '\r' {
+		lxr.readChar()
 	}
 }
 
-func (lexer *Lexer) readNumber() string {
-	startPos := lexer.curPos
-	for isDigit(lexer.curChar) {
-		lexer.readChar()
+func (lxr *Lexer) readNumber() string {
+	startPos := lxr.curPos
+	for isDigit(lxr.curChar) {
+		lxr.readChar()
 	}
-	return lexer.input[startPos:lexer.curPos]
+	return lxr.input[startPos:lxr.curPos]
 }
 func isDigit(char byte) bool {
 	return '0' <= char && char <= '9'

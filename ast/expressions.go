@@ -20,6 +20,14 @@ type BooleanLiteral struct {
 func (boolLit *BooleanLiteral) expressionNode()      {}
 func (boolLit *BooleanLiteral) TokenLiteral() string { return boolLit.Token.Literal }
 
+type StringLiteral struct {
+	Token token.Token
+	Value string
+}
+
+func (strLit *StringLiteral) expressionNode()      {}
+func (strLit *StringLiteral) TokenLiteral() string { return strLit.Token.Literal }
+
 type FunctionLiteral struct {
 	Token      token.Token
 	Parameters []*Identifier

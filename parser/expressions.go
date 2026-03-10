@@ -156,6 +156,10 @@ func (prs *Parser) parseIntegerLiteral() ast.ExpressionNode {
 	return intLiteral
 }
 
+func (prs *Parser) parseStringLiteral() ast.ExpressionNode {
+	return &ast.StringLiteral{Token: prs.curToken, Value: prs.curToken.Literal}
+}
+
 func (prs *Parser) parseBoolean() ast.ExpressionNode {
 	return &ast.BooleanLiteral{Token: prs.curToken, Value: prs.curTokenIs(token.TRUE)}
 }

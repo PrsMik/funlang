@@ -1,0 +1,8 @@
+let makeGreeter: fn(string) -> fn(string) -> string = fn(greeting) { 
+    return fn(name) { 
+        return greeting + " " + name + "!"; 
+    }; 
+};
+
+let hello: fn(string) -> string = makeGreeter("Hello");
+return hello("Thorsten");

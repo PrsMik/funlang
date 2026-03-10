@@ -1,37 +1,56 @@
 package lexer_test
 
 import (
-	"fmt"
 	"funlang/lexer"
 	"funlang/token"
-	"os"
 	"testing"
 )
 
 func TestLexer_NextToken(t *testing.T) {
-	data, err := os.ReadFile("D:/Repo/funlang/main2.txt")
-	if err != nil {
-		fmt.Println("Ошибка при чтении файла:", err)
-		return
-	}
-	content := string(data)
+	input := `let five: int = 5;
+			  let ten = 10;
+			  let add = fn(x, y) {
+				return x + y;
+				};
+				"foobar"
+				"foo bar"`
 	tests := []struct {
 		wantType    token.TokenType
 		wantLiteral string
 	}{
 		{token.LET, "let"},
-		{token.IDENT, "x"},
+		{token.IDENT, "five"},
 		{token.COLON, ":"},
-		{token.BOOL_TYPE, "bool"},
+		{token.INT_TYPE, "int"},
 		{token.ASSIGN, "="},
-		{token.TRUE, "true"},
-		{token.AND, "&&"},
-		{token.FALSE, "false"},
-		{token.OR, "||"},
-		{token.FALSE, "false"},
+		{token.INT, "5"},
 		{token.SEMICOLON, ";"},
+		{token.LET, "let"},
+		{token.IDENT, "ten"},
+		{token.ASSIGN, "="},
+		{token.INT, "10"},
+		{token.SEMICOLON, ";"},
+		{token.LET, "let"},
+		{token.IDENT, "add"},
+		{token.ASSIGN, "="},
+		{token.FN, "fn"},
+		{token.LPAREN, "("},
+		{token.IDENT, "x"},
+		{token.COMMA, ","},
+		{token.IDENT, "y"},
+		{token.RPAREN, ")"},
+		{token.LBRACE, "{"},
+		{token.RETURN, "return"},
+		{token.IDENT, "x"},
+		{token.PLUS, "+"},
+		{token.IDENT, "y"},
+		{token.SEMICOLON, ";"},
+		{token.RBRACE, "}"},
+		{token.SEMICOLON, ";"},
+		{token.STRING, "foobar"},
+		{token.STRING, "foo bar"},
 	}
-	lexer := lexer.New(content)
+	lexer := lexer.New(input)
 	for _, tt := range tests {
 		t.Run("TEST", func(t *testing.T) {
 			got := lexer.NextToken()

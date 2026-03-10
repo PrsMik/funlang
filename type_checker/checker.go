@@ -26,6 +26,7 @@ func New(curEnv *types.TypeEviroment) *TypeChecker {
 
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.IntegerLiteral](), chk.checkIntegerLiteral)
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.BooleanLiteral](), chk.checkBooleanLiteral)
+	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.StringLiteral](), chk.checkStringLiteral)
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.Identifier](), chk.checkIdentifier)
 
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.PrefixExpression](), chk.checkPrefixExpression)

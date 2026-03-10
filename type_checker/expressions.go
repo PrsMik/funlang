@@ -24,6 +24,10 @@ func (chk *TypeChecker) checkBooleanLiteral(expr ast.ExpressionNode) types.Type 
 	return &types.BoolType{}
 }
 
+func (chk *TypeChecker) checkStringLiteral(expr ast.ExpressionNode) types.Type {
+	return &types.StringType{}
+}
+
 func (chk *TypeChecker) checkIdentifier(expr ast.ExpressionNode) types.Type {
 	identType, ok := chk.env.Get(expr.(*ast.Identifier).Value)
 	if !ok {
@@ -59,6 +63,10 @@ func (chk *TypeChecker) checkInfixExpression(expr ast.ExpressionNode) types.Type
 	case "-", "+", "*", "/":
 		if types.Equals(leftType, &types.IntType{}) && types.Equals(rightType, &types.IntType{}) {
 			return &types.IntType{}
+		} else if op == "+" &&
+			types.Equals(leftType, &types.StringType{}) &&
+			types.Equals(rightType, &types.StringType{}) {
+			return &types.StringType{}
 		}
 	case "&&", "||":
 		if types.Equals(leftType, &types.BoolType{}) && types.Equals(rightType, &types.BoolType{}) {
