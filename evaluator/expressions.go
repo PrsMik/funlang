@@ -19,10 +19,12 @@ func evalExpressions(exps []ast.ExpressionNode, env *object.Environment) []objec
 
 func evalIdentifier(node *ast.Identifier, env *object.Environment) object.Object {
 	val, ok := env.Get(node.Value)
-	if !ok {
-		return newError("identifier not found: %s", node.Value)
+	if ok {
+		return val
+	} else if builtin, ok := builtins[node.Value]; ok {
+		return builtin
 	}
-	return val
+	return newError("identifier not found: %s", node.Value)
 }
 
 func evalPrefixExpression(operator string, right object.Object) object.Object {
@@ -71,7 +73,7 @@ func evalInfixExpression(operator string, left, right object.Object) object.Obje
 			return newError("runtime error. operator %s for %s", operator, right.Inspect())
 		}
 	case "+":
-		// TODO: поменять на ADD_INT и CONCAT_STR, добавить поле в node AST
+		// TODO: поменять на ADD_INT и CONCAT_STR, добавить поле с инструкцией в node AST
 		switch leftVal := left.(type) {
 		case *object.Integer:
 			return &object.Integer{Value: leftVal.Value + right.(*object.Integer).Value}

@@ -214,6 +214,35 @@ func TestClosures(t *testing.T) {
 	testIntegerObject(t, testEval(t, input), 3)
 }
 
+func TestBuiltinFunctions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{`return len_str("");`, 0},
+		{`return len_str("four");`, 4},
+		{`return len_str("hello world");`, 11},
+	}
+	for _, tt := range tests {
+		evaluated := testEval(t, tt.input)
+		switch expected := tt.expected.(type) {
+		case int:
+			testIntegerObject(t, evaluated, int(expected))
+		case string:
+			errObj, ok := evaluated.(*object.Error)
+			if !ok {
+				t.Errorf("object is not Error. got=%T (%+v)",
+					evaluated, evaluated)
+				continue
+			}
+			if errObj.Message != expected {
+				t.Errorf("wrong error message. expected=%q, got=%q",
+					expected, errObj.Message)
+			}
+		}
+	}
+}
+
 func testEval(t *testing.T, input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)

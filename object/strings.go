@@ -31,4 +31,6 @@ func (f *Function) Inspect() string {
 	return out.String()
 }
 
+func (b *Builtin) Inspect() string { return "builtin function" }
+
 func (e *Error) Inspect() string { return "ERROR: " + e.Message }

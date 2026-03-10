@@ -17,6 +17,7 @@ const (
 	STRING_OBJ
 	RETURN_VALUE_OBJ
 	FUNCTION_OBJ
+	BUILTIN_OBJ
 	ERROR_OBJ
 )
 
@@ -55,6 +56,14 @@ type Function struct {
 }
 
 func (f *Function) Type() ObjectType { return FUNCTION_OBJ }
+
+type BuiltinFunction func(...Object) Object
+
+type Builtin struct {
+	Fn BuiltinFunction
+}
+
+func (e *Builtin) Type() ObjectType { return BUILTIN_OBJ }
 
 type Error struct {
 	Message string

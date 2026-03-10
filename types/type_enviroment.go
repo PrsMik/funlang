@@ -6,7 +6,10 @@ type TypeEviroment struct {
 }
 
 func NewTypeEviroment() *TypeEviroment {
-	return &TypeEviroment{types: make(map[string]Type)}
+	// types: make(map[string]Type)
+	env := &TypeEviroment{}
+	env.types = getMapWithBuiltins()
+	return env
 }
 
 func NewEnclosedTypeEviroment(outer *TypeEviroment) *TypeEviroment {
