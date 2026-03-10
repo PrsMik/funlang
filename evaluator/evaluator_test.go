@@ -164,8 +164,11 @@ func TestFunctionApplication(t *testing.T) {
 		{"let identity: fn(int) -> int = fn(x) { return x; }; return identity(5);", 5},
 		{"let double: fn(int) -> int = fn(x) { return x * 2; }; return double(5);", 10},
 		{"let add: fn(int, int) -> int = fn(x, y) { return x + y; }; return add(5, 5);", 10},
+		{"let add: fn(int, int) -> int = fn(x: int, y: int) -> int { return x + y; }; return add(5, 5);", 10},
+		{"let add: fn() -> int = fn() { return 1; }; return add();", 1},
+		{"return fn() -> int { return 1; }();", 1},
 		{"let add: fn(int, int) -> int = fn(x, y) { return x + y; }; return add(5 + 5, add(5, 5));", 20},
-		// {"let y: int = fn(x: int) -> int { return x; }(5); return y;", 5},
+		{"let y: int = fn(x: int) -> int { return x; }(5); return y;", 5},
 	}
 	for _, tt := range tests {
 		testIntegerObject(t, testEval(t, tt.input), tt.expected)

@@ -8,7 +8,7 @@ type Type interface {
 type IllegalType struct{}
 
 func (t *IllegalType) isType()           {}
-func (t *IllegalType) Signature() string { return "none" }
+func (t *IllegalType) Signature() string { return "<none>" }
 
 type NullType struct{}
 

@@ -105,23 +105,46 @@ func (chk *TypeChecker) checkIfExpression(expr ast.ExpressionNode) types.Type {
 
 func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type {
 	resFuncType := &types.FuncType{}
+	funLit := expr.(*ast.FunctionLiteral)
+	var expectedFuncType types.FuncType
 
-	expectedFuncType := chk.curExpectedType.(*types.FuncType)
+	// hasSelfParams := false
+	if len(funLit.ParamTypes) != 0 && funLit.ParamTypes[0] != nil || funLit.ReturnType != nil {
+		if len(funLit.ParamTypes) != 0 {
+			for _, param := range funLit.ParamTypes {
+				expectedFuncType.ParamsTypes = append(expectedFuncType.ParamsTypes, chk.resolveType(param))
+			}
+		}
+		if funLit.ReturnType != nil {
+			expectedFuncType.ReturnType = chk.resolveType(funLit.ReturnType)
+		} else {
+			chk.errors = append(chk.errors, fmt.Errorf("function literal has typed parameters, but no return type specified"))
+			expectedFuncType.ReturnType = &types.IllegalType{}
+		}
+	} else {
+		expectedFuncType = *chk.curExpectedType.(*types.FuncType)
+	}
 
-	if len(expectedFuncType.ParamsTypes) != len(expr.(*ast.FunctionLiteral).Parameters) {
+	if len(expectedFuncType.ParamsTypes) != len(funLit.Parameters) {
 		chk.errors = append(chk.errors, fmt.Errorf("function literal has %d parameters, but expected %d",
-			len(expr.(*ast.FunctionLiteral).Parameters), len(expectedFuncType.ParamsTypes)))
+			len(funLit.Parameters), len(expectedFuncType.ParamsTypes)))
 		return &types.IllegalType{}
 	}
 
 	chk.env = types.NewEnclosedTypeEviroment(chk.env)
 
-	for i, param := range expr.(*ast.FunctionLiteral).Parameters {
+	for i, param := range funLit.Parameters {
 		resFuncType.ParamsTypes = append(resFuncType.ParamsTypes, expectedFuncType.ParamsTypes[i])
 		chk.env.Set(param.Value, expectedFuncType.ParamsTypes[i])
 	}
 
-	resFuncType.ReturnType = chk.checkBlockStatement(expr.(*ast.FunctionLiteral).Body)
+	resFuncType.ReturnType = chk.checkBlockStatement(funLit.Body)
+
+	if resFuncType.ReturnType != expectedFuncType.ReturnType {
+		chk.errors = append(chk.errors, fmt.Errorf("function literal has return type %s, but expected %s",
+			resFuncType.ReturnType.Signature(), expectedFuncType.ReturnType.Signature()))
+		return &types.IllegalType{}
+	}
 
 	chk.env = chk.env.Outer
 
@@ -130,10 +153,9 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 
 func (chk *TypeChecker) checkCallExpression(expr ast.ExpressionNode) types.Type {
 	callExpr := expr.(*ast.CallExpression)
-	rawCallType, ok := chk.env.Get(callExpr.Function.String())
+	rawCallType := chk.checkExpression(callExpr.Function)
 
-	if !ok {
-		chk.errors = append(chk.errors, fmt.Errorf("unknown identifier in call expr: %s", callExpr.Function.String()))
+	if _, err := rawCallType.(*types.IllegalType); err {
 		return &types.IllegalType{}
 	}
 
@@ -148,7 +170,7 @@ func (chk *TypeChecker) checkCallExpression(expr ast.ExpressionNode) types.Type 
 		argType := chk.checkExpression(arg)
 
 		if !types.Equals(argType, callFuncType.ParamsTypes[i]) {
-			chk.errors = append(chk.errors, fmt.Errorf("wrong type for argument %d: %s in func call \"%s\"; expected %s",
+			chk.errors = append(chk.errors, fmt.Errorf("wrong type for argument %d: %s in func call \" %s \"; expected %s",
 				i+1, argType.Signature(), callExpr.Function.String(), callFuncType.ParamsTypes[i].Signature()))
 			return &types.IllegalType{}
 		}

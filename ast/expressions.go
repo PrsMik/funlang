@@ -23,6 +23,8 @@ func (boolLit *BooleanLiteral) TokenLiteral() string { return boolLit.Token.Lite
 type FunctionLiteral struct {
 	Token      token.Token
 	Parameters []*Identifier
+	ParamTypes []TypeNode
+	ReturnType TypeNode
 	Body       *BlockStatement
 }
 

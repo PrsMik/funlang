@@ -167,7 +167,13 @@ func (prs *Parser) parseFunctionLiteral() ast.ExpressionNode {
 		return nil
 	}
 
-	fnLiteral.Parameters = prs.parseFunctionParameters()
+	fnLiteral.Parameters, fnLiteral.ParamTypes = prs.parseFunctionParameters()
+
+	if prs.peekTokenIs(token.RARROW) {
+		prs.nextToken()
+		prs.nextToken()
+		fnLiteral.ReturnType = prs.parseType()
+	}
 
 	if !prs.expectPeek(token.LBRACE) {
 		return nil
@@ -178,12 +184,13 @@ func (prs *Parser) parseFunctionLiteral() ast.ExpressionNode {
 	return fnLiteral
 }
 
-func (prs *Parser) parseFunctionParameters() []*ast.Identifier {
+func (prs *Parser) parseFunctionParameters() ([]*ast.Identifier, []ast.TypeNode) {
 	literals := []*ast.Identifier{}
+	paramTypes := []ast.TypeNode{}
 
 	if prs.peekTokenIs(token.RPAREN) {
 		prs.nextToken()
-		return literals
+		return literals, paramTypes
 	}
 
 	prs.nextToken()
@@ -191,18 +198,33 @@ func (prs *Parser) parseFunctionParameters() []*ast.Identifier {
 	ident := &ast.Identifier{Token: prs.curToken, Value: prs.curToken.Literal}
 	literals = append(literals, ident)
 
+	if prs.peekTokenIs(token.COLON) {
+		prs.nextToken()
+		prs.nextToken()
+		paramTypes = append(paramTypes, prs.parseType())
+	} else {
+		paramTypes = append(paramTypes, nil)
+	}
+
 	for prs.peekTokenIs(token.COMMA) {
 		prs.nextToken()
 		prs.nextToken()
 		ident := &ast.Identifier{Token: prs.curToken, Value: prs.curToken.Literal}
 		literals = append(literals, ident)
+		if prs.peekTokenIs(token.COLON) {
+			prs.nextToken()
+			prs.nextToken()
+			paramTypes = append(paramTypes, prs.parseType())
+		} else {
+			paramTypes = append(paramTypes, nil)
+		}
 	}
 
 	if !prs.expectPeek(token.RPAREN) {
-		return nil
+		return nil, nil
 	}
 
-	return literals
+	return literals, paramTypes
 }
 
 func (prs *Parser) noPrefixParseFnError(tknType token.TokenType) {
