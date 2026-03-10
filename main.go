@@ -4,20 +4,26 @@ package main
 import (
 	"flag"
 	"fmt"
+	"funlang/evaluator"
 	"funlang/lexer"
+	"funlang/object"
 	"funlang/parser"
 	"funlang/repl"
 	"funlang/type_checker"
+	"funlang/types"
 	"io"
 	"os"
 	"os/user"
 )
 
 func InterpretProgram(program string, out io.Writer) {
+	typeEnv := types.NewTypeEviroment()
+	env := object.NewEnvironment()
+
 	lxr := lexer.New(program)
 	prs := parser.New(lxr)
 	prg := prs.ParseProgram()
-	chk := type_checker.New(nil)
+	chk := type_checker.New(typeEnv)
 
 	for _, err := range prs.Errors() {
 		fmt.Println(err)
@@ -34,7 +40,14 @@ func InterpretProgram(program string, out io.Writer) {
 		return
 	}
 
-	io.WriteString(out, prg.String())
+	evaluated := evaluator.Eval(prg, env)
+	if evaluated != nil {
+		io.WriteString(out, "Result of file eval is: ")
+		io.WriteString(out, evaluated.Inspect())
+		io.WriteString(out, "\n")
+	} else {
+		io.WriteString(out, "eval error\n")
+	}
 }
 
 func main() {

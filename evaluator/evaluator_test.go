@@ -167,12 +167,27 @@ func TestFunctionApplication(t *testing.T) {
 		{"let add: fn(int, int) -> int = fn(x: int, y: int) -> int { return x + y; }; return add(5, 5);", 10},
 		{"let add: fn() -> int = fn() { return 1; }; return add();", 1},
 		{"return fn() -> int { return 1; }();", 1},
+		{"return fn() -> fn() -> int { return fn() -> int { return 1; }; }()();", 1},
 		{"let add: fn(int, int) -> int = fn(x, y) { return x + y; }; return add(5 + 5, add(5, 5));", 20},
 		{"let y: int = fn(x: int) -> int { return x; }(5); return y;", 5},
 	}
 	for _, tt := range tests {
 		testIntegerObject(t, testEval(t, tt.input), tt.expected)
 	}
+}
+
+func TestClosures(t *testing.T) {
+	// input := `
+	// 	let newAdderX: fn(int) -> fn(int) -> fn() -> int = fn(x) {
+	// 			return fn(y) { return fn() { return x + y; }; };
+	// 	};
+	// 	let setY: fn(int) -> fn() -> int = newAdderX(2);
+	// 	let addTwo: fn() -> int = setY(1);
+	// 	return addTwo();`
+	input := `
+		return fn(x: int) -> fn(int, int) -> fn() -> int {
+				return fn(y, z) -> fn() -> int { return fn() -> int { return x + y + z; }; }; }(1)(1, 1)();`
+	testIntegerObject(t, testEval(t, input), 3)
 }
 
 func testEval(t *testing.T, input string) object.Object {

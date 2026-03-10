@@ -1,10 +1,4 @@
-let add: fn(bool, bool) -> bool = fn(x, y) { return x && y; };
-
-let compute: fn(int, int) -> int = fn(x, y) {
-        let result: int = if (x > y) {
-            return x + y;
-        } else {
-            return x - y;
-        };
-        return add(x, y);
-    };
+let add: fn(int, int) -> int = fn(a, b) { return a + b; };
+let sub: fn(int, int) -> int = fn(a, b) { return a - b; };
+let applyFunc: fn(int, int, fn(int, int) -> int) -> int = fn(a, b, func) { return func(a, b); };
+return applyFunc(2, 2, add);
