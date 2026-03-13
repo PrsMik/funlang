@@ -1,4 +1,7 @@
-let add: fn(int, int) -> int = fn(a, b) { return a + b; };
-let sub: fn(int, int) -> int = fn(a, b) { return a - b; };
-let applyFunc: fn(int, int, fn(int, int) -> int) -> int = fn(a, b, func) { return func(a, b); };
-return applyFunc(2, 2, add);
+let fib: fn(int) -> int = fn(x) { 
+return if ( x == 1 || x == 2) 
+{ return 1; } 
+else 
+{ return fib(x - 2) + fib(x - 1); }; 
+};
+return fib(34);

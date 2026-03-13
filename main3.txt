@@ -1,4 +1,2 @@
-let x: int = 3;
-let y: int = 2;
-let z: int = if (x > y) { return x; } else { return y; };
-return z;
+let x: int = 9000000000000000000;
+return x;

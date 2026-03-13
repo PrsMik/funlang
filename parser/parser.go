@@ -9,15 +9,19 @@ import (
 const (
 	_ int = iota
 	LOWEST
+	LOG_SUM     // ||
+	LOG_PROD    // &&
 	EQUALS      // ==
 	LESSGREATER // >, <
-	SUM         // +, ||
-	PRODUCT     // *, &&
+	SUM         // +
+	PRODUCT     // *
 	PREFIX      // -X, !X
 	CALL        // myFunction(X)
 )
 
 var precedences = map[token.TokenType]int{
+	token.OR:               LOG_SUM,
+	token.AND:              LOG_PROD,
 	token.EQUAL:            EQUALS,
 	token.NOT_EQUAL:        EQUALS,
 	token.LESS:             LESSGREATER,
@@ -26,10 +30,8 @@ var precedences = map[token.TokenType]int{
 	token.GREATER_OR_EQUAL: LESSGREATER,
 	token.PLUS:             SUM,
 	token.MINUS:            SUM,
-	token.OR:               SUM,
 	token.SLASH:            PRODUCT,
 	token.ASTERISK:         PRODUCT,
-	token.AND:              PRODUCT,
 	token.LPAREN:           CALL,
 }
 
