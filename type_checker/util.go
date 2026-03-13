@@ -18,6 +18,8 @@ func (chk *TypeChecker) resolveType(inType ast.TypeNode) types.Type {
 		case token.STRING_TYPE:
 			return &types.StringType{}
 		}
+	case *ast.ArrayType:
+		return &types.ArrayType{ElementsType: chk.resolveType(tp.ElementsType)}
 	case *ast.FunctionType:
 		prmTypes := []types.Type{}
 

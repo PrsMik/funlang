@@ -17,6 +17,8 @@ func (prg *Program) String() string {
 
 func (simpType *SimpleType) String() string { return simpType.Value }
 
+func (arrType *ArrayType) String() string { return "[" + arrType.ElementsType.String() + "]" }
+
 func (funcType *FunctionType) String() string {
 	var out bytes.Buffer
 	params := []string{}
@@ -38,6 +40,18 @@ func (intLit *IntegerLiteral) String() string { return intLit.Token.Literal }
 func (boolLit *BooleanLiteral) String() string { return boolLit.Token.Literal }
 
 func (strLit *StringLiteral) String() string { return strLit.Token.Literal }
+
+func (arrLit *ArrayLiteral) String() string {
+	var out bytes.Buffer
+	elements := []string{}
+	for _, elem := range arrLit.Elements {
+		elements = append(elements, elem.String())
+	}
+	out.WriteString("[")
+	out.WriteString(strings.Join(elements, ", "))
+	out.WriteString("]")
+	return out.String()
+}
 
 func (funcLit *FunctionLiteral) String() string {
 	var out bytes.Buffer

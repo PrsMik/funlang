@@ -40,6 +40,8 @@ func TestCheckLetStatement(t *testing.T) {
 		{"let x: int = 5;", &types.IntType{}, true},
 		{`let x: string = "hello";`, &types.StringType{}, true},
 		{`let x: string = "hello" + "world!";`, &types.StringType{}, true},
+		{`let x: [string] = ["hello", "world!"];`, &types.ArrayType{}, true},
+		{`let x: [string] = [];`, &types.ArrayType{}, true},
 		{"let y: bool = true;", &types.BoolType{}, true},
 		{"let z: int = true;", &types.BoolType{}, false},
 		{"let z: int = -5;", &types.IntType{}, true},
@@ -71,6 +73,7 @@ func TestCheckReturnSatement(t *testing.T) {
 		want  bool
 	}{
 		{"let x: int = if (2 > 1) { return 5; } else { return 2; };", true},
+		{"let x: [int] = if (2 > 1) { return []; } else { return [2, 3]; };", true},
 		{"let x: int = if (2 > 1) { return 5 + 5 * 5; } else { return 1; };", true},
 		{"let x: bool = if (2 > 1) { return true && false || false; } else { return true; }; ", true},
 		{"let x: bool = if (2 > 1) { let x: bool = true && false || false; return x; } else { return true; }; ", true},
@@ -103,6 +106,11 @@ func TestCheckIdentifier(t *testing.T) {
 	}{
 		{"let x: int = 5; let y: int = x + 3;", true},
 		{"let x: bool = true; let y: bool = !x;", true},
+		{`let y: [int] = [1, 2, 3]; let x: [int] = y;`, true},
+		{`let y: fn() -> [int] = fn() { return []; }; let x: [int] = y();`, true},
+		{`let y: fn() -> int = fn() { return 1; }; 
+		let x: [fn() -> int] = [y, y, y];`, true},
+		{"let x: int = x;", false},
 		{"let x: bool = true; let z: int = 5; let y: int = if (z > 1) { let x: int = 1; return x + z; } else { return 1; };", true},
 		{"let y: int = x + 3;", false},
 	}

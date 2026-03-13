@@ -30,6 +30,13 @@ type StringType struct{}
 func (t *StringType) isType()           {}
 func (t *StringType) Signature() string { return "<string>" }
 
+type ArrayType struct {
+	ElementsType Type
+}
+
+func (t *ArrayType) isType()           {}
+func (t *ArrayType) Signature() string { return "[" + t.ElementsType.Signature() + "]" }
+
 type FuncType struct {
 	ParamsTypes []Type
 	ReturnType  Type
@@ -69,6 +76,17 @@ func Equals(rawLeftType, rawRightType Type) bool {
 	case *StringType:
 		_, ok := rawRightType.(*StringType)
 		return ok
+	case *ArrayType:
+		rightType, ok := rawRightType.(*ArrayType)
+		if !ok {
+			return false
+		}
+
+		if rightType.ElementsType == nil || leftType.ElementsType == nil {
+			return true
+		}
+
+		return Equals(leftType.ElementsType, rightType.ElementsType)
 	case *FuncType:
 		rightType, ok := rawRightType.(*FuncType)
 		if !ok {

@@ -10,6 +10,14 @@ type SimpleType struct {
 func (simpType *SimpleType) typeNode()            {}
 func (simpType *SimpleType) TokenLiteral() string { return simpType.Token.Literal }
 
+type ArrayType struct {
+	Token        token.Token
+	ElementsType TypeNode
+}
+
+func (arrType *ArrayType) typeNode()            {}
+func (arrType *ArrayType) TokenLiteral() string { return arrType.Token.Literal }
+
 type FunctionType struct {
 	Token       token.Token
 	ParamsTypes []TypeNode

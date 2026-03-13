@@ -13,7 +13,8 @@ func TestLexer_NextToken(t *testing.T) {
 				return x + y;
 				};
 				"foobar"
-				"foo bar"`
+				"foo bar"
+				[1, 2];`
 	tests := []struct {
 		wantType    token.TokenType
 		wantLiteral string
@@ -49,6 +50,12 @@ func TestLexer_NextToken(t *testing.T) {
 		{token.SEMICOLON, ";"},
 		{token.STRING, "foobar"},
 		{token.STRING, "foo bar"},
+		{token.LBRACKET, "["},
+		{token.INT, "1"},
+		{token.COMMA, ","},
+		{token.INT, "2"},
+		{token.RBRACKET, "]"},
+		{token.SEMICOLON, ";"},
 	}
 	lexer := lexer.New(input)
 	for _, tt := range tests {

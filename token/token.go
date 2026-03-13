@@ -47,10 +47,12 @@ const (
 	COMMA
 	COLON
 	SEMICOLON
-	LPAREN // (
-	RPAREN // )
-	LBRACE // {
-	RBRACE // }
+	LPAREN   // (
+	RPAREN   // )
+	LBRACE   // {
+	RBRACE   // }
+	LBRACKET // [
+	RBRACKET // ]
 
 	// типы
 	INT_TYPE
@@ -109,6 +111,8 @@ var symbols = map[string]TokenType{
 	")": RPAREN,
 	"{": LBRACE,
 	"}": RBRACE,
+	"[": LBRACKET,
+	"]": RBRACKET,
 }
 
 var types = map[string]TokenType{
@@ -183,6 +187,8 @@ var tokenStrings = map[TokenType]string{
 	RPAREN:           "RPAREN",
 	LBRACE:           "LBRACE",
 	RBRACE:           "RBRACE",
+	LBRACKET:         "LBRACKET",
+	RBRACKET:         "RBRACKET",
 	INT_TYPE:         "INT_TYPE",
 	BOOL_TYPE:        "BOOL_TYPE",
 	STRING_TYPE:      "STRING_TYPE",

@@ -9,12 +9,32 @@ func (prs *Parser) parseType() ast.TypeNode {
 	switch prs.curToken.Type {
 	case token.INT_TYPE, token.BOOL_TYPE, token.STRING_TYPE:
 		return &ast.SimpleType{Token: prs.curToken, Value: prs.curToken.Literal}
+	case token.LBRACKET:
+		return prs.parseArrayType()
 	case token.FN:
 		return prs.parseFunctionType()
 	default:
 		prs.typeError()
 		return nil
 	}
+}
+
+func (prs *Parser) parseArrayType() ast.TypeNode {
+	arrType := &ast.ArrayType{Token: prs.curToken}
+
+	if prs.peekTokenIs(token.RBRACKET) {
+		prs.nextToken()
+		prs.typeError()
+		return nil
+	} else {
+		prs.nextToken()
+	}
+
+	arrType.ElementsType = prs.parseType()
+
+	prs.nextToken()
+
+	return arrType
 }
 
 func (prs *Parser) parseFunctionType() ast.TypeNode {

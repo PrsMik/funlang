@@ -28,6 +28,14 @@ type StringLiteral struct {
 func (strLit *StringLiteral) expressionNode()      {}
 func (strLit *StringLiteral) TokenLiteral() string { return strLit.Token.Literal }
 
+type ArrayLiteral struct {
+	Token    token.Token
+	Elements []ExpressionNode
+}
+
+func (arrLit *ArrayLiteral) expressionNode()      {}
+func (arrLit *ArrayLiteral) TokenLiteral() string { return arrLit.Token.Literal }
+
 type FunctionLiteral struct {
 	Token      token.Token
 	Parameters []*Identifier

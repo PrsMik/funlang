@@ -34,7 +34,7 @@ func (f *Function) Inspect() string {
 
 func (b *Builtin) Inspect() string { return "builtin function" }
 
-func (e *Error) Inspect() string { return "ERROR: " + e.Message }
+func (e *Error) Inspect() string { return "RUNTIME ERROR: " + e.Message }
 
 var objectTypes map[ObjectType]string = map[ObjectType]string{
 	NULL_OBJ:         (&types.NullType{}).Signature(),

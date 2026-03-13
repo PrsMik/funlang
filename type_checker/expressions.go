@@ -28,6 +28,31 @@ func (chk *TypeChecker) checkStringLiteral(expr ast.ExpressionNode) types.Type {
 	return &types.StringType{}
 }
 
+func (chk *TypeChecker) checkArrayLiteral(expr ast.ExpressionNode) types.Type {
+	arrType := &types.ArrayType{}
+	arrLit := expr.(*ast.ArrayLiteral)
+
+	if len(arrLit.Elements) == 0 {
+		return arrType
+	}
+
+	firstArrLitType := chk.checkExpression(arrLit.Elements[0])
+
+	for _, param := range arrLit.Elements[1:] {
+		curParamType := chk.checkExpression(param)
+		if !types.Equals(firstArrLitType, curParamType) {
+			chk.errors = append(chk.errors,
+				fmt.Errorf("array literal has parametrs of different types %s & %s",
+					firstArrLitType.Signature(), curParamType.Signature()))
+			return &types.IllegalType{}
+		}
+	}
+
+	arrType.ElementsType = firstArrLitType
+
+	return arrType
+}
+
 func (chk *TypeChecker) checkIdentifier(expr ast.ExpressionNode) types.Type {
 	identType, ok := chk.env.Get(expr.(*ast.Identifier).Value)
 	if !ok {
@@ -138,7 +163,11 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 		}
 
 	} else {
-		expectedFuncType = *chk.curExpectedType.(*types.FuncType)
+		tempType, ok := chk.curExpectedType.(*types.FuncType)
+		if !ok {
+			return &types.IllegalType{}
+		}
+		expectedFuncType = *tempType
 	}
 
 	if len(expectedFuncType.ParamsTypes) != len(funLit.Parameters) {
@@ -181,10 +210,14 @@ func (chk *TypeChecker) checkCallExpression(expr ast.ExpressionNode) types.Type 
 		return &types.IllegalType{}
 	}
 
-	callFuncType := rawCallType.(*types.FuncType)
+	callFuncType, ok := rawCallType.(*types.FuncType)
+	if !ok {
+		chk.errors = append(chk.errors, fmt.Errorf(`identifier "%s" is no a funciton`, callExpr.Function.String()))
+		return &types.IllegalType{}
+	}
 
 	if len(callExpr.Arguments) != len(callFuncType.ParamsTypes) {
-		chk.errors = append(chk.errors, fmt.Errorf("wrong number of arguments for \"%s\"", callExpr.Function.String()))
+		chk.errors = append(chk.errors, fmt.Errorf(`wrong number of arguments for "%s"`, callExpr.Function.String()))
 		return &types.IllegalType{}
 	}
 

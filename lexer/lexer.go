@@ -73,6 +73,10 @@ func (lxr *Lexer) NextToken() token.Token {
 		nextTok = newToken(token.LBRACE, '{')
 	case '}':
 		nextTok = newToken(token.RBRACE, '}')
+	case '[':
+		nextTok = newToken(token.LBRACKET, '[')
+	case ']':
+		nextTok = newToken(token.RBRACKET, ']')
 	case '&':
 		var ok bool
 		nextTok, ok = newTwoCharToken(lxr, token.AND)
