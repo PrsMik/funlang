@@ -8,8 +8,8 @@ var builtins = map[string]*object.Builtin{
 		case *object.String:
 			return &object.Integer{Value: int(len(arg.Value))}
 		default:
-			return newError("argument to `len` not supported, got %s",
-				args[0].Inspect())
+			return newError("argument to `len_str` not supported, got %s",
+				object.LookUpObjSignature(args[0].Type()))
 		}
 	},
 	},

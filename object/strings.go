@@ -3,6 +3,7 @@ package object
 import (
 	"bytes"
 	"fmt"
+	"funlang/types"
 	"strings"
 )
 
@@ -34,3 +35,21 @@ func (f *Function) Inspect() string {
 func (b *Builtin) Inspect() string { return "builtin function" }
 
 func (e *Error) Inspect() string { return "ERROR: " + e.Message }
+
+var objectTypes map[ObjectType]string = map[ObjectType]string{
+	NULL_OBJ:         (&types.NullType{}).Signature(),
+	INTEGER_OBJ:      (&types.IntType{}).Signature(),
+	BOOLEAN_OBJ:      (&types.BoolType{}).Signature(),
+	STRING_OBJ:       (&types.StringType{}).Signature(),
+	RETURN_VALUE_OBJ: "<return val>",
+	FUNCTION_OBJ:     "<fn>",
+	BUILTIN_OBJ:      "<builtin>",
+	ERROR_OBJ:        "<error>",
+}
+
+func LookUpObjSignature(objectType ObjectType) string {
+	if obj, ok := objectTypes[objectType]; ok {
+		return obj
+	}
+	return "<unknown>"
+}

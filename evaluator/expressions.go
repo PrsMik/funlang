@@ -136,9 +136,11 @@ func evalInfixExpression(operator string, left, right object.Object) object.Obje
 
 func evalIfExpression(node *ast.IfExpression, env *object.Environment) object.Object {
 	condition := Eval(node.Condition, env)
+	var res object.Object
 	if condition == TRUE {
-		return Eval(node.Consequence, env)
+		res = Eval(node.Consequence, env)
 	} else {
-		return Eval(node.Alternative, env)
+		res = Eval(node.Alternative, env)
 	}
+	return unwrapReturnValue(res)
 }

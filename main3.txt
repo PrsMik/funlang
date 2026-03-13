@@ -1,8 +1,4 @@
-let makeGreeter: fn(string) -> fn(string) -> string = fn(greeting) { 
-    return fn(name) { 
-        return greeting + " " + name + "!"; 
-    }; 
-};
-
-let hello: fn(string) -> string = makeGreeter("Hello");
-return hello("Thorsten");
+let x: int = 3;
+let y: int = 2;
+let z: int = if (x > y) { return x; } else { return y; };
+return z;
