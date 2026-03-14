@@ -231,6 +231,25 @@ func TestParsingArrayLiterals(t *testing.T) {
 	testInfixExpression(t, array.Elements[2], 3, "+", 3)
 }
 
+func TestParsingIndexExpressions(t *testing.T) {
+	input := "let x: int = myArray[1 + 1]"
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+	stmt, ok := program.Statements[0].(*ast.LetStatement)
+	indexExp, ok := stmt.Value.(*ast.IndexExpression)
+	if !ok {
+		t.Fatalf("exp not *ast.IndexExpression. got=%T", stmt.Value)
+	}
+	if !testIdentifierLiteral(t, indexExp.Left, "myArray") {
+		return
+	}
+	if !testInfixExpression(t, indexExp.Index, 1, "+", 1) {
+		return
+	}
+}
+
 func TestFunctionLiteralParsing(t *testing.T) {
 	input := `let myFunc: fn(int, int) -> int = fn(x, y) { return x + y; };`
 	l := lexer.New(input)
@@ -529,6 +548,10 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 		{
 			"let x: int = (5 + 5) * 2;",
 			"let x: int = ((5 + 5) * 2);",
+		},
+		{
+			"let x: int = a * [1, 2, 3, 4][b * c] * d;",
+			"let x: int = ((a * ([1, 2, 3, 4][(b * c)])) * d);",
 		},
 	}
 	for _, tt := range tests {

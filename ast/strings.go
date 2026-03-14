@@ -148,3 +148,13 @@ func (ifExpr *IfExpression) String() string {
 	}
 	return out.String()
 }
+
+func (indExpr *IndexExpression) String() string {
+	var out bytes.Buffer
+	out.WriteString("(")
+	out.WriteString(indExpr.Left.String())
+	out.WriteString("[")
+	out.WriteString(indExpr.Index.String())
+	out.WriteString("])")
+	return out.String()
+}

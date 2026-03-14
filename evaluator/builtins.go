@@ -3,7 +3,7 @@ package evaluator
 import "funlang/object"
 
 var builtins = map[string]*object.Builtin{
-	"len_str": {Fn: func(args ...object.Object) object.Object {
+	"len": {Fn: func(args ...object.Object) object.Object {
 		switch arg := args[0].(type) {
 		case *object.String:
 			return &object.Integer{Value: int(len(arg.Value))}

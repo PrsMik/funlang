@@ -93,3 +93,12 @@ type IfExpression struct {
 
 func (ifExpr *IfExpression) expressionNode()      {}
 func (ifExpr *IfExpression) TokenLiteral() string { return ifExpr.Token.Literal }
+
+type IndexExpression struct {
+	Token token.Token
+	Left  ExpressionNode
+	Index ExpressionNode
+}
+
+func (indExpr *IndexExpression) expressionNode()      {}
+func (indExpr *IndexExpression) TokenLiteral() string { return indExpr.Token.Literal }

@@ -210,26 +210,41 @@ func (chk *TypeChecker) checkCallExpression(expr ast.ExpressionNode) types.Type 
 		return &types.IllegalType{}
 	}
 
-	callFuncType, ok := rawCallType.(*types.FuncType)
-	if !ok {
+	switch callFuncType := rawCallType.(type) {
+	case *types.FuncType:
+		if len(callExpr.Arguments) != len(callFuncType.ParamsTypes) {
+			chk.errors = append(chk.errors, fmt.Errorf(`wrong number of arguments for "%s"`, callExpr.Function.String()))
+			return &types.IllegalType{}
+		}
+
+		for i, arg := range callExpr.Arguments {
+			argType := chk.checkExpression(arg)
+
+			if !types.Equals(argType, callFuncType.ParamsTypes[i]) {
+				chk.errors = append(chk.errors, fmt.Errorf("wrong type for argument %d: %s in func call \" %s \"; expected %s",
+					i+1, argType.Signature(), callExpr.Function.String(), callFuncType.ParamsTypes[i].Signature()))
+				return &types.IllegalType{}
+			}
+		}
+
+		return callFuncType.ReturnType
+	case *types.BuiltinFunc:
+		argTypes := make([]types.Type, len(callExpr.Arguments))
+		for i, argExpr := range callExpr.Arguments {
+			argTypes[i] = chk.checkExpression(argExpr)
+		}
+
+		returnType, err := callFuncType.CheckFunc(argTypes)
+
+		if err != nil {
+			chk.errors = append(chk.errors, err)
+			return &types.IllegalType{}
+		}
+
+		return returnType
+	default:
 		chk.errors = append(chk.errors, fmt.Errorf(`identifier "%s" is no a funciton`, callExpr.Function.String()))
 		return &types.IllegalType{}
 	}
 
-	if len(callExpr.Arguments) != len(callFuncType.ParamsTypes) {
-		chk.errors = append(chk.errors, fmt.Errorf(`wrong number of arguments for "%s"`, callExpr.Function.String()))
-		return &types.IllegalType{}
-	}
-
-	for i, arg := range callExpr.Arguments {
-		argType := chk.checkExpression(arg)
-
-		if !types.Equals(argType, callFuncType.ParamsTypes[i]) {
-			chk.errors = append(chk.errors, fmt.Errorf("wrong type for argument %d: %s in func call \" %s \"; expected %s",
-				i+1, argType.Signature(), callExpr.Function.String(), callFuncType.ParamsTypes[i].Signature()))
-			return &types.IllegalType{}
-		}
-	}
-
-	return callFuncType.ReturnType
 }
