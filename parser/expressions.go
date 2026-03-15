@@ -140,10 +140,24 @@ func (prs *Parser) parseBoolean() ast.ExpressionNode {
 	return &ast.BooleanLiteral{Token: prs.curToken, Value: prs.curTokenIs(token.TRUE)}
 }
 
-func (p *Parser) parseArrayLiteral() ast.ExpressionNode {
-	array := &ast.ArrayLiteral{Token: p.curToken}
-	array.Elements = p.parseExpressionList(token.RBRACKET)
+func (prs *Parser) parseArrayLiteral() ast.ExpressionNode {
+	array := &ast.ArrayLiteral{Token: prs.curToken}
+	array.Elements = prs.parseExpressionList(token.RBRACKET)
 	return array
+}
+
+func (prs *Parser) parseIndexExpression(left ast.ExpressionNode) ast.ExpressionNode {
+	expression := &ast.IndexExpression{Token: prs.curToken, Left: left}
+
+	prs.nextToken()
+
+	expression.Index = prs.parseExpression(LOWEST)
+
+	if !prs.expectPeek(token.RBRACKET) {
+		return nil
+	}
+
+	return expression
 }
 
 func (p *Parser) parseExpressionList(end token.TokenType) []ast.ExpressionNode {

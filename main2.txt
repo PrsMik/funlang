@@ -4,4 +4,4 @@ return if ( x == 1 || x == 2)
 else 
 { return fib(x - 2) + fib(x - 1); }; 
 };
-return fib(34);
+return fib(40);

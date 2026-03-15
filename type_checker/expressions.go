@@ -53,6 +53,22 @@ func (chk *TypeChecker) checkArrayLiteral(expr ast.ExpressionNode) types.Type {
 	return arrType
 }
 
+func (chk *TypeChecker) checkIndexExpression(expr ast.ExpressionNode) types.Type {
+	indexType := chk.checkExpression(expr.(*ast.IndexExpression).Index)
+	if !types.Equals(indexType, &types.IntType{}) {
+		chk.errors = append(chk.errors, fmt.Errorf("index expression has non-integer index"))
+		return &types.IllegalType{}
+	}
+
+	arrType, ok := chk.checkExpression(expr.(*ast.IndexExpression).Left).(*types.ArrayType)
+	if !ok {
+		chk.errors = append(chk.errors, fmt.Errorf("index expression has non-array left operand"))
+		return &types.IllegalType{}
+	}
+
+	return arrType.ElementsType
+}
+
 func (chk *TypeChecker) checkIdentifier(expr ast.ExpressionNode) types.Type {
 	identType, ok := chk.env.Get(expr.(*ast.Identifier).Value)
 	if !ok {

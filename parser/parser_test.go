@@ -232,7 +232,7 @@ func TestParsingArrayLiterals(t *testing.T) {
 }
 
 func TestParsingIndexExpressions(t *testing.T) {
-	input := "let x: int = myArray[1 + 1]"
+	input := "let x: int = myArray[1 + 1];"
 	l := lexer.New(input)
 	p := New(l)
 	program := p.ParseProgram()

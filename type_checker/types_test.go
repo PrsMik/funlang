@@ -42,6 +42,7 @@ func TestCheckLetStatement(t *testing.T) {
 		{`let x: string = "hello" + "world!";`, &types.StringType{}, true},
 		{`let x: [string] = ["hello", "world!"];`, &types.ArrayType{}, true},
 		{`let x: [string] = [];`, &types.ArrayType{}, true},
+		{`let x: string = ["hello"][0];`, &types.StringType{}, true},
 		{"let y: bool = true;", &types.BoolType{}, true},
 		{"let z: int = true;", &types.BoolType{}, false},
 		{"let z: int = -5;", &types.IntType{}, true},
@@ -107,6 +108,7 @@ func TestCheckIdentifier(t *testing.T) {
 		{"let x: int = 5; let y: int = x + 3;", true},
 		{"let x: bool = true; let y: bool = !x;", true},
 		{`let y: [int] = [1, 2, 3]; let x: [int] = y;`, true},
+		{`let y: [int] = [1, 2, 3]; let x: int = y[0];`, true},
 		{`let y: fn() -> [int] = fn() { return []; }; let x: [int] = y();`, true},
 		{`let y: fn() -> int = fn() { return 1; }; 
 		let x: [fn() -> int] = [y, y, y];`, true},
