@@ -34,8 +34,13 @@ type ArrayType struct {
 	ElementsType Type
 }
 
-func (t *ArrayType) isType()           {}
-func (t *ArrayType) Signature() string { return "[" + t.ElementsType.Signature() + "]" }
+func (t *ArrayType) isType() {}
+func (t *ArrayType) Signature() string {
+	if t.ElementsType != nil {
+		return "[" + t.ElementsType.Signature() + "]"
+	}
+	return "[]"
+}
 
 type BuiltinFunc struct {
 	CheckFunc func(args []Type) (Type, error)

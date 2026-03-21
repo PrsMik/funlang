@@ -57,6 +57,7 @@ var objectTypes map[ObjectType]string = map[ObjectType]string{
 	INTEGER_OBJ:      (&types.IntType{}).Signature(),
 	BOOLEAN_OBJ:      (&types.BoolType{}).Signature(),
 	STRING_OBJ:       (&types.StringType{}).Signature(),
+	ARRAY_OBJ:        (&types.ArrayType{}).Signature(),
 	RETURN_VALUE_OBJ: "<return val>",
 	FUNCTION_OBJ:     "<fn>",
 	BUILTIN_OBJ:      "<builtin>",
