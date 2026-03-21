@@ -15,6 +15,22 @@ func (b *Boolean) Inspect() string { return fmt.Sprintf("%t", b.Value) }
 
 func (s *String) Inspect() string { return s.Value }
 
+func (ao *Array) Inspect() string {
+	var out bytes.Buffer
+
+	elements := []string{}
+
+	for _, e := range ao.Elements {
+		elements = append(elements, e.Inspect())
+	}
+
+	out.WriteString("[")
+	out.WriteString(strings.Join(elements, ", "))
+	out.WriteString("]")
+
+	return out.String()
+}
+
 func (r *ReturnValue) Inspect() string { return r.Value.Inspect() }
 
 func (f *Function) Inspect() string {

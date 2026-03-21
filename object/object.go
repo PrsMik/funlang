@@ -15,6 +15,7 @@ const (
 	INTEGER_OBJ
 	BOOLEAN_OBJ
 	STRING_OBJ
+	ARRAY_OBJ
 	RETURN_VALUE_OBJ
 	FUNCTION_OBJ
 	BUILTIN_OBJ
@@ -42,6 +43,12 @@ type String struct {
 }
 
 func (s *String) Type() ObjectType { return STRING_OBJ }
+
+type Array struct {
+	Elements []Object
+}
+
+func (a *Array) Type() ObjectType { return ARRAY_OBJ }
 
 type ReturnValue struct {
 	Value Object

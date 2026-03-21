@@ -52,7 +52,7 @@ type FuncType struct {
 func (t *FuncType) isType() {}
 func (t *FuncType) Signature() string {
 	if len(t.ParamsTypes) == 0 {
-		return "<fn() " + t.ReturnType.Signature() + ">"
+		return "<fn() -> " + t.ReturnType.Signature() + ">"
 	}
 
 	res := "<fn("
