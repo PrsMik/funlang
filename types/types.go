@@ -37,9 +37,23 @@ type ArrayType struct {
 func (t *ArrayType) isType() {}
 func (t *ArrayType) Signature() string {
 	if t.ElementsType != nil {
-		return "[" + t.ElementsType.Signature() + "]"
+		return "<[" + t.ElementsType.Signature() + "]>"
 	}
-	return "[]"
+	return "<[]>"
+}
+
+type HashMapType struct {
+	KeyType     Type
+	ElementType Type
+}
+
+func (bt *HashMapType) isType() {}
+func (bt *HashMapType) Signature() string {
+	if bt.KeyType != nil && bt.ElementType != nil {
+		return "<{" + bt.KeyType.Signature() + ":" + bt.ElementType.Signature() + "}>"
+	}
+
+	return "<{}>"
 }
 
 type BuiltinFunc struct {
@@ -99,6 +113,18 @@ func Equals(rawLeftType, rawRightType Type) bool {
 		}
 
 		return Equals(leftType.ElementsType, rightType.ElementsType)
+	case *HashMapType:
+		rightType, ok := rawRightType.(*HashMapType)
+		if !ok {
+			return false
+		}
+
+		if (rightType.KeyType == nil && rightType.ElementType == nil) ||
+			(leftType.KeyType == nil && leftType.ElementType == nil) {
+			return true
+		}
+
+		return Equals(leftType.KeyType, rightType.KeyType) && Equals(leftType.ElementType, rightType.ElementType)
 	case *FuncType:
 		rightType, ok := rawRightType.(*FuncType)
 		if !ok {
@@ -117,6 +143,6 @@ func Equals(rawLeftType, rawRightType Type) bool {
 
 		return Equals(leftType.ReturnType, rightType.ReturnType)
 	default:
-		return true
+		return false
 	}
 }

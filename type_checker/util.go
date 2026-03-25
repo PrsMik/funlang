@@ -20,6 +20,8 @@ func (chk *TypeChecker) resolveType(inType ast.TypeNode) types.Type {
 		}
 	case *ast.ArrayType:
 		return &types.ArrayType{ElementsType: chk.resolveType(tp.ElementsType)}
+	case *ast.HashMapType:
+		return &types.HashMapType{KeyType: chk.resolveType(tp.KeyType), ElementType: chk.resolveType(tp.ElementType)}
 	case *ast.FunctionType:
 		prmTypes := []types.Type{}
 

@@ -42,6 +42,8 @@ func TestCheckLetStatement(t *testing.T) {
 		{`let x: string = "hello" + "world!";`, &types.StringType{}, true},
 		{`let x: [string] = ["hello", "world!"];`, &types.ArrayType{}, true},
 		{`let x: [string] = [];`, &types.ArrayType{}, true},
+		{`let x: {string : int} = {"hello" : 1};`, &types.HashMapType{}, true},
+		{`let x: {string : int} = {};`, &types.HashMapType{}, true},
 		{`let x: string = ["hello"][0];`, &types.StringType{}, true},
 		{"let y: bool = true;", &types.BoolType{}, true},
 		{"let z: int = true;", &types.BoolType{}, false},
@@ -75,6 +77,7 @@ func TestCheckReturnSatement(t *testing.T) {
 	}{
 		{"let x: int = if (2 > 1) { return 5; } else { return 2; };", true},
 		{"let x: [int] = if (2 > 1) { return []; } else { return [2, 3]; };", true},
+		{"let x: {int : int} = if (2 > 1) { return {}; } else { return {2 : 3}; };", true},
 		{"let x: int = if (2 > 1) { return 5 + 5 * 5; } else { return 1; };", true},
 		{"let x: bool = if (2 > 1) { return true && false || false; } else { return true; }; ", true},
 		{"let x: bool = if (2 > 1) { let x: bool = true && false || false; return x; } else { return true; }; ", true},
@@ -109,6 +112,7 @@ func TestCheckIdentifier(t *testing.T) {
 		{"let x: bool = true; let y: bool = !x;", true},
 		{`let y: [int] = [1, 2, 3]; let x: [int] = y;`, true},
 		{`let y: [int] = [1, 2, 3]; let x: int = y[0];`, true},
+		{`let y: {int : int} = {1 : 2, 2 : 3, 3 : 4}; let x: {int : int} = y;`, true},
 		{`let y: fn() -> [int] = fn() { return []; }; let x: [int] = y();`, true},
 		{`let y: fn() -> int = fn() { return 1; }; 
 		let x: [fn() -> int] = [y, y, y];`, true},

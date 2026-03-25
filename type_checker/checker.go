@@ -28,6 +28,8 @@ func New(curEnv *types.TypeEviroment) *TypeChecker {
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.BooleanLiteral](), chk.checkBooleanLiteral)
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.StringLiteral](), chk.checkStringLiteral)
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.ArrayLiteral](), chk.checkArrayLiteral)
+	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.HashMapLiteral](), chk.checkHashMapLiteral)
+
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.Identifier](), chk.checkIdentifier)
 
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.PrefixExpression](), chk.checkPrefixExpression)

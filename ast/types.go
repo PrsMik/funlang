@@ -18,6 +18,15 @@ type ArrayType struct {
 func (arrType *ArrayType) typeNode()            {}
 func (arrType *ArrayType) TokenLiteral() string { return arrType.Token.Literal }
 
+type HashMapType struct {
+	Token       token.Token
+	KeyType     TypeNode
+	ElementType TypeNode
+}
+
+func (hashMapType *HashMapType) typeNode()            {}
+func (hashMapType *HashMapType) TokenLiteral() string { return hashMapType.Token.Literal }
+
 type FunctionType struct {
 	Token       token.Token
 	ParamsTypes []TypeNode

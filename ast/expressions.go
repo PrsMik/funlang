@@ -20,6 +20,7 @@ type BooleanLiteral struct {
 func (boolLit *BooleanLiteral) expressionNode()      {}
 func (boolLit *BooleanLiteral) TokenLiteral() string { return boolLit.Token.Literal }
 
+// строковый литерал (например `"Hello world!"`)
 type StringLiteral struct {
 	Token token.Token
 	Value string
@@ -28,6 +29,7 @@ type StringLiteral struct {
 func (strLit *StringLiteral) expressionNode()      {}
 func (strLit *StringLiteral) TokenLiteral() string { return strLit.Token.Literal }
 
+// литерал массива (например "[1, 2, 3]")
 type ArrayLiteral struct {
 	Token    token.Token
 	Elements []ExpressionNode
@@ -36,6 +38,15 @@ type ArrayLiteral struct {
 func (arrLit *ArrayLiteral) expressionNode()      {}
 func (arrLit *ArrayLiteral) TokenLiteral() string { return arrLit.Token.Literal }
 
+type HashMapLiteral struct {
+	Token token.Token
+	Pairs map[ExpressionNode]ExpressionNode
+}
+
+func (hashMapLit *HashMapLiteral) expressionNode()      {}
+func (hashMapLit *HashMapLiteral) TokenLiteral() string { return hashMapLit.Token.Literal }
+
+// литерал функции (например "fn(x) { return x; }")
 type FunctionLiteral struct {
 	Token      token.Token
 	Parameters []*Identifier

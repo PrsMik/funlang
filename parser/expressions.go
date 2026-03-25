@@ -146,6 +146,35 @@ func (prs *Parser) parseArrayLiteral() ast.ExpressionNode {
 	return array
 }
 
+func (prs *Parser) parseHashMapLiteral() ast.ExpressionNode {
+	hashMapLiteral := &ast.HashMapLiteral{Token: prs.curToken}
+	hashMapLiteral.Pairs = make(map[ast.ExpressionNode]ast.ExpressionNode)
+
+	for !prs.peekTokenIs(token.RBRACE) {
+		prs.nextToken()
+		key := prs.parseExpression(LOWEST)
+
+		if !prs.expectPeek(token.COLON) {
+			return nil
+		}
+
+		prs.nextToken()
+		value := prs.parseExpression(LOWEST)
+
+		hashMapLiteral.Pairs[key] = value
+
+		if !prs.peekTokenIs(token.RBRACE) && !prs.expectPeek(token.COMMA) {
+			return nil
+		}
+	}
+
+	if !prs.expectPeek(token.RBRACE) {
+		return nil
+	}
+
+	return hashMapLiteral
+}
+
 func (prs *Parser) parseIndexExpression(left ast.ExpressionNode) ast.ExpressionNode {
 	expression := &ast.IndexExpression{Token: prs.curToken, Left: left}
 

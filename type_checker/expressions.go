@@ -42,7 +42,7 @@ func (chk *TypeChecker) checkArrayLiteral(expr ast.ExpressionNode) types.Type {
 		curParamType := chk.checkExpression(param)
 		if !types.Equals(firstArrLitType, curParamType) {
 			chk.errors = append(chk.errors,
-				fmt.Errorf("array literal has parametrs of different types %s & %s",
+				fmt.Errorf("array literal has elements of different types %s & %s",
 					firstArrLitType.Signature(), curParamType.Signature()))
 			return &types.IllegalType{}
 		}
@@ -51,6 +51,47 @@ func (chk *TypeChecker) checkArrayLiteral(expr ast.ExpressionNode) types.Type {
 	arrType.ElementsType = firstArrLitType
 
 	return arrType
+}
+
+func (chk *TypeChecker) checkHashMapLiteral(expr ast.ExpressionNode) types.Type {
+	hashMapType := &types.HashMapType{}
+	hashMapLiteral := expr.(*ast.HashMapLiteral)
+
+	if len(hashMapLiteral.Pairs) == 0 {
+		return hashMapType
+	}
+
+	var firstHashMapKeyType types.Type = nil
+	var firstHashMapElementType types.Type = nil
+
+	for key, elem := range hashMapLiteral.Pairs {
+		curHashMapKeyType := chk.checkExpression(key)
+		curHashMapElementType := chk.checkExpression(elem)
+
+		if firstHashMapKeyType == nil && firstHashMapElementType == nil {
+			firstHashMapKeyType = curHashMapKeyType
+			firstHashMapElementType = curHashMapElementType
+		} else {
+			if !types.Equals(firstHashMapKeyType, curHashMapKeyType) {
+				chk.errors = append(chk.errors,
+					fmt.Errorf("map literal has keys of different types %s & %s",
+						firstHashMapKeyType.Signature(), curHashMapKeyType.Signature()))
+				return &types.IllegalType{}
+			}
+
+			if !types.Equals(firstHashMapElementType, curHashMapElementType) {
+				chk.errors = append(chk.errors,
+					fmt.Errorf("map literal has elements of different types %s & %s",
+						firstHashMapElementType.Signature(), curHashMapElementType.Signature()))
+				return &types.IllegalType{}
+			}
+		}
+	}
+
+	hashMapType.KeyType = firstHashMapKeyType
+	hashMapType.ElementType = firstHashMapElementType
+
+	return hashMapType
 }
 
 func (chk *TypeChecker) checkIndexExpression(expr ast.ExpressionNode) types.Type {

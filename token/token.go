@@ -44,15 +44,15 @@ const (
 	BANG
 
 	// спецсимволы
-	COMMA
-	COLON
-	SEMICOLON
-	LPAREN   // (
-	RPAREN   // )
-	LBRACE   // {
-	RBRACE   // }
-	LBRACKET // [
-	RBRACKET // ]
+	COMMA     // ,
+	COLON     // :
+	SEMICOLON // ;
+	LPAREN    // (
+	RPAREN    // )
+	LBRACE    // {
+	RBRACE    // }
+	LBRACKET  // [
+	RBRACKET  // ]
 
 	// типы
 	INT_TYPE

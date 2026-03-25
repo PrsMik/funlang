@@ -11,6 +11,8 @@ func (prs *Parser) parseType() ast.TypeNode {
 		return &ast.SimpleType{Token: prs.curToken, Value: prs.curToken.Literal}
 	case token.LBRACKET:
 		return prs.parseArrayType()
+	case token.LBRACE:
+		return prs.parseHashMapType()
 	case token.FN:
 		return prs.parseFunctionType()
 	default:
@@ -35,6 +37,32 @@ func (prs *Parser) parseArrayType() ast.TypeNode {
 	prs.nextToken()
 
 	return arrType
+}
+
+func (prs *Parser) parseHashMapType() ast.TypeNode {
+	hashMapType := &ast.HashMapType{Token: prs.curToken}
+
+	if prs.peekTokenIs(token.RBRACE) {
+		prs.nextToken()
+		prs.typeError()
+		return nil
+	} else {
+		prs.nextToken()
+	}
+
+	hashMapType.KeyType = prs.parseType()
+
+	if !prs.expectPeek(token.COLON) {
+		return nil
+	}
+
+	prs.nextToken()
+
+	hashMapType.ElementType = prs.parseType()
+
+	prs.nextToken()
+
+	return hashMapType
 }
 
 func (prs *Parser) parseFunctionType() ast.TypeNode {

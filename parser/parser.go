@@ -65,6 +65,7 @@ func New(lxr *lexer.Lexer) *Parser {
 
 	prs.registerPrefix(token.LPAREN, prs.parseGroupedExpression)
 	prs.registerPrefix(token.LBRACKET, prs.parseArrayLiteral)
+	prs.registerPrefix(token.LBRACE, prs.parseHashMapLiteral)
 
 	prs.registerPrefix(token.IF, prs.parseIfExpression)
 	prs.registerPrefix(token.FN, prs.parseFunctionLiteral)
