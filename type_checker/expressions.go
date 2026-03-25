@@ -95,19 +95,50 @@ func (chk *TypeChecker) checkHashMapLiteral(expr ast.ExpressionNode) types.Type 
 }
 
 func (chk *TypeChecker) checkIndexExpression(expr ast.ExpressionNode) types.Type {
-	indexType := chk.checkExpression(expr.(*ast.IndexExpression).Index)
-	if !types.Equals(indexType, &types.IntType{}) {
-		chk.errors = append(chk.errors, fmt.Errorf("index expression has non-integer index"))
+	leftExpr := chk.checkExpression(expr.(*ast.IndexExpression).Left)
+	switch leftExpr.(type) {
+	case *types.ArrayType:
+		return chk.checkArrayIndexExpression(expr)
+	case *types.HashMapType:
+		return chk.checkHashMapIndexExpression(expr)
+	default:
+		chk.errors = append(chk.errors, fmt.Errorf("index expression has wrong left operand"))
 		return &types.IllegalType{}
 	}
+}
 
-	arrType, ok := chk.checkExpression(expr.(*ast.IndexExpression).Left).(*types.ArrayType)
-	if !ok {
-		chk.errors = append(chk.errors, fmt.Errorf("index expression has non-array left operand"))
+func (chk *TypeChecker) checkArrayIndexExpression(expr ast.ExpressionNode) types.Type {
+	arrType := chk.checkExpression(expr.(*ast.IndexExpression).Left).(*types.ArrayType)
+
+	indexType := chk.checkExpression(expr.(*ast.IndexExpression).Index)
+
+	if !types.Equals(indexType, &types.IntType{}) {
+		chk.errors = append(chk.errors, fmt.Errorf("array index expression has non-integer index"))
 		return &types.IllegalType{}
 	}
 
 	return arrType.ElementsType
+}
+
+func (chk *TypeChecker) checkHashMapIndexExpression(expr ast.ExpressionNode) types.Type {
+	hashMapType := chk.checkExpression(expr.(*ast.IndexExpression).Left).(*types.HashMapType)
+
+	indexType := chk.checkExpression(expr.(*ast.IndexExpression).Index)
+
+	if hashMapType.KeyType == nil {
+		chk.errors = append(chk.errors,
+			fmt.Errorf("index operator usage for map with unkwown key type"))
+		return &types.IllegalType{}
+	}
+
+	if !types.Equals(indexType, hashMapType.KeyType) {
+		chk.errors = append(chk.errors,
+			fmt.Errorf("type mismatch between %s in index & %s in keys for index operator in hash map",
+				indexType.Signature(), hashMapType.KeyType.Signature()))
+		return &types.IllegalType{}
+	}
+
+	return hashMapType.ElementType
 }
 
 func (chk *TypeChecker) checkIdentifier(expr ast.ExpressionNode) types.Type {

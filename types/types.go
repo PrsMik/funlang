@@ -5,6 +5,10 @@ type Type interface {
 	Signature() string
 }
 
+type HashableType interface {
+	isHashable()
+}
+
 type IllegalType struct{}
 
 func (t *IllegalType) isType()           {}
@@ -19,16 +23,19 @@ type IntType struct{}
 
 func (t *IntType) isType()           {}
 func (t *IntType) Signature() string { return "<int>" }
+func (t *IntType) isHashable()       {}
 
 type BoolType struct{}
 
 func (t *BoolType) isType()           {}
 func (t *BoolType) Signature() string { return "<bool>" }
+func (t *BoolType) isHashable()       {}
 
 type StringType struct{}
 
 func (t *StringType) isType()           {}
 func (t *StringType) Signature() string { return "<string>" }
+func (t *StringType) isHashable()       {}
 
 type ArrayType struct {
 	ElementsType Type

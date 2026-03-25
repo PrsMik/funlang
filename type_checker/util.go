@@ -21,7 +21,13 @@ func (chk *TypeChecker) resolveType(inType ast.TypeNode) types.Type {
 	case *ast.ArrayType:
 		return &types.ArrayType{ElementsType: chk.resolveType(tp.ElementsType)}
 	case *ast.HashMapType:
-		return &types.HashMapType{KeyType: chk.resolveType(tp.KeyType), ElementType: chk.resolveType(tp.ElementType)}
+		keyType := chk.resolveType(tp.KeyType)
+		if _, ok := keyType.(types.HashableType); !ok {
+			chk.errors = append(chk.errors,
+				fmt.Errorf("cannot use type %s for hash map key", keyType.Signature()))
+			return &types.IllegalType{}
+		}
+		return &types.HashMapType{KeyType: keyType, ElementType: chk.resolveType(tp.ElementType)}
 	case *ast.FunctionType:
 		prmTypes := []types.Type{}
 

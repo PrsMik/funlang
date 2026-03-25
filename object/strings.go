@@ -31,6 +31,22 @@ func (ao *Array) Inspect() string {
 	return out.String()
 }
 
+func (h *HashMap) Inspect() string {
+	var out bytes.Buffer
+	pairs := []string{}
+
+	for _, pair := range h.Pairs {
+		pairs = append(pairs, fmt.Sprintf("%s: %s",
+			pair.Key.Inspect(), pair.Value.Inspect()))
+	}
+
+	out.WriteString("{")
+	out.WriteString(strings.Join(pairs, ", "))
+	out.WriteString("}")
+
+	return out.String()
+}
+
 func (r *ReturnValue) Inspect() string { return r.Value.Inspect() }
 
 func (f *Function) Inspect() string {
@@ -58,6 +74,7 @@ var objectTypes map[ObjectType]string = map[ObjectType]string{
 	BOOLEAN_OBJ:      (&types.BoolType{}).Signature(),
 	STRING_OBJ:       (&types.StringType{}).Signature(),
 	ARRAY_OBJ:        (&types.ArrayType{}).Signature(),
+	HASH_OBJ:         (&types.HashMapType{}).Signature(),
 	RETURN_VALUE_OBJ: "<return val>",
 	FUNCTION_OBJ:     "<fn>",
 	BUILTIN_OBJ:      "<builtin>",
