@@ -1,12 +1,1 @@
-let compute: fn(int, int) -> int = (x, y) {
-        let result: int = if (x > y) {
-            return x + y
-        } else {
-            return x - y
-        }
-        return result;
-    };
-
-let x: int = 20
-let y: int = 22
-let res: int = compute(x, y)
+return puts("Hello world!");

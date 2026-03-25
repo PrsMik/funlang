@@ -9,33 +9,42 @@ type HashableType interface {
 	isHashable()
 }
 
+type PrintableType interface {
+	isPrintable()
+}
+
 type IllegalType struct{}
 
 func (t *IllegalType) isType()           {}
 func (t *IllegalType) Signature() string { return "<none>" }
+func (t *IllegalType) isPrintable()      {}
 
 type NullType struct{}
 
 func (n *NullType) isType()           {}
 func (n *NullType) Signature() string { return "<null>" }
+func (t *NullType) isPrintable()      {}
 
 type IntType struct{}
 
 func (t *IntType) isType()           {}
 func (t *IntType) Signature() string { return "<int>" }
 func (t *IntType) isHashable()       {}
+func (t *IntType) isPrintable()      {}
 
 type BoolType struct{}
 
 func (t *BoolType) isType()           {}
 func (t *BoolType) Signature() string { return "<bool>" }
 func (t *BoolType) isHashable()       {}
+func (t *BoolType) isPrintable()      {}
 
 type StringType struct{}
 
 func (t *StringType) isType()           {}
 func (t *StringType) Signature() string { return "<string>" }
 func (t *StringType) isHashable()       {}
+func (t *StringType) isPrintable()      {}
 
 type ArrayType struct {
 	ElementsType Type
@@ -48,6 +57,7 @@ func (t *ArrayType) Signature() string {
 	}
 	return "<[]>"
 }
+func (t *ArrayType) isPrintable() {}
 
 type HashMapType struct {
 	KeyType     Type
@@ -62,6 +72,7 @@ func (bt *HashMapType) Signature() string {
 
 	return "<{}>"
 }
+func (t *HashMapType) isPrintable() {}
 
 type BuiltinFunc struct {
 	CheckFunc func(args []Type) (Type, error)

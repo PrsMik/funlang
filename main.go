@@ -42,9 +42,9 @@ func InterpretProgram(program string, out io.Writer) {
 
 	evaluated := evaluator.Eval(prg, env)
 	if evaluated != nil {
-		io.WriteString(out, "Result of file eval is: ")
-		io.WriteString(out, evaluated.Inspect())
-		io.WriteString(out, "\n")
+		// io.WriteString(out, "Result of file eval is: ")
+		// io.WriteString(out, evaluated.Inspect())
+		// io.WriteString(out, "\n")
 	} else {
 		io.WriteString(out, "eval error\n")
 	}
@@ -53,15 +53,15 @@ func InterpretProgram(program string, out io.Writer) {
 func main() {
 	relativeFilePath := flag.String("file_rel", "", "relative path to file to be interpreted")
 	flag.Parse()
-	fmt.Println("file:", *relativeFilePath)
+	// fmt.Println("file:", *relativeFilePath)
 	user, err := user.Current()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Hello %s! This is the funlang programming language!\n",
-		user.Username)
-	fmt.Printf("Feel free to type in commands\n")
 	if *relativeFilePath == "" {
+		fmt.Printf("Hello %s! This is the funlang programming language!\n",
+			user.Username)
+		fmt.Printf("Feel free to type in commands\n")
 		repl.Start(os.Stdin, os.Stdout)
 	} else {
 		file, err := os.ReadFile(*relativeFilePath)

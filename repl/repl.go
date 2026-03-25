@@ -47,8 +47,8 @@ func Start(in io.Reader, out io.Writer) {
 
 		evaluated := evaluator.Eval(prg, env)
 		if evaluated != nil {
-			io.WriteString(out, evaluated.Inspect())
-			io.WriteString(out, "\n")
+			// io.WriteString(out, evaluated.Inspect())
+			// io.WriteString(out, "\n")
 		} else {
 			io.WriteString(out, "eval error\n")
 		}

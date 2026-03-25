@@ -53,5 +53,24 @@ func getMapWithBuiltins() map[string]Type {
 			return &ArrayType{ElementsType: args[1]}, nil
 		},
 	}
+	builtins["puts"] = &BuiltinFunc{
+		CheckFunc: func(args []Type) (Type, error) {
+			if len(args) != 1 {
+				return &IllegalType{}, fmt.Errorf("push expects 1 argument but got %d", len(args))
+			}
+
+			_, ok := args[0].(PrintableType)
+			if !ok {
+				return &IllegalType{}, fmt.Errorf("puts does not support type %s", args[0].Signature())
+			}
+
+			// if !Equals(firstArg.ElementsType, args[1]) {
+			// 	return &IllegalType{}, fmt.Errorf("push cannot be performed on %s with 2nd arg as %s",
+			// 		args[0].Signature(), args[1].Signature())
+			// }
+
+			return &IntType{}, nil
+		},
+	}
 	return builtins
 }
