@@ -23,12 +23,27 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return val
 		}
 		env.Set(node.Name.Value, val)
-		return Eval(node.Value, env)
+		return val
 	case *ast.ReturnStatement:
+		if callNode, ok := node.Value.(*ast.CallExpression); ok {
+			function := Eval(callNode.Function, env)
+			if isError(function) {
+				return function
+			}
+
+			args := evalExpressions(callNode.Arguments, env)
+			if len(args) == 1 && isError(args[0]) {
+				return args[0]
+			}
+
+			return &object.ReturnValue{Value: &object.TailCall{Function: function, Arguments: args}}
+		}
+
 		val := Eval(node.Value, env)
 		if isError(val) {
 			return val
 		}
+
 		return &object.ReturnValue{Value: val}
 	case *ast.BlockStatement:
 		return evalBlockStatement(node, env)
@@ -104,6 +119,9 @@ func evalProgram(program *ast.Program, env *object.Environment) object.Object {
 		result = Eval(statement, env)
 		switch result := result.(type) {
 		case *object.ReturnValue:
+			if tc, ok := result.Value.(*object.TailCall); ok {
+				return applyFunction(tc.Function, tc.Arguments)
+			}
 			return result.Value
 		case *object.Error:
 			return result

@@ -3,15 +3,28 @@ package evaluator
 import "funlang/object"
 
 func applyFunction(fn object.Object, args []object.Object) object.Object {
-	switch fn := fn.(type) {
-	case *object.Function:
-		extendedEnv := extendFunctionEnv(fn, args)
-		evaluated := Eval(fn.Body, extendedEnv)
-		return unwrapReturnValue(evaluated)
-	case *object.Builtin:
-		return fn.Fn(args...)
-	default:
-		return newError("not a function: %s", fn.Inspect())
+	for {
+		switch f := fn.(type) {
+		case *object.Function:
+			extendedEnv := extendFunctionEnv(f, args)
+			evaluated := Eval(f.Body, extendedEnv)
+
+			res := unwrapReturnValue(evaluated)
+
+			if tc, ok := res.(*object.TailCall); ok {
+				fn = tc.Function
+				args = tc.Arguments
+				continue
+			}
+
+			return res
+
+		case *object.Builtin:
+			return f.Fn(args...)
+
+		default:
+			return newError("not a function: %s", fn.Inspect())
+		}
 	}
 }
 

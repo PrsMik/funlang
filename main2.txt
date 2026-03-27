@@ -1,7 +1,14 @@
-let fib: fn(int) -> int = fn(x) { 
-return if ( x == 1 || x == 2) 
-{ return 1; } 
-else 
-{ return fib(x - 2) + fib(x - 1); }; 
+let fibTail: fn(int, int, int) -> int = fn(n, a, b) {
+    return if (n == 0) { 
+        return a; 
+    } else {
+        return if (n == 1) {
+            return b;
+        } else {
+            let res: int = puts(b);
+            return fibTail(n - 1, b, a + b); 
+        };
+    };
 };
-return fib(40);
+
+return fibTail(100, 0, 1);

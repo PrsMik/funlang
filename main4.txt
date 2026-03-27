@@ -1,0 +1,10 @@
+let findBitSize: fn(int, int) -> int = fn(n, count) {
+    let next: int = n * 2;
+    return if (next < 0) {
+        return count + 1;
+    } else {
+        return findBitSize(next, count + 1);
+    };
+};
+
+return puts(findBitSize(1, 1));

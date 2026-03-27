@@ -51,23 +51,34 @@ func InterpretProgram(program string, out io.Writer) {
 }
 
 func main() {
-	relativeFilePath := flag.String("file_rel", "", "relative path to file to be interpreted")
+	runCmd := flag.NewFlagSet("run", flag.ExitOnError)
+
+	runCmd.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage: fun run <file name>\n")
+		runCmd.PrintDefaults()
+	}
+
 	flag.Parse()
-	// fmt.Println("file:", *relativeFilePath)
+
 	user, err := user.Current()
 	if err != nil {
 		panic(err)
 	}
-	if *relativeFilePath == "" {
+
+	if len(os.Args) == 1 {
 		fmt.Printf("Hello %s! This is the funlang programming language!\n",
 			user.Username)
 		fmt.Printf("Feel free to type in commands\n")
 		repl.Start(os.Stdin, os.Stdout)
 	} else {
-		file, err := os.ReadFile(*relativeFilePath)
-		if err != nil {
-			panic(err)
+		switch os.Args[1] {
+		case "run":
+			runCmd.Parse(os.Args[2:])
+			file, err := os.ReadFile(runCmd.Arg(0))
+			if err != nil {
+				panic(err)
+			}
+			InterpretProgram(string(file), os.Stdout)
 		}
-		InterpretProgram(string(file), os.Stdout)
 	}
 }

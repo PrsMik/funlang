@@ -17,13 +17,13 @@ builds:
       - amd64
       - arm64
     main: ./main.go
-    binary: funlang
+    binary: fun
 
 archives:
-  - format: tar.gz
+  - formats: ["tar.gz"]
     format_overrides:
       - goos: windows
-        format: zip
+        formats: ["zip"]
 
 changelog:
   sort: asc

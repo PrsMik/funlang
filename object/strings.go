@@ -64,6 +64,8 @@ func (f *Function) Inspect() string {
 	return out.String()
 }
 
+func (tc *TailCall) Inspect() string { return "tail call" }
+
 func (b *Builtin) Inspect() string { return "builtin function" }
 
 func (e *Error) Inspect() string { return "RUNTIME ERROR: " + e.Message }

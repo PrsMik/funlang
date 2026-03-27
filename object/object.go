@@ -26,6 +26,7 @@ const (
 	HASH_OBJ
 	RETURN_VALUE_OBJ
 	FUNCTION_OBJ
+	TAIL_CALL_OBJ
 	BUILTIN_OBJ
 	ERROR_OBJ
 )
@@ -110,6 +111,13 @@ type Function struct {
 }
 
 func (f *Function) Type() ObjectType { return FUNCTION_OBJ }
+
+type TailCall struct {
+	Function  Object
+	Arguments []Object
+}
+
+func (f *TailCall) Type() ObjectType { return TAIL_CALL_OBJ }
 
 type BuiltinFunction func(...Object) Object
 
