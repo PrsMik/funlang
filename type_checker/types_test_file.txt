@@ -1,0 +1,41 @@
+let equal: type = fn(Comparable, Comparable) -> Logical; 
+let not_equal: type = fn(Comparable, Comparable) -> Logical; 
+let Equalable: type = equal | not_equal;
+
+let less: type = fn(Comparable, Comparable) -> Logical; 
+let greater: type = fn(Comparable, Comparable) -> Logical; 
+let Comparable: type = less | greater;
+
+let add: type = fn(Algebraic, Algebraic) -> Algebraic;
+let Addable: type = add;
+
+let sub: type = fn(Algebraic, Algebraic) -> Algebraic;
+let Substractable: type = sub;
+
+let mul: type = fn(Algebraic, Algebraic) -> Algebraic;
+let Multipliable: type = mul;
+
+let div: type = fn(Algebraic, Algebraic) -> Algebraic;
+let Diviable: type = div;
+
+let Algebraic: type = Addable | Substractable | Multipliable | Diviable;
+
+let and: type = fn(Logical, Logical) -> Logical;
+let or: type = fn(Logical, Logical) -> Logical;
+let not: type = fn(Logical) -> Logical;
+let Logical: type = and | or | not;
+
+??? let int: type = Algebraic | Comparable | Equalable; // но int же вшит в интерпретатор как токен!
+
+let add: fn(int, int) -> int = fn(a, b) {
+???    return a + b; // int не знает о "+"!
+}
+
+let sub, let mul, let div... etc. 
+
+let bool: type = Logical | Equalable;
+let string: type = Addable | Equalable;
+??? let array: type = Addable | Equalable;
+??? let hashMap: type = ;
+
+??? let map: fn(T: type, U: type, [T], fn(T) -> U) -> [U] 

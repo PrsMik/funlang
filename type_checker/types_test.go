@@ -199,6 +199,15 @@ func TestCheckCallExpression(t *testing.T) {
 	}
 }
 
+// func TestCheckTypeVariable(t *testing.T) {
+// file, err := os.ReadFile("types_test_file.txt")
+// if err != nil {
+// 	panic(err)
+// }
+
+// input = string(file)
+// }
+
 func checkParserErrors(t *testing.T, prs *parser.Parser) {
 	errors := prs.Errors()
 	if len(errors) == 0 {

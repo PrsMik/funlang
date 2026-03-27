@@ -1,0 +1,33 @@
+version: 2
+
+project_name: funlang
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin # macOS
+    goarch:
+      - amd64
+      - arm64
+    main: ./main.go
+    binary: funlang
+
+archives:
+  - format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
