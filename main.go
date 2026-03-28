@@ -52,9 +52,15 @@ func InterpretProgram(program string, out io.Writer) {
 
 func main() {
 	runCmd := flag.NewFlagSet("run", flag.ExitOnError)
+	lspCmd := flag.NewFlagSet("lsp", flag.ExitOnError)
 
 	runCmd.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: fun run <file name>\n")
+		runCmd.PrintDefaults()
+	}
+
+	lspCmd.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage: fun lsp\n")
 		runCmd.PrintDefaults()
 	}
 

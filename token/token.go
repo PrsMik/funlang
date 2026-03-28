@@ -60,9 +60,16 @@ const (
 	STRING_TYPE
 )
 
+type Position struct {
+	Line   int
+	Column int
+}
+
 type Token struct {
 	Type    TokenType
 	Literal string
+	Start   Position
+	End     Position
 }
 
 var keywords = map[string]TokenType{

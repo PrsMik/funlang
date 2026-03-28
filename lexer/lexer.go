@@ -1,16 +1,21 @@
 package lexer
 
-import "funlang/token"
+import (
+	"funlang/token"
+)
 
 type Lexer struct {
 	input   string
 	curPos  int
 	readPos int
 	curChar byte
+
+	curCol  int
+	curLine int
 }
 
 func New(input string) *Lexer {
-	lexer := Lexer{input: input}
+	lexer := Lexer{input: input, curCol: -1, curLine: 0}
 	lexer.readChar()
 	return &lexer
 }
@@ -18,6 +23,8 @@ func New(input string) *Lexer {
 func (lxr *Lexer) NextToken() token.Token {
 	var nextTok token.Token
 	lxr.skipWhitespace()
+	startPos := token.Position{Column: lxr.curCol, Line: lxr.curLine}
+
 	switch lxr.curChar {
 	case '=':
 		var ok bool
@@ -94,6 +101,9 @@ func (lxr *Lexer) NextToken() token.Token {
 		nextTok.Literal = lxr.readString()
 	case 0:
 		nextTok = token.Token{Type: token.EOF, Literal: ""}
+		nextTok.Start = startPos
+		nextTok.End = token.Position{Column: lxr.curCol, Line: lxr.curLine}
+		return nextTok
 	default:
 		if isLetter(lxr.curChar) {
 			nextTok.Literal = lxr.readIdentifier()
@@ -102,16 +112,26 @@ func (lxr *Lexer) NextToken() token.Token {
 			if !ok {
 				nextTok.Type = token.LookupIdentifier(nextTok.Literal)
 			}
-			return nextTok
 		} else if isDigit(lxr.curChar) {
+
 			nextTok.Literal = lxr.readNumber()
+
 			nextTok.Type = token.INT
-			return nextTok
 		} else {
 			nextTok = newToken(token.ILLEGAL, lxr.curChar)
 		}
+
+		nextTok.Start = startPos
+		nextTok.End = token.Position{Column: lxr.curCol, Line: lxr.curLine}
+		return nextTok
 	}
+
+	nextTok.Start = startPos
+
+	nextTok.End = token.Position{Column: lxr.curCol + 1, Line: lxr.curLine}
+
 	lxr.readChar()
+
 	return nextTok
 }
 
@@ -121,6 +141,14 @@ func (lxr *Lexer) readChar() {
 	} else {
 		lxr.curChar = lxr.input[lxr.readPos]
 	}
+
+	if lxr.curChar == '\n' {
+		lxr.curCol = -1
+		lxr.curLine++
+	} else {
+		lxr.curCol++
+	}
+
 	lxr.curPos = lxr.readPos
 	lxr.readPos++
 }
@@ -140,14 +168,20 @@ func newToken(tokenType token.TokenType, tokenChar byte) token.Token {
 func newTwoCharToken(lexer *Lexer, tokenType token.TokenType) (token.Token, bool) {
 	char := lexer.curChar
 	pos := lexer.curPos
+	startCol := lexer.curCol
+
 	lexer.readChar()
+
 	literal := string(char) + string(lexer.curChar)
+
 	wantType, ok := token.LookupOperator(literal)
 	if !ok || wantType != tokenType {
 		lexer.readPos = lexer.curPos
 		lexer.curPos = pos
+		lexer.curCol = startCol
 		return token.Token{Type: token.ILLEGAL, Literal: literal}, false
 	}
+
 	token := token.Token{Type: tokenType, Literal: literal}
 	return token, true
 }
@@ -188,6 +222,7 @@ func (lxr *Lexer) readNumber() string {
 	}
 	return lxr.input[startPos:lxr.curPos]
 }
+
 func isDigit(char byte) bool {
 	return '0' <= char && char <= '9'
 }
