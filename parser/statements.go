@@ -53,6 +53,8 @@ func (prs *Parser) parseLetStatement() *ast.LetStatement {
 		return nil
 	}
 
+	statement.SemiToken = prs.curToken
+
 	return statement
 }
 
@@ -71,6 +73,8 @@ func (prs *Parser) parseReturnStatement() *ast.ReturnStatement {
 		return nil
 	}
 
+	statement.SemiToken = prs.curToken
+
 	return statement
 }
 
@@ -87,6 +91,8 @@ func (prs *Parser) parseBlockStatement() *ast.BlockStatement {
 		}
 		prs.nextToken()
 	}
+
+	block.SemiToken = prs.curToken
 
 	return block
 }

@@ -111,6 +111,7 @@ func (prs *Parser) parseGroupedExpression() ast.ExpressionNode {
 func (prs *Parser) parseCallExpression(function ast.ExpressionNode) ast.ExpressionNode {
 	expr := &ast.CallExpression{Token: prs.curToken, Function: function}
 	expr.Arguments = prs.parseExpressionList(token.RPAREN)
+	expr.SemiToken = prs.curToken
 	return expr
 }
 
@@ -143,6 +144,7 @@ func (prs *Parser) parseBoolean() ast.ExpressionNode {
 func (prs *Parser) parseArrayLiteral() ast.ExpressionNode {
 	array := &ast.ArrayLiteral{Token: prs.curToken}
 	array.Elements = prs.parseExpressionList(token.RBRACKET)
+	array.SemiToken = prs.curToken
 	return array
 }
 
@@ -172,6 +174,8 @@ func (prs *Parser) parseHashMapLiteral() ast.ExpressionNode {
 		return nil
 	}
 
+	hashMapLiteral.SemiToken = prs.curToken
+
 	return hashMapLiteral
 }
 
@@ -185,28 +189,29 @@ func (prs *Parser) parseIndexExpression(left ast.ExpressionNode) ast.ExpressionN
 	if !prs.expectPeek(token.RBRACKET) {
 		return nil
 	}
+	expression.SemiToken = prs.curToken
 
 	return expression
 }
 
-func (p *Parser) parseExpressionList(end token.TokenType) []ast.ExpressionNode {
+func (prs *Parser) parseExpressionList(end token.TokenType) []ast.ExpressionNode {
 	list := []ast.ExpressionNode{}
 
-	if p.peekTokenIs(end) {
-		p.nextToken()
+	if prs.peekTokenIs(end) {
+		prs.nextToken()
 		return list
 	}
 
-	p.nextToken()
-	list = append(list, p.parseExpression(LOWEST))
+	prs.nextToken()
+	list = append(list, prs.parseExpression(LOWEST))
 
-	for p.peekTokenIs(token.COMMA) {
-		p.nextToken()
-		p.nextToken()
-		list = append(list, p.parseExpression(LOWEST))
+	for prs.peekTokenIs(token.COMMA) {
+		prs.nextToken()
+		prs.nextToken()
+		list = append(list, prs.parseExpression(LOWEST))
 	}
 
-	if !p.expectPeek(end) {
+	if !prs.expectPeek(end) {
 		return nil
 	}
 

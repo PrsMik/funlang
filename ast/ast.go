@@ -1,8 +1,12 @@
 package ast
 
+import "funlang/token"
+
 type Node interface {
 	TokenLiteral() string
 	String() string
+	Start() token.Position
+	End() token.Position
 }
 
 // узел является инструкцией
@@ -34,3 +38,6 @@ func (prg *Program) TokenLiteral() string {
 	}
 	return ""
 }
+
+func (prg *Program) Start() token.Position { return prg.Statements[0].Start() }
+func (prg *Program) End() token.Position   { return prg.Statements[len(prg.Statements)-1].End() }
