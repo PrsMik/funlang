@@ -56,7 +56,7 @@ func getMapWithBuiltins() map[string]Type {
 	builtins["puts"] = &BuiltinFunc{
 		CheckFunc: func(args []Type) (Type, error) {
 			if len(args) != 1 {
-				return &IllegalType{}, fmt.Errorf("push expects 1 argument but got %d", len(args))
+				return &IllegalType{}, fmt.Errorf("puts expects 1 argument but got %d", len(args))
 			}
 
 			_, ok := args[0].(PrintableType)

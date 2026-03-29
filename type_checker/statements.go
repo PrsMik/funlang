@@ -20,6 +20,15 @@ func (chk *TypeChecker) checkStatement(stmt ast.StatementNode) types.Type {
 }
 
 func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
+	if stmt == nil {
+		return &types.IllegalType{}
+	}
+
+	if stmt.Type == nil {
+		chk.typeError("missing type in let statement", stmt)
+		return &types.IllegalType{}
+	}
+
 	expectedType := chk.resolveType(stmt.Type)
 
 	chk.curExpectedType = expectedType
@@ -47,11 +56,29 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 }
 
 func (chk *TypeChecker) checkReturnStatement(stmt *ast.ReturnStatement) types.Type {
+	if stmt == nil {
+		return &types.IllegalType{}
+	}
+
+	if stmt.Value == nil {
+		chk.typeError("missing val in return statement", stmt)
+		return &types.IllegalType{}
+	}
+
 	returnType := chk.checkExpression(stmt.Value)
 	return returnType
 }
 
 func (chk *TypeChecker) checkBlockStatement(stmt *ast.BlockStatement) types.Type {
+	if stmt == nil {
+		return &types.IllegalType{}
+	}
+
+	if stmt.Statements == nil {
+		chk.typeError("missing body in block statement", stmt)
+		return &types.IllegalType{}
+	}
+
 	chk.env = types.NewEnclosedTypeEviroment(chk.env)
 
 	var returnType types.Type = &types.IllegalType{}

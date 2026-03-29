@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"funlang/evaluator"
 	"funlang/lexer"
+	"funlang/lsp"
 	"funlang/object"
 	"funlang/parser"
 	"funlang/repl"
@@ -81,6 +82,9 @@ func main() {
 				panic(err)
 			}
 			InterpretProgram(string(file), os.Stdout)
+		case "lsp":
+			lsp.StartServer()
+			return
 		}
 	}
 }

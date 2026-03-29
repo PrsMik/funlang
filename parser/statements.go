@@ -8,9 +8,17 @@ import (
 func (prs *Parser) parseStatement() ast.StatementNode {
 	switch prs.curToken.Type {
 	case token.LET:
-		return prs.parseLetStatement()
+		stmt := prs.parseLetStatement()
+		if stmt == nil {
+			return nil
+		}
+		return stmt
 	case token.RETURN:
-		return prs.parseReturnStatement()
+		stmt := prs.parseReturnStatement()
+		if stmt == nil {
+			return nil
+		}
+		return stmt
 	default:
 		prs.stmtError()
 		return nil
