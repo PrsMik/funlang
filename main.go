@@ -21,22 +21,18 @@ func InterpretProgram(program string, out io.Writer) {
 	env := object.NewEnvironment()
 
 	lxr := lexer.New(program)
+
 	prs := parser.New(lxr)
 	prg := prs.ParseProgram()
-	chk := type_checker.New(typeEnv)
-
-	for _, err := range prs.Errors() {
-		fmt.Println(err)
-	}
 	if len(prs.Errors()) != 0 {
+		repl.PrintParserErrors(out, prs.Errors())
 		return
 	}
 
+	chk := type_checker.New(typeEnv)
 	chk.CheckProgram(prg)
-	for _, err := range chk.Errors() {
-		fmt.Println(err)
-	}
 	if len(chk.Errors()) != 0 {
+		repl.PrintCheckerErrors(out, chk.Errors())
 		return
 	}
 

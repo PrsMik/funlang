@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"funlang/ast"
 	"funlang/token"
 	"strconv"
@@ -124,8 +123,7 @@ func (prs *Parser) parseIntegerLiteral() ast.ExpressionNode {
 
 	value, err := strconv.ParseInt(prs.curToken.Literal, 0, 0)
 	if err != nil {
-		msg := fmt.Sprintf("could not parse %q as integer", prs.curToken.Literal)
-		prs.errors = append(prs.errors, msg)
+		prs.integerLiteralParseError()
 		return nil
 	}
 
@@ -283,10 +281,4 @@ func (prs *Parser) parseFunctionParameters() ([]*ast.Identifier, []ast.TypeNode)
 	}
 
 	return literals, paramTypes
-}
-
-func (prs *Parser) noPrefixParseFnError(tknType token.TokenType) {
-	tknStr, _ := token.LookupString(tknType)
-	msg := fmt.Sprintf("no prefix parse function for %s found", tknStr)
-	prs.errors = append(prs.errors, msg)
 }

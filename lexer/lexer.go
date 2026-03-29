@@ -119,6 +119,7 @@ func (lxr *Lexer) NextToken() token.Token {
 			nextTok.Type = token.INT
 		} else {
 			nextTok = newToken(token.ILLEGAL, lxr.curChar)
+			lxr.readChar()
 		}
 
 		nextTok.Start = startPos

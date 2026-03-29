@@ -7,6 +7,7 @@ import (
 	"funlang/lexer"
 	"funlang/object"
 	"funlang/parser"
+	"funlang/token"
 	"funlang/type_checker"
 	"funlang/types"
 	"io"
@@ -33,15 +34,14 @@ func Start(in io.Reader, out io.Writer) {
 		prg := prs.ParseProgram()
 
 		if len(prs.Errors()) != 0 {
-			printParserErrors(out, prs.Errors())
+			PrintParserErrors(out, prs.Errors())
 			continue
 		}
 
 		chk := type_checker.New(typeEnv)
 		chk.CheckProgram(prg)
 		if len(chk.Errors()) != 0 {
-			fmt.Println("!TYPE CHECKER ERRORS!")
-			printCheckerErrors(out, chk.Errors())
+			PrintCheckerErrors(out, chk.Errors())
 			continue
 		}
 
@@ -55,14 +55,19 @@ func Start(in io.Reader, out io.Writer) {
 	}
 }
 
-func printParserErrors(out io.Writer, errors []string) {
-	for _, msg := range errors {
-		io.WriteString(out, "\t"+msg+"\n")
+func PrintParserErrors(out io.Writer, errors []parser.ParseError) {
+	for _, err := range errors {
+		tknType, _ := token.LookupString(err.Token.Type)
+		io.WriteString(out, fmt.Sprintf("\t%s\n\ton token %s: from %s to %s\n",
+			err.Msg, tknType, err.Token.Start.String(), err.Token.End.String()))
 	}
 }
 
-func printCheckerErrors(out io.Writer, errors []error) {
-	for _, msg := range errors {
-		io.WriteString(out, "\t"+msg.Error()+"\n")
+func PrintCheckerErrors(out io.Writer, errors []type_checker.TypeError) {
+	for _, err := range errors {
+		start := err.Node.Start()
+		end := err.Node.End()
+		io.WriteString(out, fmt.Sprintf("\t%s\n\ton node %s: from %s to %s\n",
+			err.Msg, err.Node.TokenLiteral(), start.String(), end.String()))
 	}
 }

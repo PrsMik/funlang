@@ -37,9 +37,14 @@ var precedences = map[token.TokenType]int{
 	token.LBRACKET:         INDEX,
 }
 
+type ParseError struct {
+	Msg   string
+	Token token.Token
+}
+
 type Parser struct {
 	lxr    *lexer.Lexer
-	errors []string
+	errors []ParseError
 
 	curToken  token.Token
 	peekToken token.Token
@@ -49,7 +54,7 @@ type Parser struct {
 }
 
 func New(lxr *lexer.Lexer) *Parser {
-	prs := &Parser{lxr: lxr, errors: []string{}}
+	prs := &Parser{lxr: lxr, errors: []ParseError{}}
 
 	prs.prefixParseFns = make(map[token.TokenType]prefixParseFn)
 

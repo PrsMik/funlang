@@ -12,11 +12,16 @@ func (chk *TypeChecker) registerExpressionCheckFn(exprType reflect.Type, fn expr
 	chk.expressionCheckFns[exprType] = fn
 }
 
+type TypeError struct {
+	Msg  string
+	Node ast.Node
+}
+
 type TypeChecker struct {
 	env                *types.TypeEviroment
 	expressionCheckFns map[reflect.Type]expressionCheckFn
 	curExpectedType    types.Type
-	errors             []error
+	errors             []TypeError
 }
 
 func New(curEnv *types.TypeEviroment) *TypeChecker {
@@ -50,6 +55,6 @@ func (chk *TypeChecker) CheckProgram(prog *ast.Program) {
 	}
 }
 
-func (chk *TypeChecker) Errors() []error {
+func (chk *TypeChecker) Errors() []TypeError {
 	return chk.errors
 }

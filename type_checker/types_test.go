@@ -215,8 +215,8 @@ func checkParserErrors(t *testing.T, prs *parser.Parser) {
 	}
 
 	t.Errorf("Parser has %d erros", len(errors))
-	for _, msg := range errors {
-		t.Errorf("parser error: %q", msg)
+	for _, err := range errors {
+		t.Errorf("parser error: %q", err.Msg)
 	}
 	t.FailNow()
 }
@@ -228,8 +228,8 @@ func checkCheckerErrors(t *testing.T, chk *TypeChecker) {
 	}
 
 	t.Errorf("Checker has %d erros", len(errors))
-	for _, msg := range errors {
-		t.Errorf("checker error: %q", msg)
+	for _, err := range errors {
+		t.Errorf("checker error: %q", err.Msg)
 	}
 	t.FailNow()
 }

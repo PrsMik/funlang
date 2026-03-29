@@ -12,7 +12,7 @@ func (chk *TypeChecker) checkExpression(expr ast.ExpressionNode) types.Type {
 	if fn, ok := chk.expressionCheckFns[exprTp]; ok {
 		return fn(expr)
 	}
-	chk.errors = append(chk.errors, fmt.Errorf("unknown expression type"))
+	chk.typeError("unknown expression type", expr)
 	return &types.IllegalType{}
 }
 
@@ -41,9 +41,8 @@ func (chk *TypeChecker) checkArrayLiteral(expr ast.ExpressionNode) types.Type {
 	for _, param := range arrLit.Elements[1:] {
 		curParamType := chk.checkExpression(param)
 		if !types.Equals(firstArrLitType, curParamType) {
-			chk.errors = append(chk.errors,
-				fmt.Errorf("array literal has elements of different types %s & %s",
-					firstArrLitType.Signature(), curParamType.Signature()))
+			chk.typeError(fmt.Sprintf("array literal has elements of different types %s & %s",
+				firstArrLitType.Signature(), curParamType.Signature()), expr)
 			return &types.IllegalType{}
 		}
 	}
@@ -73,16 +72,14 @@ func (chk *TypeChecker) checkHashMapLiteral(expr ast.ExpressionNode) types.Type 
 			firstHashMapElementType = curHashMapElementType
 		} else {
 			if !types.Equals(firstHashMapKeyType, curHashMapKeyType) {
-				chk.errors = append(chk.errors,
-					fmt.Errorf("map literal has keys of different types %s & %s",
-						firstHashMapKeyType.Signature(), curHashMapKeyType.Signature()))
+				chk.typeError(fmt.Sprintf("map literal has keys of different types %s & %s",
+					firstHashMapKeyType.Signature(), curHashMapKeyType.Signature()), expr)
 				return &types.IllegalType{}
 			}
 
 			if !types.Equals(firstHashMapElementType, curHashMapElementType) {
-				chk.errors = append(chk.errors,
-					fmt.Errorf("map literal has elements of different types %s & %s",
-						firstHashMapElementType.Signature(), curHashMapElementType.Signature()))
+				chk.typeError(fmt.Sprintf("map literal has elements of different types %s & %s",
+					firstHashMapElementType.Signature(), curHashMapElementType.Signature()), expr)
 				return &types.IllegalType{}
 			}
 		}
@@ -102,7 +99,7 @@ func (chk *TypeChecker) checkIndexExpression(expr ast.ExpressionNode) types.Type
 	case *types.HashMapType:
 		return chk.checkHashMapIndexExpression(expr)
 	default:
-		chk.errors = append(chk.errors, fmt.Errorf("index expression has wrong left operand"))
+		chk.typeError("index expression has wrong left operand", expr)
 		return &types.IllegalType{}
 	}
 }
@@ -113,7 +110,7 @@ func (chk *TypeChecker) checkArrayIndexExpression(expr ast.ExpressionNode) types
 	indexType := chk.checkExpression(expr.(*ast.IndexExpression).Index)
 
 	if !types.Equals(indexType, &types.IntType{}) {
-		chk.errors = append(chk.errors, fmt.Errorf("array index expression has non-integer index"))
+		chk.typeError("array index expression has non-integer index", expr)
 		return &types.IllegalType{}
 	}
 
@@ -126,15 +123,13 @@ func (chk *TypeChecker) checkHashMapIndexExpression(expr ast.ExpressionNode) typ
 	indexType := chk.checkExpression(expr.(*ast.IndexExpression).Index)
 
 	if hashMapType.KeyType == nil {
-		chk.errors = append(chk.errors,
-			fmt.Errorf("index operator usage for map with unkwown key type"))
+		chk.typeError("index operator usage for map with unkwown key type", expr)
 		return &types.IllegalType{}
 	}
 
 	if !types.Equals(indexType, hashMapType.KeyType) {
-		chk.errors = append(chk.errors,
-			fmt.Errorf("type mismatch between %s in index & %s in keys for index operator in hash map",
-				indexType.Signature(), hashMapType.KeyType.Signature()))
+		chk.typeError(fmt.Sprintf("type mismatch between %s in index & %s in keys for index operator in hash map",
+			indexType.Signature(), hashMapType.KeyType.Signature()), expr)
 		return &types.IllegalType{}
 	}
 
@@ -144,7 +139,7 @@ func (chk *TypeChecker) checkHashMapIndexExpression(expr ast.ExpressionNode) typ
 func (chk *TypeChecker) checkIdentifier(expr ast.ExpressionNode) types.Type {
 	identType, ok := chk.env.Get(expr.(*ast.Identifier).Value)
 	if !ok {
-		chk.errors = append(chk.errors, fmt.Errorf("unknown identifier: %s", expr.(*ast.Identifier).Value))
+		chk.typeError(fmt.Sprintf("unknown identifier: %s", expr.(*ast.Identifier).Value), expr)
 		return &types.IllegalType{}
 	}
 	return identType
@@ -163,7 +158,7 @@ func (chk *TypeChecker) checkPrefixExpression(expr ast.ExpressionNode) types.Typ
 			return &types.BoolType{}
 		}
 	}
-	chk.errors = append(chk.errors, fmt.Errorf("unknown operator: %s for type %s", op, rightType.Signature()))
+	chk.typeError(fmt.Sprintf("unknown operator: %s for type %s", op, rightType.Signature()), expr)
 	return &types.IllegalType{}
 }
 
@@ -196,8 +191,8 @@ func (chk *TypeChecker) checkInfixExpression(expr ast.ExpressionNode) types.Type
 		}
 	}
 
-	chk.errors = append(chk.errors, fmt.Errorf("type mismatch between: %s & %s; for operator %s",
-		leftType.Signature(), rightType.Signature(), op))
+	chk.typeError(fmt.Sprintf("type mismatch between: %s & %s; for operator %s",
+		leftType.Signature(), rightType.Signature(), op), expr)
 	return &types.IllegalType{}
 }
 
@@ -205,7 +200,7 @@ func (chk *TypeChecker) checkIfExpression(expr ast.ExpressionNode) types.Type {
 	condType := chk.checkExpression(expr.(*ast.IfExpression).Condition)
 
 	if !types.Equals(condType, &types.BoolType{}) {
-		chk.errors = append(chk.errors, fmt.Errorf("wrong type %s for if condition", condType.Signature()))
+		chk.typeError(fmt.Sprintf("wrong type %s for if condition", condType.Signature()), expr)
 		return &types.IllegalType{}
 	}
 
@@ -215,8 +210,8 @@ func (chk *TypeChecker) checkIfExpression(expr ast.ExpressionNode) types.Type {
 		alterType := chk.checkBlockStatement(expr.(*ast.IfExpression).Alternative)
 
 		if !types.Equals(conseqType, alterType) {
-			chk.errors = append(chk.errors, fmt.Errorf("type mismatch between %s & %s in if/else branches",
-				conseqType.Signature(), alterType.Signature()))
+			chk.typeError(fmt.Sprintf("type mismatch between %s & %s in if/else branches",
+				conseqType.Signature(), alterType.Signature()), expr)
 			return &types.IllegalType{}
 		}
 	}
@@ -239,14 +234,14 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 		} else if tp, ok := chk.curExpectedType.(*types.FuncType); ok && len(tp.ParamsTypes) != 0 {
 			expectedFuncType.ParamsTypes = tp.ParamsTypes
 		} else if len(funLit.Parameters) != 0 {
-			chk.errors = append(chk.errors, fmt.Errorf("function literal has parameters, but no type specified for them"))
+			chk.typeError("function literal has parameters, but no type specified for them", expr)
 			return &types.IllegalType{}
 		}
 
 		if funLit.ReturnType != nil {
 			expectedFuncType.ReturnType = chk.resolveType(funLit.ReturnType)
 		} else {
-			chk.errors = append(chk.errors, fmt.Errorf("function literal has typed parameters, but no return type specified"))
+			chk.typeError("function literal has typed parameters, but no return type specified", expr)
 			return &types.IllegalType{}
 		}
 
@@ -259,8 +254,8 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 	}
 
 	if len(expectedFuncType.ParamsTypes) != len(funLit.Parameters) {
-		chk.errors = append(chk.errors, fmt.Errorf("function literal has %d parameters, but expected %d",
-			len(funLit.Parameters), len(expectedFuncType.ParamsTypes)))
+		chk.typeError(fmt.Sprintf("function literal has %d parameters, but expected %d",
+			len(funLit.Parameters), len(expectedFuncType.ParamsTypes)), expr)
 		return &types.IllegalType{}
 	}
 
@@ -278,8 +273,8 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 	resFuncType.ReturnType = chk.checkBlockStatement(funLit.Body)
 
 	if !types.Equals(resFuncType.ReturnType, expectedFuncType.ReturnType) {
-		chk.errors = append(chk.errors, fmt.Errorf("function literal has return type %s, but expected %s",
-			resFuncType.ReturnType.Signature(), expectedFuncType.ReturnType.Signature()))
+		chk.typeError(fmt.Sprintf("function literal has return type %s, but expected %s",
+			resFuncType.ReturnType.Signature(), expectedFuncType.ReturnType.Signature()), expr)
 		return &types.IllegalType{}
 	}
 
@@ -301,7 +296,7 @@ func (chk *TypeChecker) checkCallExpression(expr ast.ExpressionNode) types.Type 
 	switch callFuncType := rawCallType.(type) {
 	case *types.FuncType:
 		if len(callExpr.Arguments) != len(callFuncType.ParamsTypes) {
-			chk.errors = append(chk.errors, fmt.Errorf(`wrong number of arguments for "%s"`, callExpr.Function.String()))
+			chk.typeError(fmt.Sprintf(`wrong number of arguments for "%s"`, callExpr.Function.String()), expr)
 			return &types.IllegalType{}
 		}
 
@@ -309,8 +304,8 @@ func (chk *TypeChecker) checkCallExpression(expr ast.ExpressionNode) types.Type 
 			argType := chk.checkExpression(arg)
 
 			if !types.Equals(argType, callFuncType.ParamsTypes[i]) {
-				chk.errors = append(chk.errors, fmt.Errorf("wrong type for argument %d: %s in func call \" %s \"; expected %s",
-					i+1, argType.Signature(), callExpr.Function.String(), callFuncType.ParamsTypes[i].Signature()))
+				chk.typeError(fmt.Sprintf("wrong type for argument %d: %s in func call \" %s \"; expected %s",
+					i+1, argType.Signature(), callExpr.Function.String(), callFuncType.ParamsTypes[i].Signature()), expr)
 				return &types.IllegalType{}
 			}
 		}
@@ -325,13 +320,14 @@ func (chk *TypeChecker) checkCallExpression(expr ast.ExpressionNode) types.Type 
 		returnType, err := callFuncType.CheckFunc(argTypes)
 
 		if err != nil {
-			chk.errors = append(chk.errors, err)
+			// chk.errors = append(chk.errors, err)
+			chk.typeError(err.Error(), expr)
 			return &types.IllegalType{}
 		}
 
 		return returnType
 	default:
-		chk.errors = append(chk.errors, fmt.Errorf(`identifier "%s" is no a funciton`, callExpr.Function.String()))
+		chk.typeError(fmt.Sprintf(`identifier "%s" is no a funciton`, callExpr.Function.String()), expr)
 		return &types.IllegalType{}
 	}
 

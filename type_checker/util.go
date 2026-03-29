@@ -23,8 +23,7 @@ func (chk *TypeChecker) resolveType(inType ast.TypeNode) types.Type {
 	case *ast.HashMapType:
 		keyType := chk.resolveType(tp.KeyType)
 		if _, ok := keyType.(types.HashableType); !ok {
-			chk.errors = append(chk.errors,
-				fmt.Errorf("cannot use type %s for hash map key", keyType.Signature()))
+			chk.typeError(fmt.Sprintf("cannot use type %s for hash map key", keyType.Signature()), tp)
 			return &types.IllegalType{}
 		}
 		return &types.HashMapType{KeyType: keyType, ElementType: chk.resolveType(tp.ElementType)}
@@ -40,6 +39,6 @@ func (chk *TypeChecker) resolveType(inType ast.TypeNode) types.Type {
 
 		return &types.FuncType{ParamsTypes: prmTypes, ReturnType: rtrnType}
 	}
-	chk.errors = append(chk.errors, fmt.Errorf("unknown type"))
+	chk.typeError(fmt.Sprintf("%s is not a valid type", inType.String()), inType)
 	return nil
 }

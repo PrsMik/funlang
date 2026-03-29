@@ -15,7 +15,7 @@ func (chk *TypeChecker) checkStatement(stmt ast.StatementNode) types.Type {
 	case *ast.BlockStatement:
 		return chk.checkBlockStatement(curStmt)
 	}
-	chk.errors = append(chk.errors, fmt.Errorf("unknown statement type"))
+	chk.typeError("unknown statement type", stmt)
 	return &types.IllegalType{}
 }
 
@@ -34,8 +34,7 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 	if !types.Equals(expectedType, actualType) {
 		if expectedType != nil && actualType != nil {
 			if len(chk.errors) == 0 {
-				chk.errors = append(chk.errors, fmt.Errorf("expected type %s, got %s",
-					expectedType.Signature(), actualType.Signature()))
+				chk.typeError(fmt.Sprintf("expected type %s, got %s", expectedType.Signature(), actualType.Signature()), stmt)
 			}
 		}
 	}
