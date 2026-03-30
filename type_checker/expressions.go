@@ -139,12 +139,17 @@ func (chk *TypeChecker) checkHashMapIndexExpression(expr ast.ExpressionNode) typ
 }
 
 func (chk *TypeChecker) checkIdentifier(expr ast.ExpressionNode) types.Type {
-	identType, ok := chk.env.Get(expr.(*ast.Identifier).Value)
+	symbolInfo, ok := chk.env.Get(expr.(*ast.Identifier).Value)
 	if !ok {
 		chk.typeError(fmt.Sprintf("unknown identifier: %s", expr.(*ast.Identifier).Value), expr)
 		return &types.IllegalType{}
 	}
-	return identType
+
+	if symbolInfo.DeclNode != nil {
+		chk.Definitions[expr] = symbolInfo.DeclNode
+	}
+
+	return symbolInfo.SymbolType
 }
 
 func (chk *TypeChecker) checkPrefixExpression(expr ast.ExpressionNode) types.Type {
@@ -224,17 +229,20 @@ func (chk *TypeChecker) checkIfExpression(expr ast.ExpressionNode) types.Type {
 func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type {
 	resFuncType := &types.FuncType{}
 	funLit := expr.(*ast.FunctionLiteral)
+
 	var expectedFuncType types.FuncType
 
 	// hasSelfParams := false
+	// типы параметров описаны в самом литерале
 	if len(funLit.ParamTypes) != 0 && funLit.ParamTypes[0] != nil || funLit.ReturnType != nil {
 
 		if len(funLit.ParamTypes) != 0 && funLit.ParamTypes[0] != nil {
 			for _, param := range funLit.ParamTypes {
 				expectedFuncType.ParamsTypes = append(expectedFuncType.ParamsTypes, chk.resolveType(param))
 			}
-		} else if tp, ok := chk.curExpectedType.(*types.FuncType); ok && len(tp.ParamsTypes) != 0 {
-			expectedFuncType.ParamsTypes = tp.ParamsTypes
+		} else if expTp, ok := chk.curExpectedType.(*types.FuncType); ok && len(expTp.ParamsTypes) != 0 {
+			// у ожидаемого типа определены типы параметров
+			expectedFuncType.ParamsTypes = expTp.ParamsTypes
 		} else if len(funLit.Parameters) != 0 {
 			chk.typeError("function literal has parameters, but no type specified for them", expr)
 			return &types.IllegalType{}
@@ -246,7 +254,6 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 			chk.typeError("function literal has typed parameters, but no return type specified", expr)
 			return &types.IllegalType{}
 		}
-
 	} else {
 		tempType, ok := chk.curExpectedType.(*types.FuncType)
 		if !ok {
@@ -263,9 +270,10 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 
 	chk.env = types.NewEnclosedTypeEviroment(chk.env)
 
+	// спуск типов из ожидаемого типа функции на переменные в литерале
 	for i, param := range funLit.Parameters {
 		resFuncType.ParamsTypes = append(resFuncType.ParamsTypes, expectedFuncType.ParamsTypes[i])
-		chk.env.Set(param.Value, expectedFuncType.ParamsTypes[i])
+		chk.env.Set(param.Value, expectedFuncType.ParamsTypes[i], param)
 	}
 
 	oldExp := chk.curExpectedType

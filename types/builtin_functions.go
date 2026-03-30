@@ -1,10 +1,12 @@
 package types
 
-import "fmt"
+import (
+	"fmt"
+)
 
-func getMapWithBuiltins() map[string]Type {
-	builtins := make(map[string]Type)
-	builtins["len"] = &BuiltinFunc{
+func getMapWithBuiltins() map[string]SymbolInfo {
+	builtins := make(map[string]SymbolInfo)
+	builtins["len"] = SymbolInfo{SymbolType: &BuiltinFunc{
 		CheckFunc: func(args []Type) (Type, error) {
 			if len(args) != 1 {
 				return &IllegalType{}, fmt.Errorf("len expects 1 argument but got %d", len(args))
@@ -19,8 +21,8 @@ func getMapWithBuiltins() map[string]Type {
 				return &IllegalType{}, fmt.Errorf("len does not support type %s", argType.Signature())
 			}
 		},
-	}
-	builtins["tail"] = &BuiltinFunc{
+	}, DeclNode: nil}
+	builtins["tail"] = SymbolInfo{SymbolType: &BuiltinFunc{
 		CheckFunc: func(args []Type) (Type, error) {
 			if len(args) != 1 {
 				return &IllegalType{}, fmt.Errorf("tail expects 1 argument but got %d", len(args))
@@ -33,8 +35,8 @@ func getMapWithBuiltins() map[string]Type {
 				return &IllegalType{}, fmt.Errorf("tail does not support type %s", argType.Signature())
 			}
 		},
-	}
-	builtins["push"] = &BuiltinFunc{
+	}, DeclNode: nil}
+	builtins["push"] = SymbolInfo{SymbolType: &BuiltinFunc{
 		CheckFunc: func(args []Type) (Type, error) {
 			if len(args) != 2 {
 				return &IllegalType{}, fmt.Errorf("push expects 2 argument but got %d", len(args))
@@ -52,8 +54,8 @@ func getMapWithBuiltins() map[string]Type {
 
 			return &ArrayType{ElementsType: args[1]}, nil
 		},
-	}
-	builtins["puts"] = &BuiltinFunc{
+	}, DeclNode: nil}
+	builtins["puts"] = SymbolInfo{SymbolType: &BuiltinFunc{
 		CheckFunc: func(args []Type) (Type, error) {
 			if len(args) != 1 {
 				return &IllegalType{}, fmt.Errorf("puts expects 1 argument but got %d", len(args))
@@ -71,6 +73,6 @@ func getMapWithBuiltins() map[string]Type {
 
 			return &IntType{}, nil
 		},
-	}
+	}, DeclNode: nil}
 	return builtins
 }

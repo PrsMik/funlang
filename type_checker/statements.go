@@ -37,7 +37,7 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 
 	_, isFuncLit := stmt.Value.(*ast.FunctionLiteral)
 	if isFuncLit {
-		chk.env.Set(stmt.Name.Value, expectedType)
+		chk.env.Set(stmt.Name.Value, expectedType, stmt.Name)
 	}
 
 	actualType := chk.checkExpression(stmt.Value)
@@ -51,7 +51,7 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 	}
 
 	if !isFuncLit {
-		chk.env.Set(stmt.Name.Value, expectedType)
+		chk.env.Set(stmt.Name.Value, expectedType, stmt.Name)
 	}
 
 	return actualType

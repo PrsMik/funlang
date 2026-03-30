@@ -23,10 +23,11 @@ type TypeChecker struct {
 	curExpectedType    types.Type
 	errors             []TypeError
 	TypesInfo          map[ast.Node]types.Type
+	Definitions        map[ast.Node]ast.Node // лучше хранить по самому идентификатору, но так проще перебирать в сервере
 }
 
 func New(curEnv *types.TypeEviroment) *TypeChecker {
-	chk := &TypeChecker{env: curEnv, TypesInfo: make(map[ast.Node]types.Type)}
+	chk := &TypeChecker{env: curEnv, TypesInfo: make(map[ast.Node]types.Type), Definitions: make(map[ast.Node]ast.Node)}
 
 	chk.expressionCheckFns = make(map[reflect.Type]expressionCheckFn)
 

@@ -1,7 +1,14 @@
 package types
 
+import "funlang/ast"
+
+type SymbolInfo struct {
+	SymbolType Type
+	DeclNode   ast.Node
+}
+
 type TypeEviroment struct {
-	types map[string]Type
+	types map[string]SymbolInfo
 	Outer *TypeEviroment
 }
 
@@ -13,10 +20,10 @@ func NewTypeEviroment() *TypeEviroment {
 }
 
 func NewEnclosedTypeEviroment(outer *TypeEviroment) *TypeEviroment {
-	return &TypeEviroment{types: make(map[string]Type), Outer: outer}
+	return &TypeEviroment{types: make(map[string]SymbolInfo), Outer: outer}
 }
 
-func (env *TypeEviroment) Get(name string) (Type, bool) {
+func (env *TypeEviroment) Get(name string) (SymbolInfo, bool) {
 	tp, ok := env.types[name]
 
 	if !ok && env.Outer != nil {
@@ -26,6 +33,6 @@ func (env *TypeEviroment) Get(name string) (Type, bool) {
 	return tp, ok
 }
 
-func (env *TypeEviroment) Set(name string, tp Type) {
-	env.types[name] = tp
+func (env *TypeEviroment) Set(name string, tp Type, declNode ast.Node) {
+	env.types[name] = SymbolInfo{SymbolType: tp, DeclNode: declNode}
 }

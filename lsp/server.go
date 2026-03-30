@@ -16,11 +16,12 @@ var (
 
 func StartServer() {
 	handler = protocol.Handler{
-		Initialize:            initialize,
-		Initialized:           initialized,
-		TextDocumentDidOpen:   textDocumentDidOpen,
-		TextDocumentDidChange: textDocumentDidChange,
-		TextDocumentHover:     textDocumentHover,
+		Initialize:             initialize,
+		Initialized:            initialized,
+		TextDocumentDidOpen:    textDocumentDidOpen,
+		TextDocumentDidChange:  textDocumentDidChange,
+		TextDocumentHover:      textDocumentHover,
+		TextDocumentDefinition: textDocumentDefinition,
 	}
 
 	srv := server.NewServer(&handler, "funlang-lsp", false)
@@ -36,6 +37,9 @@ func initialize(context *glsp.Context, params *protocol.InitializeParams) (any, 
 
 	hoverProvider := true
 	capabilities.HoverProvider = &hoverProvider
+
+	definitionProvider := true
+	capabilities.DefinitionProvider = &definitionProvider
 
 	return protocol.InitializeResult{
 		Capabilities: capabilities,
