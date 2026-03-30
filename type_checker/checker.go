@@ -22,10 +22,11 @@ type TypeChecker struct {
 	expressionCheckFns map[reflect.Type]expressionCheckFn
 	curExpectedType    types.Type
 	errors             []TypeError
+	TypesInfo          map[ast.Node]types.Type
 }
 
 func New(curEnv *types.TypeEviroment) *TypeChecker {
-	chk := &TypeChecker{env: curEnv}
+	chk := &TypeChecker{env: curEnv, TypesInfo: make(map[ast.Node]types.Type)}
 
 	chk.expressionCheckFns = make(map[reflect.Type]expressionCheckFn)
 

@@ -33,6 +33,8 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 
 	chk.curExpectedType = expectedType
 
+	chk.TypesInfo[stmt.Name] = expectedType
+
 	_, isFuncLit := stmt.Value.(*ast.FunctionLiteral)
 	if isFuncLit {
 		chk.env.Set(stmt.Name.Value, expectedType)

@@ -1,14 +1,17 @@
 package lsp
 
 import (
+	"funlang/type_checker"
+
 	"github.com/tliron/glsp"
 	protocol "github.com/tliron/glsp/protocol_3_16"
 	"github.com/tliron/glsp/server"
 )
 
 var (
-	handler protocol.Handler
-	version string = "0.1.0"
+	handler        protocol.Handler
+	version        string = "0.1.0"
+	documentStates        = make(map[string]*type_checker.TypeChecker)
 )
 
 func StartServer() {
@@ -17,6 +20,7 @@ func StartServer() {
 		Initialized:           initialized,
 		TextDocumentDidOpen:   textDocumentDidOpen,
 		TextDocumentDidChange: textDocumentDidChange,
+		TextDocumentHover:     textDocumentHover,
 	}
 
 	srv := server.NewServer(&handler, "funlang-lsp", false)
@@ -29,6 +33,9 @@ func initialize(context *glsp.Context, params *protocol.InitializeParams) (any, 
 
 	syncKind := protocol.TextDocumentSyncKindFull
 	capabilities.TextDocumentSync = syncKind
+
+	hoverProvider := true
+	capabilities.HoverProvider = &hoverProvider
 
 	return protocol.InitializeResult{
 		Capabilities: capabilities,

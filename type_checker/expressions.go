@@ -10,7 +10,9 @@ import (
 func (chk *TypeChecker) checkExpression(expr ast.ExpressionNode) types.Type {
 	exprTp := reflect.TypeOf(expr)
 	if fn, ok := chk.expressionCheckFns[exprTp]; ok {
-		return fn(expr)
+		tp := fn(expr)
+		chk.TypesInfo[expr] = tp
+		return tp
 	}
 	chk.typeError("unknown expression type", expr)
 	return &types.IllegalType{}

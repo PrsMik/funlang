@@ -52,6 +52,8 @@ func validateDocument(context *glsp.Context, uri string, text string) {
 		chk := type_checker.New(env)
 		chk.CheckProgram(program)
 
+		documentStates[uri] = chk
+
 		for _, err := range chk.Errors() {
 			// length := 1
 			// if err.Node != nil {
