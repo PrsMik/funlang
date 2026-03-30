@@ -6,7 +6,7 @@ func (pos *Position) String() string {
 	return fmt.Sprintf("%d:%d", pos.Line, pos.Column)
 }
 
-var keywords = map[string]TokenType{
+var Keywords = map[string]TokenType{
 	// ключевые слова (выражения)
 	"let":    LET,
 	"fn":     FN,
@@ -17,7 +17,7 @@ var keywords = map[string]TokenType{
 	"false":  FALSE,
 }
 
-var operators = map[string]TokenType{
+var Operators = map[string]TokenType{
 	// операторы
 	// присваивание
 	"=":  ASSIGN,
@@ -43,7 +43,7 @@ var operators = map[string]TokenType{
 	"!":  BANG,
 }
 
-var symbols = map[string]TokenType{
+var Symbols = map[string]TokenType{
 	// спецсимволы
 	",": COMMA,
 	":": COLON,
@@ -56,7 +56,7 @@ var symbols = map[string]TokenType{
 	"]": RBRACKET,
 }
 
-var types = map[string]TokenType{
+var Types = map[string]TokenType{
 	// типы
 	"int":    INT_TYPE,
 	"bool":   BOOL_TYPE,
@@ -64,21 +64,21 @@ var types = map[string]TokenType{
 }
 
 func LookupIdentifier(identifier string) TokenType {
-	if tokenType, ok := keywords[identifier]; ok {
+	if tokenType, ok := Keywords[identifier]; ok {
 		return tokenType
 	}
 	return IDENT
 }
 
 func LookupType(identifier string) (TokenType, bool) {
-	if tokenType, ok := types[identifier]; ok {
+	if tokenType, ok := Types[identifier]; ok {
 		return tokenType, true
 	}
 	return IDENT, false
 }
 
 func LookupOperator(literal string) (TokenType, bool) {
-	if tokenType, ok := operators[literal]; ok {
+	if tokenType, ok := Operators[literal]; ok {
 		return tokenType, true
 	}
 	return ILLEGAL, false

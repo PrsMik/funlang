@@ -22,12 +22,20 @@ type TypeChecker struct {
 	expressionCheckFns map[reflect.Type]expressionCheckFn
 	curExpectedType    types.Type
 	errors             []TypeError
-	TypesInfo          map[ast.Node]types.Type
-	Definitions        map[ast.Node]ast.Node // лучше хранить по самому идентификатору, но так проще перебирать в сервере
+
+	// для сервера
+	TypesInfo     map[ast.Node]types.Type
+	Definitions   map[ast.Node]ast.Node // лучше хранить по самому идентификатору, но так проще перебирать в сервере
+	Scopes        map[ast.Node]*types.TypeEviroment
+	ExpectedTypes map[ast.Node]types.Type
 }
 
 func New(curEnv *types.TypeEviroment) *TypeChecker {
-	chk := &TypeChecker{env: curEnv, TypesInfo: make(map[ast.Node]types.Type), Definitions: make(map[ast.Node]ast.Node)}
+	chk := &TypeChecker{env: curEnv,
+		TypesInfo:     make(map[ast.Node]types.Type),
+		Definitions:   make(map[ast.Node]ast.Node),
+		Scopes:        make(map[ast.Node]*types.TypeEviroment),
+		ExpectedTypes: make(map[ast.Node]types.Type)}
 
 	chk.expressionCheckFns = make(map[reflect.Type]expressionCheckFn)
 
@@ -59,4 +67,8 @@ func (chk *TypeChecker) CheckProgram(prog *ast.Program) {
 
 func (chk *TypeChecker) Errors() []TypeError {
 	return chk.errors
+}
+
+func (chk *TypeChecker) GetEnv() types.TypeEviroment {
+	return *chk.env
 }

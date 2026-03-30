@@ -36,3 +36,21 @@ func (env *TypeEviroment) Get(name string) (SymbolInfo, bool) {
 func (env *TypeEviroment) Set(name string, tp Type, declNode ast.Node) {
 	env.types[name] = SymbolInfo{SymbolType: tp, DeclNode: declNode}
 }
+
+func (env *TypeEviroment) GetAllNames() []string {
+	namesMap := make(map[string]bool)
+	currEnv := env
+
+	for currEnv != nil {
+		for name := range currEnv.types {
+			namesMap[name] = true
+		}
+		currEnv = currEnv.Outer
+	}
+
+	res := make([]string, 0, len(namesMap))
+	for name := range namesMap {
+		res = append(res, name)
+	}
+	return res
+}

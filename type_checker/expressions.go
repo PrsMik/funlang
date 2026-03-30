@@ -12,6 +12,7 @@ func (chk *TypeChecker) checkExpression(expr ast.ExpressionNode) types.Type {
 	if fn, ok := chk.expressionCheckFns[exprTp]; ok {
 		tp := fn(expr)
 		chk.TypesInfo[expr] = tp
+		chk.ExpectedTypes[expr] = tp
 		return tp
 	}
 	chk.typeError("unknown expression type", expr)
@@ -269,6 +270,7 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 	}
 
 	chk.env = types.NewEnclosedTypeEviroment(chk.env)
+	chk.Scopes[expr] = chk.env
 
 	// спуск типов из ожидаемого типа функции на переменные в литерале
 	for i, param := range funLit.Parameters {

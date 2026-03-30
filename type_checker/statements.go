@@ -34,6 +34,7 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 	chk.curExpectedType = expectedType
 
 	chk.TypesInfo[stmt.Name] = expectedType
+	chk.ExpectedTypes[stmt] = expectedType
 
 	_, isFuncLit := stmt.Value.(*ast.FunctionLiteral)
 	if isFuncLit {
@@ -54,6 +55,8 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 		chk.env.Set(stmt.Name.Value, expectedType, stmt.Name)
 	}
 
+	chk.curExpectedType = nil
+
 	return actualType
 }
 
@@ -65,6 +68,10 @@ func (chk *TypeChecker) checkReturnStatement(stmt *ast.ReturnStatement) types.Ty
 	if stmt.Value == nil {
 		chk.typeError("missing val in return statement", stmt)
 		return &types.IllegalType{}
+	}
+
+	if chk.curExpectedType != nil {
+		chk.ExpectedTypes[stmt] = chk.curExpectedType
 	}
 
 	returnType := chk.checkExpression(stmt.Value)
@@ -82,6 +89,7 @@ func (chk *TypeChecker) checkBlockStatement(stmt *ast.BlockStatement) types.Type
 	}
 
 	chk.env = types.NewEnclosedTypeEviroment(chk.env)
+	chk.Scopes[stmt] = chk.env
 
 	var returnType types.Type = &types.IllegalType{}
 

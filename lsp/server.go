@@ -11,6 +11,7 @@ import (
 var (
 	handler        protocol.Handler
 	version        string = "0.1.0"
+	documents             = make(map[string]string)
 	documentStates        = make(map[string]*type_checker.TypeChecker)
 )
 
@@ -22,6 +23,7 @@ func StartServer() {
 		TextDocumentDidChange:  textDocumentDidChange,
 		TextDocumentHover:      textDocumentHover,
 		TextDocumentDefinition: textDocumentDefinition,
+		TextDocumentCompletion: textDocumentCompletion,
 	}
 
 	srv := server.NewServer(&handler, "funlang-lsp", false)
@@ -41,6 +43,16 @@ func initialize(context *glsp.Context, params *protocol.InitializeParams) (any, 
 	definitionProvider := true
 	capabilities.DefinitionProvider = &definitionProvider
 
+	capabilities.CompletionProvider = &protocol.CompletionOptions{
+		TriggerCharacters: []string{
+			":", // типы
+			"=", // значения
+			"(", // аргументы
+			",", // следующие аргументы
+			" ", // ключевые слова
+			".", // методы (?)
+		}}
+
 	return protocol.InitializeResult{
 		Capabilities: capabilities,
 		ServerInfo: &protocol.InitializeResultServerInfo{
@@ -55,6 +67,7 @@ func initialized(context *glsp.Context, params *protocol.InitializedParams) erro
 }
 
 func textDocumentDidOpen(context *glsp.Context, params *protocol.DidOpenTextDocumentParams) error {
+	documents[params.TextDocument.URI] = params.TextDocument.Text
 	validateDocument(context, params.TextDocument.URI, params.TextDocument.Text)
 	return nil
 }
@@ -71,6 +84,7 @@ func textDocumentDidChange(context *glsp.Context, params *protocol.DidChangeText
 		}
 
 		if newText != "" {
+			documents[params.TextDocument.URI] = newText
 			validateDocument(context, params.TextDocument.URI, newText)
 		}
 	}

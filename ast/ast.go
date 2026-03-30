@@ -27,6 +27,15 @@ type TypeNode interface {
 	typeNode()
 }
 
+type UnparsedNode struct {
+	Value Node
+}
+
+func TokenLiteral() string  { return "" }
+func String() string        { return "" }
+func Start() token.Position { return token.Position{} }
+func End() token.Position   { return token.Position{} }
+
 // корневой узел
 type Program struct {
 	Statements []StatementNode
