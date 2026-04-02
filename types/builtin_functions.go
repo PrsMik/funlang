@@ -21,21 +21,27 @@ func getMapWithBuiltins() map[string]SymbolInfo {
 				return &IllegalType{}, fmt.Errorf("len does not support type %s", argType.Signature())
 			}
 		},
+		ReturnType: &IntType{},
 	}, DeclNode: nil}
+
+	var argType Type
 	builtins["tail"] = SymbolInfo{SymbolType: &BuiltinFunc{
 		CheckFunc: func(args []Type) (Type, error) {
 			if len(args) != 1 {
 				return &IllegalType{}, fmt.Errorf("tail expects 1 argument but got %d", len(args))
 			}
 
-			switch argType := args[0].(type) {
+			switch tempArgType := args[0].(type) {
 			case *ArrayType:
-				return &IntType{}, nil
+				argType = tempArgType.ElementsType
+				return &ArrayType{ElementsType: tempArgType.ElementsType}, nil
 			default:
-				return &IllegalType{}, fmt.Errorf("tail does not support type %s", argType.Signature())
+				return &IllegalType{}, fmt.Errorf("tail does not support type %s", tempArgType.Signature())
 			}
 		},
 	}, DeclNode: nil}
+	builtins["tail"].SymbolType.(*BuiltinFunc).ReturnType = &ArrayType{ElementsType: argType}
+
 	builtins["push"] = SymbolInfo{SymbolType: &BuiltinFunc{
 		CheckFunc: func(args []Type) (Type, error) {
 			if len(args) != 2 {
@@ -52,9 +58,13 @@ func getMapWithBuiltins() map[string]SymbolInfo {
 					args[0].Signature(), args[1].Signature())
 			}
 
+			argType = args[1]
+
 			return &ArrayType{ElementsType: args[1]}, nil
 		},
 	}, DeclNode: nil}
+	builtins["push"].SymbolType.(*BuiltinFunc).ReturnType = &ArrayType{ElementsType: argType}
+
 	builtins["puts"] = SymbolInfo{SymbolType: &BuiltinFunc{
 		CheckFunc: func(args []Type) (Type, error) {
 			if len(args) != 1 {
@@ -73,6 +83,8 @@ func getMapWithBuiltins() map[string]SymbolInfo {
 
 			return &IntType{}, nil
 		},
+		ReturnType: &IntType{},
 	}, DeclNode: nil}
+
 	return builtins
 }

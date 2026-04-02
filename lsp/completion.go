@@ -1,13 +1,11 @@
 package lsp
 
 import (
-	"fmt"
 	"funlang/ast"
 	"funlang/lexer"
 	"funlang/token"
 	"funlang/type_checker"
 	"funlang/types"
-	"os"
 
 	"github.com/tliron/glsp"
 	protocol "github.com/tliron/glsp/protocol_3_16"
@@ -107,7 +105,12 @@ func getTypesCompletions() []protocol.CompletionItem {
 
 func getValueCompletions(chk *type_checker.TypeChecker, env *types.TypeEviroment,
 	hoveredNode ast.Node, hoveredType types.Type) []protocol.CompletionItem {
-	fmt.Fprintf(os.Stderr, "%v", hoveredNode)
+	// fmt.Fprintf(os.Stderr, "Node hovered %v with type %T ", hoveredNode, hoveredNode)
+	// fmt.Fprintf(os.Stderr, "Final map: ")
+
+	// for key, value := range chk.ExpectedTypes {
+	// 	fmt.Fprintf(os.Stderr, "Key: %+v, Value: %T\n", key, value)
+	// }
 
 	items := []protocol.CompletionItem{}
 	for _, name := range env.GetAllNames() {
@@ -119,15 +122,20 @@ func getValueCompletions(chk *type_checker.TypeChecker, env *types.TypeEviroment
 		if chk.ExpectedTypes[hoveredNode] == nil {
 			matches = true
 		} else {
-			matches = types.Equals(symbolInfo.SymbolType, hoveredType)
+			matches = types.Equals(symbolInfo.SymbolType, chk.ExpectedTypes[hoveredNode])
 		}
 
-		switch symbolInfo.SymbolType.(type) {
+		// fmt.Fprintf(os.Stderr, "Matches %T symb %T with type %T is %v\n ", symbolInfo.SymbolType,
+		// 	chk.ExpectedTypes[hoveredNode], hoveredNode, matches)
+
+		switch innerType := symbolInfo.SymbolType.(type) {
 		case *types.FuncType:
 			kind = protocol.CompletionItemKindFunction
+			matches = types.Equals(innerType.ReturnType, chk.ExpectedTypes[hoveredNode])
 			insertText = name + "()"
 		case *types.BuiltinFunc:
 			kind = protocol.CompletionItemKindFunction
+			matches = types.Equals(innerType.ReturnType, chk.ExpectedTypes[hoveredNode])
 			insertText = name + "()"
 		default:
 			insertText = name
@@ -141,11 +149,19 @@ func getValueCompletions(chk *type_checker.TypeChecker, env *types.TypeEviroment
 		}
 
 		if matches {
-			item.SortText = &[]string{"001_" + name}[0]
+			if *item.Kind == protocol.CompletionItemKindFunction {
+				item.SortText = &[]string{"002_" + name}[0]
+			} else {
+				item.SortText = &[]string{"001_" + name}[0]
+			}
 			detail := "(matches type) " + *item.Detail
 			item.Detail = &detail
 		} else {
-			item.SortText = &[]string{"099_" + name}[0]
+			if *item.Kind == protocol.CompletionItemKindFunction {
+				item.SortText = &[]string{"004_" + name}[0]
+			} else {
+				item.SortText = &[]string{"003_" + name}[0]
+			}
 		}
 
 		items = append(items, item)

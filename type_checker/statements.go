@@ -31,10 +31,12 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 
 	expectedType := chk.resolveType(stmt.Type)
 
+	// fmt.Fprintf(os.Stderr, "Node checked %+v with expected type %T ", stmt.Value, expectedType)
+
 	chk.curExpectedType = expectedType
 
 	chk.TypesInfo[stmt.Name] = expectedType
-	chk.ExpectedTypes[stmt] = expectedType
+	chk.ExpectedTypes[stmt.Value] = expectedType
 
 	_, isFuncLit := stmt.Value.(*ast.FunctionLiteral)
 	if isFuncLit {

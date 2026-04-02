@@ -75,7 +75,8 @@ func (bt *HashMapType) Signature() string {
 func (t *HashMapType) isPrintable() {}
 
 type BuiltinFunc struct {
-	CheckFunc func(args []Type) (Type, error)
+	CheckFunc  func(args []Type) (Type, error)
+	ReturnType Type
 }
 
 func (bt *BuiltinFunc) isType()           {}

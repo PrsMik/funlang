@@ -12,10 +12,18 @@ func (chk *TypeChecker) checkExpression(expr ast.ExpressionNode) types.Type {
 	if fn, ok := chk.expressionCheckFns[exprTp]; ok {
 		tp := fn(expr)
 		chk.TypesInfo[expr] = tp
-		chk.ExpectedTypes[expr] = tp
+		// chk.ExpectedTypes[expr] = tp
 		return tp
 	}
 	chk.typeError("unknown expression type", expr)
+	return &types.IllegalType{}
+}
+
+func (chk *TypeChecker) checkUnparsedNode(expr ast.ExpressionNode) types.Type {
+	if chk.curExpectedType != nil {
+		chk.ExpectedTypes[expr] = chk.curExpectedType
+		return chk.curExpectedType
+	}
 	return &types.IllegalType{}
 }
 

@@ -53,12 +53,13 @@ func (prs *Parser) parseLetStatement() *ast.LetStatement {
 
 	statement.Value = prs.parseExpression(LOWEST)
 	if statement.Value == nil {
-		return nil
+		// return nil
+		statement.Value = &ast.UnparsedNode{From: prs.curToken.Start, To: prs.curToken.End}
 	}
 
 	if !prs.expectPeek(token.SEMICOLON) {
 		// prs.nextToken()
-		return nil
+		// return nil
 	}
 
 	statement.SemiToken = prs.curToken
