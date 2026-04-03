@@ -1,17 +1,30 @@
 package lsp
 
 import (
+	"fmt"
 	"funlang/ast"
 	"funlang/lexer"
 	"funlang/token"
 	"funlang/type_checker"
 	"funlang/types"
+	"os"
 
 	"github.com/tliron/glsp"
 	protocol "github.com/tliron/glsp/protocol_3_16"
 )
 
 func textDocumentCompletion(context *glsp.Context, params *protocol.CompletionParams) (any, error) {
+	// defer func() {
+	// 	if r := recover(); r != nil {
+	// 		fmt.Fprintf(os.Stderr, "Recovered from panic during LSP validation: %v\n", r)
+	// 	}
+
+	// 	context.Notify(protocol.ServerTextDocumentPublishDiagnostics, protocol.PublishDiagnosticsParams{
+	// 		URI:         params.TextDocument.URI,
+	// 		Diagnostics: []protocol.Diagnostic{},
+	// 	})
+	// }()
+
 	chk, ok := documentStates[params.TextDocument.URI]
 	if !ok {
 		return nil, nil
@@ -81,7 +94,10 @@ func textDocumentCompletion(context *glsp.Context, params *protocol.CompletionPa
 		items = append(items, []protocol.CompletionItem{}...)
 
 	default:
-		res := getValueCompletions(chk, &env, hoveredNode, hoveredType)
+		var res []protocol.CompletionItem
+		if hoveredNode != nil {
+			res = getValueCompletions(chk, &env, hoveredNode, hoveredType)
+		}
 		keywords := getKeywords()
 		for _, kw := range keywords {
 			kind := protocol.CompletionItemKindKeyword
@@ -105,7 +121,7 @@ func getTypesCompletions() []protocol.CompletionItem {
 
 func getValueCompletions(chk *type_checker.TypeChecker, env *types.TypeEviroment,
 	hoveredNode ast.Node, hoveredType types.Type) []protocol.CompletionItem {
-	// fmt.Fprintf(os.Stderr, "Node hovered %v with type %T ", hoveredNode, hoveredNode)
+	fmt.Fprintf(os.Stderr, "Node hovered %v with type %T ", hoveredNode, hoveredNode)
 	// fmt.Fprintf(os.Stderr, "Final map: ")
 
 	// for key, value := range chk.ExpectedTypes {
@@ -117,6 +133,12 @@ func getValueCompletions(chk *type_checker.TypeChecker, env *types.TypeEviroment
 		symbolInfo, _ := env.Get(name)
 		kind := protocol.CompletionItemKindVariable
 		var insertText string
+
+		// fmt.Fprintf(os.Stderr, "symb %s: %T %v %v\n", name, symbolInfo.SymbolType, symbolInfo.DeclNode, symbolInfo.Depth)
+
+		if declaredLater(symbolInfo.DeclNode, hoveredNode) {
+			continue
+		}
 
 		matches := false
 		if chk.ExpectedTypes[hoveredNode] == nil {
@@ -138,6 +160,9 @@ func getValueCompletions(chk *type_checker.TypeChecker, env *types.TypeEviroment
 			matches = types.Equals(innerType.ReturnType, chk.ExpectedTypes[hoveredNode])
 			insertText = name + "()"
 		default:
+			if declaredOnSameLine(symbolInfo.DeclNode, hoveredNode) {
+				continue
+			}
 			insertText = name
 		}
 
@@ -148,21 +173,31 @@ func getValueCompletions(chk *type_checker.TypeChecker, env *types.TypeEviroment
 			InsertText: &insertText,
 		}
 
+		var typePriority string
 		if matches {
 			if *item.Kind == protocol.CompletionItemKindFunction {
-				item.SortText = &[]string{"002_" + name}[0]
+				// item.SortText = &[]string{"002_" + name}[0]
+				typePriority = "002"
 			} else {
-				item.SortText = &[]string{"001_" + name}[0]
+				// item.SortText = &[]string{"001_" + name}[0]
+				typePriority = "001"
 			}
 			detail := "(matches type) " + *item.Detail
 			item.Detail = &detail
 		} else {
 			if *item.Kind == protocol.CompletionItemKindFunction {
-				item.SortText = &[]string{"004_" + name}[0]
+				// item.SortText = &[]string{"004_" + name}[0]
+				typePriority = "004"
 			} else {
-				item.SortText = &[]string{"003_" + name}[0]
+				// item.SortText = &[]string{"003_" + name}[0]
+				typePriority = "005"
 			}
 		}
+
+		distStr := fmt.Sprintf("%03d", symbolInfo.Depth)
+		sortKey := fmt.Sprintf("%s_%s_%s", typePriority, distStr, name)
+
+		item.SortText = &sortKey
 
 		items = append(items, item)
 	}
@@ -203,4 +238,19 @@ func getPrecedingToken(text string, pos protocol.Position) token.Token {
 		lastTok = tok
 	}
 	return lastTok
+}
+
+func declaredLater(firstNode ast.Node, secondNode ast.Node) bool {
+	if firstNode.Start().Line > secondNode.End().Line ||
+		(firstNode.Start().Line == secondNode.End().Line && firstNode.Start().Column > secondNode.End().Column) {
+		return true
+	}
+	return false
+}
+
+func declaredOnSameLine(firstNode ast.Node, secondNode ast.Node) bool {
+	if firstNode.Start().Line != secondNode.Start().Line {
+		return false
+	}
+	return true
 }

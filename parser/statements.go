@@ -49,17 +49,25 @@ func (prs *Parser) parseLetStatement() *ast.LetStatement {
 		return nil
 	}
 
+	reserveCurToken := prs.curToken
+
 	prs.nextToken()
 
 	statement.Value = prs.parseExpression(LOWEST)
 	if statement.Value == nil {
 		// return nil
-		statement.Value = &ast.UnparsedNode{From: prs.curToken.Start, To: prs.curToken.End}
+		statement.Value = &ast.UnparsedNode{From: reserveCurToken.End, To: prs.curToken.Start}
 	}
 
-	if !prs.expectPeek(token.SEMICOLON) {
-		// prs.nextToken()
+	reserveCurToken = prs.curToken
+
+	if prs.peekTokenIs(token.SEMICOLON) {
 		// return nil
+		prs.nextToken()
+	} else {
+		if !prs.curTokenIs(token.SEMICOLON) {
+			prs.tokenError(prs.curToken, token.Token{Type: token.SEMICOLON}, reserveCurToken)
+		}
 	}
 
 	statement.SemiToken = prs.curToken
@@ -70,16 +78,25 @@ func (prs *Parser) parseLetStatement() *ast.LetStatement {
 func (prs *Parser) parseReturnStatement() *ast.ReturnStatement {
 	statement := &ast.ReturnStatement{Token: prs.curToken}
 
+	reserveCurToken := prs.curToken
+
 	prs.nextToken()
 
 	statement.Value = prs.parseExpression(LOWEST)
 	if statement.Value == nil {
-		return nil
+		// return nil
+		statement.Value = &ast.UnparsedNode{From: reserveCurToken.End, To: prs.curToken.Start}
 	}
 
-	if !prs.expectPeek(token.SEMICOLON) {
-		// prs.nextToken()
-		return nil
+	reserveCurToken = prs.curToken
+
+	if prs.peekTokenIs(token.SEMICOLON) {
+		// return nil
+		prs.nextToken()
+	} else {
+		if !prs.curTokenIs(token.SEMICOLON) {
+			prs.tokenError(prs.curToken, token.Token{Type: token.SEMICOLON}, reserveCurToken)
+		}
 	}
 
 	statement.SemiToken = prs.curToken

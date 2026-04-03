@@ -15,6 +15,14 @@ func (prs *Parser) integerLiteralParseError() {
 	prs.errors = append(prs.errors, err)
 }
 
+func (prs *Parser) tokenError(tknGot token.Token, tknWant token.Token, tknPos token.Token) {
+	got, _ := token.LookupString(tknGot.Type)
+	want, _ := token.LookupString(tknWant.Type)
+	msg := fmt.Sprintf("expected next token to be %s, got %s instead; with value: %s", want, got, tknGot.Literal)
+	err := ParseError{Msg: "parse error: " + msg, Token: tknPos}
+	prs.errors = append(prs.errors, err)
+}
+
 func (prs *Parser) peekError(tknType token.TokenType) {
 	want, _ := token.LookupString(tknType)
 	got, _ := token.LookupString(prs.peekToken.Type)

@@ -73,7 +73,7 @@ func (chk *TypeChecker) checkReturnStatement(stmt *ast.ReturnStatement) types.Ty
 	}
 
 	if chk.curExpectedType != nil {
-		chk.ExpectedTypes[stmt] = chk.curExpectedType
+		chk.ExpectedTypes[stmt.Value] = chk.curExpectedType
 	}
 
 	returnType := chk.checkExpression(stmt.Value)

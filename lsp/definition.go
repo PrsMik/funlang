@@ -8,6 +8,17 @@ import (
 )
 
 func textDocumentDefinition(context *glsp.Context, params *protocol.DefinitionParams) (any, error) {
+	// defer func() {
+	// 	if r := recover(); r != nil {
+	// 		fmt.Fprintf(os.Stderr, "Recovered from panic during LSP validation: %v\n", r)
+	// 	}
+
+	// 	context.Notify(protocol.ServerTextDocumentPublishDiagnostics, protocol.PublishDiagnosticsParams{
+	// 		URI:         params.TextDocument.URI,
+	// 		Diagnostics: []protocol.Diagnostic{},
+	// 	})
+	// }()
+
 	chk, ok := documentStates[params.TextDocument.URI]
 	if !ok {
 		return nil, nil

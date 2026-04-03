@@ -25,6 +25,7 @@ func (prs *Parser) parseExpression(precedence int) ast.ExpressionNode {
 		prs.noPrefixParseFnError(prs.curToken.Type)
 		return nil
 	}
+
 	leftExp = prefix()
 
 	for !prs.peekTokenIs(token.SEMICOLON) && precedence < prs.peekTokenPrecedence() {
@@ -44,10 +45,18 @@ func (prs *Parser) parseExpression(precedence int) ast.ExpressionNode {
 
 func (prs *Parser) parsePrefixExpression() ast.ExpressionNode {
 	expression := &ast.PrefixExpression{Token: prs.curToken, Operator: prs.curToken.Literal}
+	operatorEnd := prs.curToken.End
 
 	prs.nextToken()
 
 	expression.Right = prs.parseExpression(PREFIX)
+
+	if expression.Right == nil {
+		expression.Right = &ast.UnparsedNode{
+			From: operatorEnd,
+			To:   prs.curToken.Start,
+		}
+	}
 
 	return expression
 }
@@ -55,9 +64,19 @@ func (prs *Parser) parsePrefixExpression() ast.ExpressionNode {
 func (prs *Parser) parseInfixExpression(left ast.ExpressionNode) ast.ExpressionNode {
 	expression := &ast.InfixExpression{Token: prs.curToken, Operator: prs.curToken.Literal, Left: left}
 
+	operatorEnd := prs.curToken.End
 	precedence := prs.curTokenPrecedence()
+
 	prs.nextToken()
+
 	expression.Right = prs.parseExpression(precedence)
+
+	if expression.Right == nil {
+		expression.Right = &ast.UnparsedNode{
+			From: operatorEnd,
+			To:   prs.curToken.Start,
+		}
+	}
 
 	return expression
 }
@@ -71,6 +90,9 @@ func (prs *Parser) parseIfExpression() ast.ExpressionNode {
 
 	prs.nextToken()
 	expr.Condition = prs.parseExpression(LOWEST)
+	if expr.Condition == nil {
+		expr.Condition = &ast.UnparsedNode{From: prs.curToken.Start, To: prs.curToken.End}
+	}
 
 	if !prs.expectPeek(token.RPAREN) {
 		return nil

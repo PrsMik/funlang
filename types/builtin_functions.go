@@ -2,10 +2,13 @@ package types
 
 import (
 	"fmt"
+	"funlang/ast"
+	"funlang/token"
 )
 
 func getMapWithBuiltins() map[string]SymbolInfo {
 	builtins := make(map[string]SymbolInfo)
+
 	builtins["len"] = SymbolInfo{SymbolType: &BuiltinFunc{
 		CheckFunc: func(args []Type) (Type, error) {
 			if len(args) != 1 {
@@ -22,7 +25,7 @@ func getMapWithBuiltins() map[string]SymbolInfo {
 			}
 		},
 		ReturnType: &IntType{},
-	}, DeclNode: nil}
+	}, DeclNode: getFakeNode("len", "len")}
 
 	var argType Type
 	builtins["tail"] = SymbolInfo{SymbolType: &BuiltinFunc{
@@ -39,7 +42,7 @@ func getMapWithBuiltins() map[string]SymbolInfo {
 				return &IllegalType{}, fmt.Errorf("tail does not support type %s", tempArgType.Signature())
 			}
 		},
-	}, DeclNode: nil}
+	}, DeclNode: getFakeNode("tail", "tail")}
 	builtins["tail"].SymbolType.(*BuiltinFunc).ReturnType = &ArrayType{ElementsType: argType}
 
 	builtins["push"] = SymbolInfo{SymbolType: &BuiltinFunc{
@@ -62,7 +65,7 @@ func getMapWithBuiltins() map[string]SymbolInfo {
 
 			return &ArrayType{ElementsType: args[1]}, nil
 		},
-	}, DeclNode: nil}
+	}, DeclNode: getFakeNode("push", "push")}
 	builtins["push"].SymbolType.(*BuiltinFunc).ReturnType = &ArrayType{ElementsType: argType}
 
 	builtins["puts"] = SymbolInfo{SymbolType: &BuiltinFunc{
@@ -84,7 +87,14 @@ func getMapWithBuiltins() map[string]SymbolInfo {
 			return &IntType{}, nil
 		},
 		ReturnType: &IntType{},
-	}, DeclNode: nil}
+	}, DeclNode: getFakeNode("puts", "puts")}
 
 	return builtins
+}
+
+func getFakeNode(literal string, value string) ast.Node {
+	fakeToken := token.Token{Literal: literal,
+		Start: token.Position{Column: 0, Line: 0},
+		End:   token.Position{Column: 0, Line: 0}}
+	return &ast.Identifier{Token: fakeToken, Value: value}
 }

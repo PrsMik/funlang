@@ -67,6 +67,11 @@ func initialized(context *glsp.Context, params *protocol.InitializedParams) erro
 }
 
 func textDocumentDidOpen(context *glsp.Context, params *protocol.DidOpenTextDocumentParams) error {
+	// defer func() {
+	// 	if r := recover(); r != nil {
+	// 		fmt.Fprintf(os.Stderr, "PANIC in didChange: %v\nStack: %s", r, debug.Stack())
+	// 	}
+	// }()
 	documents[params.TextDocument.URI] = params.TextDocument.Text
 	validateDocument(context, params.TextDocument.URI, params.TextDocument.Text)
 	return nil
