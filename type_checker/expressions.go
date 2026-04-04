@@ -47,15 +47,30 @@ func (chk *TypeChecker) checkArrayLiteral(expr ast.ExpressionNode) types.Type {
 		return arrType
 	}
 
+	oldType := chk.curExpectedType
+	expType, ok := chk.curExpectedType.(*types.ArrayType)
+	if ok {
+		chk.curExpectedType = expType.ElementsType
+	}
+
 	firstArrLitType := chk.checkExpression(arrLit.Elements[0])
 
 	for _, param := range arrLit.Elements[1:] {
 		curParamType := chk.checkExpression(param)
 		if !types.Equals(firstArrLitType, curParamType) {
+			// if tp, ok := arrLit.Elements[index].(*ast.UnparsedNode); ok {
+
+			// }
 			chk.typeError(fmt.Sprintf("array literal has elements of different types %s & %s",
 				firstArrLitType.Signature(), curParamType.Signature()), expr)
 			return &types.IllegalType{}
 		}
+	}
+
+	chk.curExpectedType = oldType
+
+	if _, ok := arrLit.Elements[0].(*ast.UnparsedNode); len(arrLit.Elements) == 1 && ok {
+		arrLit.Elements = arrLit.Elements[1:]
 	}
 
 	arrType.ElementsType = firstArrLitType
@@ -316,8 +331,14 @@ func (chk *TypeChecker) checkCallExpression(expr ast.ExpressionNode) types.Type 
 	switch callFuncType := rawCallType.(type) {
 	case *types.FuncType:
 		if len(callExpr.Arguments) != len(callFuncType.ParamsTypes) {
-			chk.typeError(fmt.Sprintf(`wrong number of arguments for "%s"`, callExpr.Function.String()), expr)
-			return &types.IllegalType{}
+			if len(callFuncType.ParamsTypes) != 0 {
+				chk.typeError(fmt.Sprintf(`wrong number of arguments for "%s"`, callExpr.Function.String()), expr)
+				return &types.IllegalType{}
+			} else {
+				if _, ok := callExpr.Arguments[0].(*ast.UnparsedNode); ok {
+					callExpr.Arguments = callExpr.Arguments[1:]
+				}
+			}
 		}
 
 		for i, arg := range callExpr.Arguments {

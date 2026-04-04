@@ -121,7 +121,8 @@ func getTypesCompletions() []protocol.CompletionItem {
 
 func getValueCompletions(chk *type_checker.TypeChecker, env *types.TypeEviroment,
 	hoveredNode ast.Node, hoveredType types.Type) []protocol.CompletionItem {
-	fmt.Fprintf(os.Stderr, "Node hovered %v with type %T ", hoveredNode, hoveredNode)
+	fmt.Fprintf(os.Stderr, "Node hovered %v with type %T expected type: %T",
+		hoveredNode, hoveredNode, chk.ExpectedTypes[hoveredNode])
 	// fmt.Fprintf(os.Stderr, "Final map: ")
 
 	// for key, value := range chk.ExpectedTypes {
@@ -145,6 +146,7 @@ func getValueCompletions(chk *type_checker.TypeChecker, env *types.TypeEviroment
 			matches = true
 		} else {
 			matches = types.Equals(symbolInfo.SymbolType, chk.ExpectedTypes[hoveredNode])
+			fmt.Fprintf(os.Stderr, "symb %T v. %T is %+v\n", symbolInfo.SymbolType, chk.ExpectedTypes[hoveredNode], matches)
 		}
 
 		// fmt.Fprintf(os.Stderr, "Matches %T symb %T with type %T is %v\n ", symbolInfo.SymbolType,
@@ -153,12 +155,16 @@ func getValueCompletions(chk *type_checker.TypeChecker, env *types.TypeEviroment
 		switch innerType := symbolInfo.SymbolType.(type) {
 		case *types.FuncType:
 			kind = protocol.CompletionItemKindFunction
-			matches = types.Equals(innerType.ReturnType, chk.ExpectedTypes[hoveredNode])
-			insertText = name + "()"
+			if !matches {
+				matches = types.Equals(innerType.ReturnType, chk.ExpectedTypes[hoveredNode])
+				insertText = name + "()"
+			}
 		case *types.BuiltinFunc:
 			kind = protocol.CompletionItemKindFunction
-			matches = types.Equals(innerType.ReturnType, chk.ExpectedTypes[hoveredNode])
-			insertText = name + "()"
+			if !matches {
+				matches = types.Equals(innerType.ReturnType, chk.ExpectedTypes[hoveredNode])
+				insertText = name + "()"
+			}
 		default:
 			if declaredOnSameLine(symbolInfo.DeclNode, hoveredNode) {
 				continue

@@ -204,7 +204,13 @@ func (prs *Parser) parseIndexExpression(left ast.ExpressionNode) ast.ExpressionN
 
 	prs.nextToken()
 
+	reserveCurToken := prs.curToken
+
 	expression.Index = prs.parseExpression(LOWEST)
+
+	if expression.Index == nil {
+		expression.Index = &ast.UnparsedNode{From: reserveCurToken.End, To: prs.curToken.Start}
+	}
 
 	if !prs.expectPeek(token.RBRACKET) {
 		return nil
@@ -218,22 +224,46 @@ func (prs *Parser) parseExpressionList(end token.TokenType) []ast.ExpressionNode
 	list := []ast.ExpressionNode{}
 
 	if prs.peekTokenIs(end) {
+		reserveCurToken := prs.curToken
 		prs.nextToken()
+		expr := &ast.UnparsedNode{From: reserveCurToken.End, To: prs.curToken.Start}
+		list = append(list, expr)
 		return list
 	}
 
 	prs.nextToken()
-	list = append(list, prs.parseExpression(LOWEST))
 
-	for prs.peekTokenIs(token.COMMA) {
+	expr := prs.parseExpression(LOWEST)
+	list = append(list, expr)
+
+	for prs.peekTokenIs(token.COMMA) || prs.curTokenIs(token.COMMA) {
+
+		if !prs.curTokenIs(token.COMMA) && prs.peekTokenIs(token.COMMA) {
+			prs.nextToken()
+		}
+
+		// prs.nextToken()
+		reservePrevToken := prs.curToken
+
 		prs.nextToken()
-		prs.nextToken()
-		list = append(list, prs.parseExpression(LOWEST))
+		reserveCurToken := prs.curToken
+
+		expr = prs.parseExpression(LOWEST)
+		if expr == nil {
+			expr = &ast.UnparsedNode{From: reservePrevToken.End, To: reserveCurToken.Start}
+		}
+
+		list = append(list, expr)
 	}
 
-	if !prs.expectPeek(end) {
-		return nil
-	}
+	// if prs.curTokenIs(end) {
+	// 	return list
+	// }
+
+	// if !prs.expectPeek(end) {
+	// 	return nil
+	// }
+	prs.expectPeek(end)
 
 	return list
 }
