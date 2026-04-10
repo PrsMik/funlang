@@ -52,7 +52,7 @@ func (prs *Parser) parsePrefixExpression() ast.ExpressionNode {
 	expression.Right = prs.parseExpression(PREFIX)
 
 	if expression.Right == nil {
-		expression.Right = &ast.UnparsedNode{
+		expression.Right = &ast.VirtualNode{
 			From: operatorEnd,
 			To:   prs.curToken.Start,
 		}
@@ -72,7 +72,7 @@ func (prs *Parser) parseInfixExpression(left ast.ExpressionNode) ast.ExpressionN
 	expression.Right = prs.parseExpression(precedence)
 
 	if expression.Right == nil {
-		expression.Right = &ast.UnparsedNode{
+		expression.Right = &ast.VirtualNode{
 			From: operatorEnd,
 			To:   prs.curToken.Start,
 		}
@@ -88,29 +88,47 @@ func (prs *Parser) parseIfExpression() ast.ExpressionNode {
 		return nil
 	}
 
+	reserveCurToken := prs.curToken
+
 	prs.nextToken()
+
+	reserveEndToken := prs.curToken
+
 	expr.Condition = prs.parseExpression(LOWEST)
+
 	if expr.Condition == nil {
-		expr.Condition = &ast.UnparsedNode{From: prs.curToken.Start, To: prs.curToken.End}
+		expr.Condition = &ast.VirtualNode{From: reserveCurToken.End, To: reserveEndToken.Start}
 	}
 
-	if !prs.expectPeek(token.RPAREN) {
-		return nil
+	// if !prs.expectPeek(token.RPAREN) {
+	// 	return nil
+	// }
+
+	if !prs.curTokenIs(token.RPAREN) {
+		prs.expectPeek(token.RPAREN)
 	}
 
-	if !prs.expectPeek(token.LBRACE) {
-		return nil
+	// if !prs.expectPeek(token.LBRACE) {
+	// 	return nil
+	// }
+
+	if !prs.curTokenIs(token.LBRACE) {
+		prs.expectPeek(token.LBRACE)
 	}
 
 	expr.Consequence = prs.parseBlockStatement()
 
-	if !prs.expectPeek(token.ELSE) {
-		return nil
-	}
+	// if !prs.expectPeek(token.ELSE) {
+	// 	return nil
+	// }
 
-	if !prs.expectPeek(token.LBRACE) {
-		return nil
-	}
+	prs.expectPeek(token.ELSE)
+
+	// if !prs.expectPeek(token.LBRACE) {
+	// 	return nil
+	// }
+
+	prs.expectPeek(token.LBRACE)
 
 	expr.Alternative = prs.parseBlockStatement()
 
@@ -209,7 +227,7 @@ func (prs *Parser) parseIndexExpression(left ast.ExpressionNode) ast.ExpressionN
 	expression.Index = prs.parseExpression(LOWEST)
 
 	if expression.Index == nil {
-		expression.Index = &ast.UnparsedNode{From: reserveCurToken.End, To: prs.curToken.Start}
+		expression.Index = &ast.VirtualNode{From: reserveCurToken.End, To: prs.curToken.Start}
 	}
 
 	if !prs.expectPeek(token.RBRACKET) {
@@ -226,7 +244,7 @@ func (prs *Parser) parseExpressionList(end token.TokenType) []ast.ExpressionNode
 	if prs.peekTokenIs(end) {
 		reserveCurToken := prs.curToken
 		prs.nextToken()
-		expr := &ast.UnparsedNode{From: reserveCurToken.End, To: prs.curToken.Start}
+		expr := &ast.VirtualNode{From: reserveCurToken.End, To: prs.curToken.Start}
 		list = append(list, expr)
 		return list
 	}
@@ -250,7 +268,7 @@ func (prs *Parser) parseExpressionList(end token.TokenType) []ast.ExpressionNode
 
 		expr = prs.parseExpression(LOWEST)
 		if expr == nil {
-			expr = &ast.UnparsedNode{From: reservePrevToken.End, To: reserveCurToken.Start}
+			expr = &ast.VirtualNode{From: reservePrevToken.End, To: reserveCurToken.Start}
 		}
 
 		list = append(list, expr)

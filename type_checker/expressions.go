@@ -3,16 +3,19 @@ package type_checker
 import (
 	"fmt"
 	"funlang/ast"
+	"funlang/token"
 	"funlang/types"
 	"reflect"
 )
 
 func (chk *TypeChecker) checkExpression(expr ast.ExpressionNode) types.Type {
-	exprTp := reflect.TypeOf(expr)
-	if fn, ok := chk.expressionCheckFns[exprTp]; ok {
-		tp := fn(expr)
+	exprType := reflect.TypeOf(expr)
+	if chk.curExpectedType != nil {
+		chk.ExpectedTypes[expr] = chk.curExpectedType
+	}
+	if checkFun, ok := chk.expressionCheckFns[exprType]; ok {
+		tp := checkFun(expr)
 		chk.TypesInfo[expr] = tp
-		// chk.ExpectedTypes[expr] = tp
 		return tp
 	}
 	chk.typeError("unknown expression type", expr)
@@ -48,6 +51,7 @@ func (chk *TypeChecker) checkArrayLiteral(expr ast.ExpressionNode) types.Type {
 	}
 
 	oldType := chk.curExpectedType
+
 	expType, ok := chk.curExpectedType.(*types.ArrayType)
 	if ok {
 		chk.curExpectedType = expType.ElementsType
@@ -69,7 +73,7 @@ func (chk *TypeChecker) checkArrayLiteral(expr ast.ExpressionNode) types.Type {
 
 	chk.curExpectedType = oldType
 
-	if _, ok := arrLit.Elements[0].(*ast.UnparsedNode); len(arrLit.Elements) == 1 && ok {
+	if _, ok := arrLit.Elements[0].(*ast.VirtualNode); len(arrLit.Elements) == 1 && ok {
 		arrLit.Elements = arrLit.Elements[1:]
 	}
 
@@ -228,7 +232,33 @@ func (chk *TypeChecker) checkInfixExpression(expr ast.ExpressionNode) types.Type
 }
 
 func (chk *TypeChecker) checkIfExpression(expr ast.ExpressionNode) types.Type {
+	// --- РАЗМЕТКА УСЛОВИЯ ---
+	ifExpr := expr.(*ast.IfExpression)
+
+	startPos := ifExpr.Start()
+	var endPos token.Position
+
+	if ifExpr.Consequence != nil {
+		endPos = ifExpr.Consequence.Start()
+	} else {
+		endPos = ifExpr.End()
+	}
+
+	condArea := &ast.VirtualNode{
+		From: startPos,
+		To:   endPos,
+	}
+
+	chk.ExpectedTypes[condArea] = &types.BoolType{}
+
+	// --- ПРОВЕРКА ТИПА ---
+	oldType := chk.curExpectedType
+
+	chk.curExpectedType = &types.BoolType{}
+
 	condType := chk.checkExpression(expr.(*ast.IfExpression).Condition)
+
+	chk.curExpectedType = oldType
 
 	if !types.Equals(condType, &types.BoolType{}) {
 		chk.typeError(fmt.Sprintf("wrong type %s for if condition", condType.Signature()), expr)
@@ -335,7 +365,7 @@ func (chk *TypeChecker) checkCallExpression(expr ast.ExpressionNode) types.Type 
 				chk.typeError(fmt.Sprintf(`wrong number of arguments for "%s"`, callExpr.Function.String()), expr)
 				return &types.IllegalType{}
 			} else {
-				if _, ok := callExpr.Arguments[0].(*ast.UnparsedNode); ok {
+				if _, ok := callExpr.Arguments[0].(*ast.VirtualNode); ok {
 					callExpr.Arguments = callExpr.Arguments[1:]
 				}
 			}

@@ -123,11 +123,11 @@ func getValueCompletions(chk *type_checker.TypeChecker, env *types.TypeEviroment
 	hoveredNode ast.Node, hoveredType types.Type) []protocol.CompletionItem {
 	fmt.Fprintf(os.Stderr, "Node hovered %v with type %T expected type: %T",
 		hoveredNode, hoveredNode, chk.ExpectedTypes[hoveredNode])
-	// fmt.Fprintf(os.Stderr, "Final map: ")
+	fmt.Fprintf(os.Stderr, "Final map: ")
 
-	// for key, value := range chk.ExpectedTypes {
-	// 	fmt.Fprintf(os.Stderr, "Key: %+v, Value: %T\n", key, value)
-	// }
+	for key, value := range chk.ExpectedTypes {
+		fmt.Fprintf(os.Stderr, "Key: %+v, Value: %T\n", key, value)
+	}
 
 	items := []protocol.CompletionItem{}
 	for _, name := range env.GetAllNames() {

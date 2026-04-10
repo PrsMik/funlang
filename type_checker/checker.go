@@ -39,7 +39,7 @@ func New(curEnv *types.TypeEviroment) *TypeChecker {
 
 	chk.expressionCheckFns = make(map[reflect.Type]expressionCheckFn)
 
-	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.UnparsedNode](), chk.checkUnparsedNode)
+	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.VirtualNode](), chk.checkUnparsedNode)
 
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.IntegerLiteral](), chk.checkIntegerLiteral)
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.BooleanLiteral](), chk.checkBooleanLiteral)

@@ -65,18 +65,9 @@ func textDocumentHover(context *glsp.Context, params *protocol.HoverParams) (*pr
 }
 
 func isPosInside(pos protocol.Position, start token.Position, end token.Position) bool {
-	sl, sc := uint32(start.Line), uint32(start.Column)
-	el, ec := uint32(end.Line), uint32(end.Column)
-	pl, pc := pos.Line, pos.Character
+	posAbs := pos.Line*10000 + pos.Character
+	startAbs := uint32(start.Line)*10000 + uint32(start.Column)
+	endAbs := uint32(end.Line)*10000 + uint32(end.Column)
 
-	if pl < sl || pl > el {
-		return false
-	}
-	if pl == sl && pc < sc {
-		return false
-	}
-	if pl == el && pc > ec {
-		return false
-	}
-	return true
+	return posAbs >= startAbs && posAbs <= endAbs
 }

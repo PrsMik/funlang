@@ -2,16 +2,16 @@ package ast
 
 import "funlang/token"
 
-type UnparsedNode struct {
+type VirtualNode struct {
 	From token.Position
 	To   token.Position
 }
 
-func (un *UnparsedNode) expressionNode()       {}
-func (un *UnparsedNode) TokenLiteral() string  { return "" }
-func (un *UnparsedNode) String() string        { return "" }
-func (un *UnparsedNode) Start() token.Position { return un.From }
-func (un *UnparsedNode) End() token.Position   { return un.To }
+func (un *VirtualNode) expressionNode()       {}
+func (un *VirtualNode) TokenLiteral() string  { return "" }
+func (un *VirtualNode) String() string        { return "" }
+func (un *VirtualNode) Start() token.Position { return un.From }
+func (un *VirtualNode) End() token.Position   { return un.To }
 
 // литерал типа int (например "5")
 type IntegerLiteral struct {
