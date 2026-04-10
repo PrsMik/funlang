@@ -84,8 +84,12 @@ func textDocumentCompletion(context *glsp.Context, params *protocol.CompletionPa
 	lastTok := getPrecedingToken(docText, params.Position)
 
 	switch lastTok.Type {
-	case token.COLON, token.RARROW:
-		items = append(items, getTypesCompletions()...)
+	// case token.COLON, token.RARROW:
+	// 	if _, ok := hoveredNode.(*ast.HashMapLiteral); !ok {
+	// 		fmt.Fprintf(os.Stderr, "Node hovered %v with type %T. From %v To %v\n",
+	// 			hoveredNode, hoveredNode, hoveredNode.Start(), hoveredNode.End())
+	// 		items = append(items, getTypesCompletions()...)
+	// 	}
 
 	case token.ASSIGN, token.LPAREN, token.COMMA, token.PLUS, token.ASTERISK:
 		items = append(items, getValueCompletions(chk, &env, hoveredNode, hoveredType)...)
@@ -123,11 +127,11 @@ func getValueCompletions(chk *type_checker.TypeChecker, env *types.TypeEviroment
 	hoveredNode ast.Node, hoveredType types.Type) []protocol.CompletionItem {
 	fmt.Fprintf(os.Stderr, "Node hovered %v with type %T expected type: %T",
 		hoveredNode, hoveredNode, chk.ExpectedTypes[hoveredNode])
-	fmt.Fprintf(os.Stderr, "Final map: ")
+	// fmt.Fprintf(os.Stderr, "Final map: ")
 
-	for key, value := range chk.ExpectedTypes {
-		fmt.Fprintf(os.Stderr, "Key: %+v, Value: %T\n", key, value)
-	}
+	// for key, value := range chk.ExpectedTypes {
+	// 	fmt.Fprintf(os.Stderr, "Key: %+v, Value: %T\n", key, value)
+	// }
 
 	items := []protocol.CompletionItem{}
 	for _, name := range env.GetAllNames() {

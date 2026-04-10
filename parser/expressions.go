@@ -191,25 +191,55 @@ func (prs *Parser) parseHashMapLiteral() ast.ExpressionNode {
 	hashMapLiteral.Pairs = make(map[ast.ExpressionNode]ast.ExpressionNode)
 
 	for !prs.peekTokenIs(token.RBRACE) {
+		reserveCurToken := prs.curToken
+
 		prs.nextToken()
 		key := prs.parseExpression(LOWEST)
 
-		if !prs.expectPeek(token.COLON) {
-			return nil
+		// if !prs.expectPeek(token.COLON) {
+		// 	return nil
+		// }
+		prs.expectPeek(token.COLON)
+
+		if key == nil {
+			key = &ast.VirtualNode{From: reserveCurToken.Start, To: prs.curToken.Start}
 		}
 
+		reserveCurToken = prs.curToken
+
 		prs.nextToken()
+
 		value := prs.parseExpression(LOWEST)
 
-		hashMapLiteral.Pairs[key] = value
+		if value == nil {
+			hashMapLiteral.Pairs[key] = &ast.VirtualNode{From: reserveCurToken.Start, To: prs.curToken.Start}
+		} else {
+			hashMapLiteral.Pairs[key] = value
+		}
 
 		if !prs.peekTokenIs(token.RBRACE) && !prs.expectPeek(token.COMMA) {
-			return nil
+			// return nil
+			break
 		}
 	}
 
-	if !prs.expectPeek(token.RBRACE) {
-		return nil
+	// if !prs.expectPeek(token.RBRACE) {
+	// 	return nil
+	// }
+
+	if prs.curTokenIs(token.COMMA) {
+		resTailCurToken := prs.curToken
+
+		prs.expectPeek(token.RBRACE)
+
+		tailVirtualExpr := &ast.VirtualNode{From: resTailCurToken.End, To: prs.curToken.Start}
+
+		hashMapLiteral.Pairs[tailVirtualExpr] = &ast.VirtualNode{
+			From: token.Position{Line: -1, Column: -1},
+			To:   token.Position{Line: -1, Column: -1},
+		}
+	} else {
+		prs.expectPeek(token.RBRACE)
 	}
 
 	hashMapLiteral.SemiToken = prs.curToken

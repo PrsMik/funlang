@@ -22,7 +22,7 @@ func (chk *TypeChecker) checkExpression(expr ast.ExpressionNode) types.Type {
 	return &types.IllegalType{}
 }
 
-func (chk *TypeChecker) checkUnparsedNode(expr ast.ExpressionNode) types.Type {
+func (chk *TypeChecker) checkVirtualNode(expr ast.ExpressionNode) types.Type {
 	if chk.curExpectedType != nil {
 		chk.ExpectedTypes[expr] = chk.curExpectedType
 		return chk.curExpectedType
@@ -90,11 +90,24 @@ func (chk *TypeChecker) checkHashMapLiteral(expr ast.ExpressionNode) types.Type 
 		return hashMapType
 	}
 
+	oldExpectedType := chk.curExpectedType
+	var keyExpectedType types.Type = nil
+	var elemExpectedType types.Type = nil
+
+	if tp, ok := chk.curExpectedType.(*types.HashMapType); ok {
+		keyExpectedType = tp.KeyType
+		elemExpectedType = tp.ElementType
+	}
+
 	var firstHashMapKeyType types.Type = nil
 	var firstHashMapElementType types.Type = nil
 
 	for key, elem := range hashMapLiteral.Pairs {
+
+		chk.curExpectedType = keyExpectedType
 		curHashMapKeyType := chk.checkExpression(key)
+
+		chk.curExpectedType = elemExpectedType
 		curHashMapElementType := chk.checkExpression(elem)
 
 		if firstHashMapKeyType == nil && firstHashMapElementType == nil {
@@ -115,6 +128,7 @@ func (chk *TypeChecker) checkHashMapLiteral(expr ast.ExpressionNode) types.Type 
 		}
 	}
 
+	chk.curExpectedType = oldExpectedType
 	hashMapType.KeyType = firstHashMapKeyType
 	hashMapType.ElementType = firstHashMapElementType
 
