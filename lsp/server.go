@@ -11,8 +11,6 @@ import (
 )
 
 // TODO
-// 2. Символы документа
-// 3. Поиск ссылок
 // 4. Семантическая подсветка
 // 5. Переименование
 // 6. Автоформатирование (и комментарии?)
@@ -35,6 +33,7 @@ func StartServer() {
 		TextDocumentCompletion:     textDocumentCompletion,
 		TextDocumentSignatureHelp:  textDocumentSignatureHelp,
 		TextDocumentDocumentSymbol: textDocumentDocumentSymbol,
+		TextDocumentReferences:     textDocumentReferences,
 	}
 
 	srv := server.NewServer(&handler, "funlang-lsp", false)
@@ -51,6 +50,9 @@ func initialize(context *glsp.Context, params *protocol.InitializeParams) (any, 
 
 	hoverProvider := true
 	capabilities.HoverProvider = &hoverProvider
+
+	referencesProvider := true
+	capabilities.ReferencesProvider = &referencesProvider
 
 	definitionProvider := true
 	capabilities.DefinitionProvider = &definitionProvider
