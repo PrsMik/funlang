@@ -8,6 +8,7 @@ import (
 )
 
 func textDocumentDefinition(context *glsp.Context, params *protocol.DefinitionParams) (any, error) {
+	defer handlePanic(context)
 	// defer func() {
 	// 	if r := recover(); r != nil {
 	// 		fmt.Fprintf(os.Stderr, "Recovered from panic during LSP validation: %v\n", r)

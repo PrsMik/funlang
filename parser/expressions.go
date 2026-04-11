@@ -257,12 +257,14 @@ func (prs *Parser) parseIndexExpression(left ast.ExpressionNode) ast.ExpressionN
 	expression.Index = prs.parseExpression(LOWEST)
 
 	if expression.Index == nil {
-		expression.Index = &ast.VirtualNode{From: reserveCurToken.End, To: prs.curToken.Start}
+		expression.Index = &ast.VirtualNode{From: reserveCurToken.Start, To: prs.curToken.End}
 	}
 
-	if !prs.expectPeek(token.RBRACKET) {
-		return nil
-	}
+	// if !prs.expectPeek(token.RBRACKET) {
+	// 	return nil
+	// }
+	prs.expectPeek(token.RBRACKET)
+
 	expression.SemiToken = prs.curToken
 
 	return expression

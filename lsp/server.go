@@ -1,7 +1,9 @@
 package lsp
 
 import (
+	"fmt"
 	"funlang/type_checker"
+	"runtime/debug"
 
 	"github.com/tliron/glsp"
 	protocol "github.com/tliron/glsp/protocol_3_16"
@@ -28,7 +30,8 @@ func StartServer() {
 
 	srv := server.NewServer(&handler, "funlang-lsp", false)
 
-	srv.RunStdio()
+	// srv.RunStdio()
+	srv.RunTCP("127.0.0.1:5007")
 }
 
 func initialize(context *glsp.Context, params *protocol.InitializeParams) (any, error) {
@@ -94,4 +97,19 @@ func textDocumentDidChange(context *glsp.Context, params *protocol.DidChangeText
 		}
 	}
 	return nil
+}
+
+func handlePanic(context *glsp.Context) {
+	if r := recover(); r != nil {
+		stack := string(debug.Stack())
+
+		errorMessage := fmt.Sprintf("LSP Panic recovered: %v\nStack trace:\n%s", r, stack)
+
+		fmt.Println(errorMessage)
+
+		context.Notify(protocol.ServerWindowLogMessage, protocol.LogMessageParams{
+			Type:    protocol.MessageTypeError,
+			Message: errorMessage,
+		})
+	}
 }

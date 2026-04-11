@@ -137,11 +137,26 @@ func (chk *TypeChecker) checkHashMapLiteral(expr ast.ExpressionNode) types.Type 
 
 func (chk *TypeChecker) checkIndexExpression(expr ast.ExpressionNode) types.Type {
 	leftExpr := chk.checkExpression(expr.(*ast.IndexExpression).Left)
-	switch leftExpr.(type) {
+
+	switch leftType := leftExpr.(type) {
 	case *types.ArrayType:
-		return chk.checkArrayIndexExpression(expr)
+		oldType := chk.curExpectedType
+		chk.curExpectedType = &types.IntType{}
+
+		res := chk.checkArrayIndexExpression(expr)
+
+		chk.curExpectedType = oldType
+		return res
 	case *types.HashMapType:
-		return chk.checkHashMapIndexExpression(expr)
+		oldType := chk.curExpectedType
+		chk.curExpectedType = leftType.KeyType
+
+		// fmt.Fprintf(os.Stderr, "Checking map with expected %T\n", chk.curExpectedType)
+
+		res := chk.checkHashMapIndexExpression(expr)
+
+		chk.curExpectedType = oldType
+		return res
 	default:
 		chk.typeError("index expression has wrong left operand", expr)
 		return &types.IllegalType{}
@@ -196,7 +211,19 @@ func (chk *TypeChecker) checkIdentifier(expr ast.ExpressionNode) types.Type {
 
 func (chk *TypeChecker) checkPrefixExpression(expr ast.ExpressionNode) types.Type {
 	op := expr.(*ast.PrefixExpression).Operator
+
+	oldType := chk.curExpectedType
+
+	switch op {
+	case "-":
+		chk.curExpectedType = &types.IntType{}
+	case "!":
+		chk.curExpectedType = &types.BoolType{}
+	}
+
 	rightType := chk.checkExpression(expr.(*ast.PrefixExpression).Right)
+	chk.curExpectedType = oldType
+
 	switch op {
 	case "-":
 		if types.Equals(rightType, &types.IntType{}) {
@@ -213,8 +240,27 @@ func (chk *TypeChecker) checkPrefixExpression(expr ast.ExpressionNode) types.Typ
 
 func (chk *TypeChecker) checkInfixExpression(expr ast.ExpressionNode) types.Type {
 	leftType := chk.checkExpression(expr.(*ast.InfixExpression).Left)
-	rightType := chk.checkExpression(expr.(*ast.InfixExpression).Right)
 	op := expr.(*ast.InfixExpression).Operator
+
+	oldType := chk.curExpectedType
+
+	switch op {
+	case "-", "*", "/", ">", "<", ">=", "<=":
+		chk.curExpectedType = &types.IntType{}
+	case "&&", "||":
+		chk.curExpectedType = &types.BoolType{}
+	case "+":
+		if types.Equals(leftType, &types.StringType{}) {
+			chk.curExpectedType = &types.StringType{}
+		} else {
+			chk.curExpectedType = &types.IntType{}
+		}
+	case "==", "!=":
+		chk.curExpectedType = leftType
+	}
+
+	rightType := chk.checkExpression(expr.(*ast.InfixExpression).Right)
+	chk.curExpectedType = oldType
 
 	switch op {
 	case "-", "+", "*", "/":
