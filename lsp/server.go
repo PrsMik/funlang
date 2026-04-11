@@ -26,14 +26,15 @@ var (
 
 func StartServer() {
 	handler = protocol.Handler{
-		Initialize:                initialize,
-		Initialized:               initialized,
-		TextDocumentDidOpen:       textDocumentDidOpen,
-		TextDocumentDidChange:     textDocumentDidChange,
-		TextDocumentHover:         textDocumentHover,
-		TextDocumentDefinition:    textDocumentDefinition,
-		TextDocumentCompletion:    textDocumentCompletion,
-		TextDocumentSignatureHelp: textDocumentSignatureHelp,
+		Initialize:                 initialize,
+		Initialized:                initialized,
+		TextDocumentDidOpen:        textDocumentDidOpen,
+		TextDocumentDidChange:      textDocumentDidChange,
+		TextDocumentHover:          textDocumentHover,
+		TextDocumentDefinition:     textDocumentDefinition,
+		TextDocumentCompletion:     textDocumentCompletion,
+		TextDocumentSignatureHelp:  textDocumentSignatureHelp,
+		TextDocumentDocumentSymbol: textDocumentDocumentSymbol,
 	}
 
 	srv := server.NewServer(&handler, "funlang-lsp", false)
@@ -53,6 +54,9 @@ func initialize(context *glsp.Context, params *protocol.InitializeParams) (any, 
 
 	definitionProvider := true
 	capabilities.DefinitionProvider = &definitionProvider
+
+	documentSymbolProvider := true
+	capabilities.DocumentSymbolProvider = &documentSymbolProvider
 
 	capabilities.CompletionProvider = &protocol.CompletionOptions{
 		TriggerCharacters: []string{
