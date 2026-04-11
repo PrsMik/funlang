@@ -11,7 +11,6 @@ import (
 )
 
 // TODO
-// 4. Семантическая подсветка
 // 5. Переименование
 // 6. Автоформатирование (и комментарии?)
 
@@ -22,18 +21,31 @@ var (
 	documentStates        = make(map[string]*type_checker.TypeChecker)
 )
 
+var semanticTokenTypes = []string{
+	string(protocol.SemanticTokenTypeVariable),
+	string(protocol.SemanticTokenTypeFunction),
+	string(protocol.SemanticTokenTypeParameter),
+	string(protocol.SemanticTokenTypeType),
+}
+
+var semanticTokenModifiers = []string{
+	string(protocol.SemanticTokenModifierDeclaration),
+	string(protocol.SemanticTokenModifierReadonly),
+}
+
 func StartServer() {
 	handler = protocol.Handler{
-		Initialize:                 initialize,
-		Initialized:                initialized,
-		TextDocumentDidOpen:        textDocumentDidOpen,
-		TextDocumentDidChange:      textDocumentDidChange,
-		TextDocumentHover:          textDocumentHover,
-		TextDocumentDefinition:     textDocumentDefinition,
-		TextDocumentCompletion:     textDocumentCompletion,
-		TextDocumentSignatureHelp:  textDocumentSignatureHelp,
-		TextDocumentDocumentSymbol: textDocumentDocumentSymbol,
-		TextDocumentReferences:     textDocumentReferences,
+		Initialize:                     initialize,
+		Initialized:                    initialized,
+		TextDocumentDidOpen:            textDocumentDidOpen,
+		TextDocumentDidChange:          textDocumentDidChange,
+		TextDocumentHover:              textDocumentHover,
+		TextDocumentDefinition:         textDocumentDefinition,
+		TextDocumentCompletion:         textDocumentCompletion,
+		TextDocumentSignatureHelp:      textDocumentSignatureHelp,
+		TextDocumentDocumentSymbol:     textDocumentDocumentSymbol,
+		TextDocumentReferences:         textDocumentReferences,
+		TextDocumentSemanticTokensFull: textDocumentSemanticTokensFull,
 	}
 
 	srv := server.NewServer(&handler, "funlang-lsp", false)
@@ -73,6 +85,17 @@ func initialize(context *glsp.Context, params *protocol.InitializeParams) (any, 
 	capabilities.SignatureHelpProvider = &protocol.SignatureHelpOptions{
 		TriggerCharacters:   []string{"(", ",", " "},
 		RetriggerCharacters: []string{","},
+	}
+
+	fullSupport := true
+	capabilities.SemanticTokensProvider = protocol.SemanticTokensRegistrationOptions{
+		SemanticTokensOptions: protocol.SemanticTokensOptions{
+			Legend: protocol.SemanticTokensLegend{
+				TokenTypes:     semanticTokenTypes,
+				TokenModifiers: semanticTokenModifiers,
+			},
+			Full: &fullSupport,
+		},
 	}
 
 	return protocol.InitializeResult{

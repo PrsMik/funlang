@@ -391,6 +391,8 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 	for i, param := range funLiteral.Parameters {
 		parameter := types.FuncParam{Name: param.Value, Type: expectedFuncType.Params[i].Type}
 		resFuncType.Params = append(resFuncType.Params, parameter)
+
+		chk.TypesInfo[param] = expectedFuncType.Params[i].Type
 		chk.env.Set(param.Value, expectedFuncType.Params[i].Type, param)
 	}
 

@@ -8,6 +8,7 @@ import (
 )
 
 func (chk *TypeChecker) resolveType(inType ast.TypeNode) types.Type {
+	chk.TypeNodes[inType] = true
 	switch tp := inType.(type) {
 	case *ast.SimpleType:
 		switch tp.Token.Type {
