@@ -10,6 +10,13 @@ import (
 	"github.com/tliron/glsp/server"
 )
 
+// TODO
+// 2. Символы документа
+// 3. Поиск ссылок
+// 4. Семантическая подсветка
+// 5. Переименование
+// 6. Автоформатирование (и комментарии?)
+
 var (
 	handler        protocol.Handler
 	version        string = "0.1.0"
@@ -19,13 +26,14 @@ var (
 
 func StartServer() {
 	handler = protocol.Handler{
-		Initialize:             initialize,
-		Initialized:            initialized,
-		TextDocumentDidOpen:    textDocumentDidOpen,
-		TextDocumentDidChange:  textDocumentDidChange,
-		TextDocumentHover:      textDocumentHover,
-		TextDocumentDefinition: textDocumentDefinition,
-		TextDocumentCompletion: textDocumentCompletion,
+		Initialize:                initialize,
+		Initialized:               initialized,
+		TextDocumentDidOpen:       textDocumentDidOpen,
+		TextDocumentDidChange:     textDocumentDidChange,
+		TextDocumentHover:         textDocumentHover,
+		TextDocumentDefinition:    textDocumentDefinition,
+		TextDocumentCompletion:    textDocumentCompletion,
+		TextDocumentSignatureHelp: textDocumentSignatureHelp,
 	}
 
 	srv := server.NewServer(&handler, "funlang-lsp", false)
@@ -56,6 +64,11 @@ func initialize(context *glsp.Context, params *protocol.InitializeParams) (any, 
 			".", // методы (?)
 		}}
 
+	capabilities.SignatureHelpProvider = &protocol.SignatureHelpOptions{
+		TriggerCharacters:   []string{"(", ",", " "},
+		RetriggerCharacters: []string{","},
+	}
+
 	return protocol.InitializeResult{
 		Capabilities: capabilities,
 		ServerInfo: &protocol.InitializeResultServerInfo{
@@ -70,11 +83,6 @@ func initialized(context *glsp.Context, params *protocol.InitializedParams) erro
 }
 
 func textDocumentDidOpen(context *glsp.Context, params *protocol.DidOpenTextDocumentParams) error {
-	// defer func() {
-	// 	if r := recover(); r != nil {
-	// 		fmt.Fprintf(os.Stderr, "PANIC in didChange: %v\nStack: %s", r, debug.Stack())
-	// 	}
-	// }()
 	documents[params.TextDocument.URI] = params.TextDocument.Text
 	validateDocument(context, params.TextDocument.URI, params.TextDocument.Text)
 	return nil

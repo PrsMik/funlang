@@ -15,16 +15,6 @@ import (
 
 func textDocumentCompletion(context *glsp.Context, params *protocol.CompletionParams) (any, error) {
 	defer handlePanic(context)
-	// defer func() {
-	// 	if r := recover(); r != nil {
-	// 		fmt.Fprintf(os.Stderr, "Recovered from panic during LSP validation: %v\n", r)
-	// 	}
-
-	// 	context.Notify(protocol.ServerTextDocumentPublishDiagnostics, protocol.PublishDiagnosticsParams{
-	// 		URI:         params.TextDocument.URI,
-	// 		Diagnostics: []protocol.Diagnostic{},
-	// 	})
-	// }()
 
 	chk, ok := documentStates[params.TextDocument.URI]
 	if !ok {
@@ -87,6 +77,9 @@ func textDocumentCompletion(context *glsp.Context, params *protocol.CompletionPa
 	if len(tokensUpToCursor) > 0 {
 		lastTok = tokensUpToCursor[len(tokensUpToCursor)-1]
 	}
+
+	fmt.Fprintf(os.Stderr, "Node hovered %v with type %T expected type: %T\n",
+		hoveredNode, hoveredNode, chk.ExpectedTypes[hoveredNode])
 
 	if isExpectedTypeContext(tokensUpToCursor) {
 		items = append(items, getTypesCompletions()...)
@@ -161,8 +154,8 @@ func getTypesCompletions() []protocol.CompletionItem {
 
 func getValueCompletions(chk *type_checker.TypeChecker, env *types.TypeEviroment,
 	hoveredNode ast.Node, hoveredType types.Type) []protocol.CompletionItem {
-	fmt.Fprintf(os.Stderr, "Node hovered %v with type %T expected type: %T",
-		hoveredNode, hoveredNode, chk.ExpectedTypes[hoveredNode])
+	// fmt.Fprintf(os.Stderr, "Node hovered %v with type %T expected type: %T",
+	// 	hoveredNode, hoveredNode, chk.ExpectedTypes[hoveredNode])
 	// fmt.Fprintf(os.Stderr, "Final map: ")
 
 	// for key, value := range chk.ExpectedTypes {
@@ -186,7 +179,7 @@ func getValueCompletions(chk *type_checker.TypeChecker, env *types.TypeEviroment
 			matches = true
 		} else {
 			matches = types.Equals(symbolInfo.SymbolType, chk.ExpectedTypes[hoveredNode])
-			fmt.Fprintf(os.Stderr, "symb %T v. %T is %+v\n", symbolInfo.SymbolType, chk.ExpectedTypes[hoveredNode], matches)
+			// fmt.Fprintf(os.Stderr, "symb %T v. %T is %+v\n", symbolInfo.SymbolType, chk.ExpectedTypes[hoveredNode], matches)
 		}
 
 		// fmt.Fprintf(os.Stderr, "Matches %T symb %T with type %T is %v\n ", symbolInfo.SymbolType,

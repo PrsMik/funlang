@@ -82,22 +82,28 @@ type BuiltinFunc struct {
 func (bt *BuiltinFunc) isType()           {}
 func (bt *BuiltinFunc) Signature() string { return "<builtin_func>" }
 
+type FuncParam struct {
+	Name string
+	Type Type
+}
+
 type FuncType struct {
-	ParamsTypes []Type
-	ReturnType  Type
+	Params     []FuncParam
+	ReturnType Type
 }
 
 func (t *FuncType) isType() {}
 func (t *FuncType) Signature() string {
-	if len(t.ParamsTypes) == 0 {
+	if len(t.Params) == 0 {
 		return "<fn() -> " + t.ReturnType.Signature() + ">"
 	}
 
 	res := "<fn("
 
-	for idx, tp := range t.ParamsTypes {
-		res += tp.Signature()
-		if idx < len(t.ParamsTypes)-1 {
+	for idx, param := range t.Params {
+		res += param.Name + ": "
+		res += param.Type.Signature()
+		if idx < len(t.Params)-1 {
 			res += ", "
 		}
 	}
@@ -150,12 +156,12 @@ func Equals(rawLeftType, rawRightType Type) bool {
 			return false
 		}
 
-		if len(leftType.ParamsTypes) != len(rawRightType.(*FuncType).ParamsTypes) {
+		if len(leftType.Params) != len(rawRightType.(*FuncType).Params) {
 			return false
 		}
 
-		for i := range leftType.ParamsTypes {
-			if !Equals(leftType.ParamsTypes[i], rightType.ParamsTypes[i]) {
+		for i := range leftType.Params {
+			if !Equals(leftType.Params[i].Type, rightType.Params[i].Type) {
 				return false
 			}
 		}

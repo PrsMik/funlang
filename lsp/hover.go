@@ -12,16 +12,6 @@ import (
 
 func textDocumentHover(context *glsp.Context, params *protocol.HoverParams) (*protocol.Hover, error) {
 	defer handlePanic(context)
-	// defer func() {
-	// 	if r := recover(); r != nil {
-	// 		fmt.Fprintf(os.Stderr, "Recovered from panic during LSP validation: %v\n", r)
-	// 	}
-
-	// 	context.Notify(protocol.ServerTextDocumentPublishDiagnostics, protocol.PublishDiagnosticsParams{
-	// 		URI:         params.TextDocument.URI,
-	// 		Diagnostics: []protocol.Diagnostic{},
-	// 	})
-	// }()
 
 	chk, ok := documentStates[params.TextDocument.URI]
 	if !ok {

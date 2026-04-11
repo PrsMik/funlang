@@ -28,16 +28,16 @@ func (chk *TypeChecker) resolveType(inType ast.TypeNode) types.Type {
 		}
 		return &types.HashMapType{KeyType: keyType, ElementType: chk.resolveType(tp.ElementType)}
 	case *ast.FunctionType:
-		prmTypes := []types.Type{}
+		funcParams := []types.FuncParam{}
 
 		for _, prm := range tp.ParamsTypes {
-			resolvedParam := chk.resolveType(prm)
-			prmTypes = append(prmTypes, resolvedParam)
+			resolvedParamType := chk.resolveType(prm)
+			funcParams = append(funcParams, types.FuncParam{Name: "", Type: resolvedParamType})
 		}
 
 		rtrnType := chk.resolveType(tp.ReturnType)
 
-		return &types.FuncType{ParamsTypes: prmTypes, ReturnType: rtrnType}
+		return &types.FuncType{Params: funcParams, ReturnType: rtrnType}
 	}
 	chk.typeError(fmt.Sprintf("%s is not a valid type", inType.String()), inType)
 	return nil

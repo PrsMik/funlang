@@ -31,15 +31,21 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 
 	expectedType := chk.resolveType(stmt.Type)
 
-	// fmt.Fprintf(os.Stderr, "Node checked %+v with expected type %T ", stmt.Value, expectedType)
-
 	chk.curExpectedType = expectedType
 
 	chk.TypesInfo[stmt.Name] = expectedType
 	chk.ExpectedTypes[stmt.Value] = expectedType
 
-	_, isFuncLit := stmt.Value.(*ast.FunctionLiteral)
+	funcLit, isFuncLit := stmt.Value.(*ast.FunctionLiteral)
 	if isFuncLit {
+		if expFnType, ok := expectedType.(*types.FuncType); ok {
+			for i, param := range funcLit.Parameters {
+				if i < len(expFnType.Params) {
+					expFnType.Params[i].Name = param.Value
+				}
+			}
+		}
+
 		chk.env.Set(stmt.Name.Value, expectedType, stmt.Name)
 	}
 
@@ -55,6 +61,9 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 
 	if !isFuncLit {
 		chk.env.Set(stmt.Name.Value, expectedType, stmt.Name)
+	} else {
+		chk.env.Set(stmt.Name.Value, actualType, stmt.Name)
+		chk.TypesInfo[stmt.Name] = actualType
 	}
 
 	chk.curExpectedType = nil

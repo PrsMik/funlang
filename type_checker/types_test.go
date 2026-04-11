@@ -17,11 +17,20 @@ func TestTypesEquals(t *testing.T) {
 		{"1", &types.IntType{}, &types.IntType{}, true},
 		{"2", &types.IntType{}, &types.BoolType{}, false},
 		{"3", &types.IntType{}, &types.FuncType{}, false},
-		{"4", &types.FuncType{ParamsTypes: []types.Type{&types.IntType{}, &types.IntType{}},
+		{"4", &types.FuncType{Params: []types.FuncParam{
+			{Name: "", Type: &types.IntType{}},
+			{Name: "", Type: &types.IntType{}},
+		},
 			ReturnType: &types.BoolType{}}, &types.FuncType{}, false},
-		{"5", &types.FuncType{ParamsTypes: []types.Type{&types.IntType{}, &types.IntType{}},
+		{"5", &types.FuncType{Params: []types.FuncParam{
+			{Name: "", Type: &types.IntType{}},
+			{Name: "", Type: &types.IntType{}},
+		},
 			ReturnType: &types.BoolType{}},
-			&types.FuncType{ParamsTypes: []types.Type{&types.IntType{}, &types.IntType{}},
+			&types.FuncType{Params: []types.FuncParam{
+				{Name: "", Type: &types.IntType{}},
+				{Name: "", Type: &types.IntType{}},
+			},
 				ReturnType: &types.BoolType{}}, true},
 	}
 	for _, tt := range tests {
