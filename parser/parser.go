@@ -51,6 +51,8 @@ type Parser struct {
 
 	prefixParseFns map[token.TokenType]prefixParseFn
 	infixParseFns  map[token.TokenType]infixParseFn
+
+	Comments []token.Token
 }
 
 func New(lxr *lexer.Lexer) *Parser {
@@ -114,6 +116,7 @@ func (prs *Parser) ParseProgram() *ast.Program {
 		prs.nextToken()
 	}
 
+	program.Comments = prs.Comments
 	return program
 }
 

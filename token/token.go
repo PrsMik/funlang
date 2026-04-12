@@ -15,6 +15,7 @@ const (
 	ELSE
 
 	// идентификаторы и литералы
+	COMMENT
 	IDENT
 	INT
 	BOOL
@@ -30,6 +31,7 @@ const (
 	MINUS
 	ASTERISK
 	SLASH
+	COMMENT_SEPARATOR // "//"
 	// сравнение (== и !=)
 	EQUAL
 	NOT_EQUAL

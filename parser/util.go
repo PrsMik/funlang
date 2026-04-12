@@ -5,6 +5,13 @@ import "funlang/token"
 func (prs *Parser) nextToken() {
 	prs.curToken = prs.peekToken
 	prs.peekToken = prs.lxr.NextToken()
+
+	for prs.curToken.Type == token.COMMENT {
+		prs.Comments = append(prs.Comments, prs.curToken)
+
+		prs.curToken = prs.peekToken
+		prs.peekToken = prs.lxr.NextToken()
+	}
 }
 
 func (prs *Parser) curTokenIs(tknType token.TokenType) bool {

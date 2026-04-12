@@ -2,13 +2,16 @@ package lexer
 
 import (
 	"funlang/token"
+	"unicode"
+	"unicode/utf8"
 )
 
 type Lexer struct {
 	input   string
 	curPos  int
 	readPos int
-	curChar byte
+	// curChar byte
+	curChar rune
 
 	curCol  int
 	curLine int
@@ -43,7 +46,14 @@ func (lxr *Lexer) NextToken() token.Token {
 	case '*':
 		nextTok = newToken(token.ASTERISK, '*')
 	case '/':
-		nextTok = newToken(token.SLASH, '/')
+		var ok bool
+		_, ok = newTwoCharToken(lxr, token.COMMENT_SEPARATOR)
+		if !ok {
+			nextTok = newToken(token.SLASH, '/')
+		} else {
+			lxr.readChar()
+			nextTok = lxr.newCommentToken()
+		}
 	case '<':
 		var ok bool
 		nextTok, ok = newTwoCharToken(lxr, token.LESS_OR_EQUAL)
@@ -137,10 +147,15 @@ func (lxr *Lexer) NextToken() token.Token {
 }
 
 func (lxr *Lexer) readChar() {
+	var size int
 	if lxr.readPos >= len(lxr.input) {
 		lxr.curChar = 0
 	} else {
-		lxr.curChar = lxr.input[lxr.readPos]
+		// lxr.curChar = lxr.input[lxr.readPos]
+		tokenRune, tmp := utf8.DecodeRuneInString(lxr.input[lxr.readPos:])
+		size = tmp
+		lxr.curChar = tokenRune
+		// lxr.readPos += size
 	}
 
 	if lxr.curChar == '\n' {
@@ -151,21 +166,26 @@ func (lxr *Lexer) readChar() {
 	}
 
 	lxr.curPos = lxr.readPos
-	lxr.readPos++
+	lxr.readPos += size
+	// lxr.readPos++
 }
 
-func (lxr *Lexer) peekChar() byte {
+func (lxr *Lexer) peekChar() rune {
 	if lxr.readPos >= len(lxr.input) {
 		return 0
 	} else {
-		return lxr.input[lxr.readPos]
+		tknRune, _ := utf8.DecodeRuneInString(lxr.input[lxr.readPos:])
+		return tknRune
 	}
 }
 
-func newToken(tokenType token.TokenType, tokenChar byte) token.Token {
-	return token.Token{Type: tokenType, Literal: string(tokenChar)}
+func newToken(tokenType token.TokenType, tokenRune rune) token.Token {
+	return token.Token{Type: tokenType, Literal: string(tokenRune)}
 }
 
+// совершает поглощение следующего символа и проверяет является ли он
+// корректным двухсимвольным токеном, если да - возвращает его, сохраняя позицию,
+// если нет - возвращает ILLEGAL токен и false, откатывая позицию
 func newTwoCharToken(lexer *Lexer, tokenType token.TokenType) (token.Token, bool) {
 	char := lexer.curChar
 	pos := lexer.curPos
@@ -189,7 +209,7 @@ func newTwoCharToken(lexer *Lexer, tokenType token.TokenType) (token.Token, bool
 
 func (lxr *Lexer) readIdentifier() string {
 	startPos := lxr.curPos
-	for isLetter(lxr.curChar) {
+	for isLetter(lxr.curChar) || isDigit(lxr.curChar) {
 		lxr.readChar()
 	}
 	return lxr.input[startPos:lxr.curPos]
@@ -206,12 +226,51 @@ func (lxr *Lexer) readString() string {
 	return lxr.input[position:lxr.curPos]
 }
 
-func isLetter(ch byte) bool {
-	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
+func (lxr *Lexer) newCommentToken() token.Token {
+	var nextTok token.Token
+	var startPos int
+
+	lxr.skipCommentSpaces()
+
+	if lxr.curChar != '\n' && lxr.curChar != 0 {
+		startPos = lxr.curPos
+		nextTok.Type = token.COMMENT
+		nextTok.Start = token.Position{Column: lxr.curCol, Line: lxr.curLine}
+
+		for lxr.peekChar() != '\n' && lxr.peekChar() != 0 {
+			lxr.readChar()
+		}
+
+		nextTok.Literal = lxr.input[startPos : lxr.curPos+utf8.RuneLen(lxr.curChar)]
+
+		nextTok.End = token.Position{Column: lxr.curCol, Line: lxr.curLine}
+	} else {
+		startPos = lxr.curPos
+		nextTok.Type = token.COMMENT
+		nextTok.Start = token.Position{Column: lxr.curCol, Line: lxr.curLine}
+		nextTok.Literal = ""
+		nextTok.End = token.Position{Column: lxr.curCol, Line: lxr.curLine}
+	}
+
+	return nextTok
+}
+
+func isLetter(ch rune) bool {
+	return unicode.IsLetter(ch) || ch == '_'
+}
+
+func isDigit(ch rune) bool {
+	return '0' <= ch && ch <= '9'
 }
 
 func (lxr *Lexer) skipWhitespace() {
 	for lxr.curChar == ' ' || lxr.curChar == '\t' || lxr.curChar == '\n' || lxr.curChar == '\r' {
+		lxr.readChar()
+	}
+}
+
+func (lxr *Lexer) skipCommentSpaces() {
+	for lxr.curChar == ' ' || lxr.curChar == '\t' || lxr.curChar == '\r' {
 		lxr.readChar()
 	}
 }
@@ -222,8 +281,4 @@ func (lxr *Lexer) readNumber() string {
 		lxr.readChar()
 	}
 	return lxr.input[startPos:lxr.curPos]
-}
-
-func isDigit(char byte) bool {
-	return '0' <= char && char <= '9'
 }

@@ -79,7 +79,7 @@ func initialize(context *glsp.Context, params *protocol.InitializeParams) (any, 
 			"=", // значения
 			"(", // аргументы
 			",", // следующие аргументы
-			" ", // ключевые слова
+			// " ", // ключевые слова
 			".", // методы (?)
 		}}
 

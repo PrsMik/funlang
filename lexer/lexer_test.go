@@ -7,8 +7,8 @@ import (
 
 func TestLexer_NextToken(t *testing.T) {
 	input := `let five: int = 5;
-			  let ten = 10;
-			  let add = fn(x, y) {
+			  let ten = 10; //  абоба
+			  let сумм = fn(x, y) {
 				return x + y;
 				};
 				"foobar"
@@ -30,8 +30,9 @@ func TestLexer_NextToken(t *testing.T) {
 		{token.ASSIGN, "="},
 		{token.INT, "10"},
 		{token.SEMICOLON, ";"},
+		{token.COMMENT, "абоба"},
 		{token.LET, "let"},
-		{token.IDENT, "add"},
+		{token.IDENT, "сумм"},
 		{token.ASSIGN, "="},
 		{token.FN, "fn"},
 		{token.LPAREN, "("},

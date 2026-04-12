@@ -30,6 +30,7 @@ type TypeNode interface {
 // корневой узел
 type Program struct {
 	Statements []StatementNode
+	Comments   []token.Token
 }
 
 func (prg *Program) TokenLiteral() string {

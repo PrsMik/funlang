@@ -186,8 +186,9 @@ func TestASTExpressionBoundaries(t *testing.T) {
 
 func TestLetStatements(t *testing.T) {
 	input := `
-			let x: int = 5;
-			let y: int = 10;
+			let x: int = 5; // пять
+			let y: int = 10; // десять
+			// абоба
 			let foobar: bool = true;
 			`
 	lxr := lexer.New(input)
