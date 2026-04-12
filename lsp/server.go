@@ -11,7 +11,6 @@ import (
 )
 
 // TODO
-// 5. Переименование
 // 6. Автоформатирование (и комментарии?)
 
 var (
@@ -46,6 +45,7 @@ func StartServer() {
 		TextDocumentDocumentSymbol:     textDocumentDocumentSymbol,
 		TextDocumentReferences:         textDocumentReferences,
 		TextDocumentSemanticTokensFull: textDocumentSemanticTokensFull,
+		TextDocumentRename:             textDocumentRename,
 	}
 
 	srv := server.NewServer(&handler, "funlang-lsp", false)
@@ -97,6 +97,9 @@ func initialize(context *glsp.Context, params *protocol.InitializeParams) (any, 
 			Full: &fullSupport,
 		},
 	}
+
+	renameProvider := true
+	capabilities.RenameProvider = &renameProvider
 
 	return protocol.InitializeResult{
 		Capabilities: capabilities,

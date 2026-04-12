@@ -94,7 +94,7 @@ func getMapWithBuiltins() map[string]SymbolInfo {
 
 func getFakeNode(literal string, value string) ast.Node {
 	fakeToken := token.Token{Literal: literal,
-		Start: token.Position{Column: 0, Line: 0},
-		End:   token.Position{Column: 0, Line: 0}}
+		Start: token.Position{Column: -1, Line: -1},
+		End:   token.Position{Column: -1, Line: -1}}
 	return &ast.Identifier{Token: fakeToken, Value: value}
 }
