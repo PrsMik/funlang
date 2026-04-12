@@ -46,6 +46,7 @@ func StartServer() {
 		TextDocumentReferences:         textDocumentReferences,
 		TextDocumentSemanticTokensFull: textDocumentSemanticTokensFull,
 		TextDocumentRename:             textDocumentRename,
+		TextDocumentPrepareRename:      textDocumentPrepareRename,
 	}
 
 	srv := server.NewServer(&handler, "funlang-lsp", false)
@@ -98,8 +99,10 @@ func initialize(context *glsp.Context, params *protocol.InitializeParams) (any, 
 		},
 	}
 
-	renameProvider := true
-	capabilities.RenameProvider = &renameProvider
+	prepareSupport := true
+	capabilities.RenameProvider = protocol.RenameOptions{
+		PrepareProvider: &prepareSupport,
+	}
 
 	return protocol.InitializeResult{
 		Capabilities: capabilities,

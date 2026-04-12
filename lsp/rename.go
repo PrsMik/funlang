@@ -12,7 +12,7 @@ import (
 	protocol "github.com/tliron/glsp/protocol_3_16"
 )
 
-func getRenameTarget(chk *type_checker.TypeChecker, pos protocol.Position) (ast.Node, error) {
+func getRenameTarget(chk *type_checker.TypeChecker, pos protocol.Position) (ast.Node, ast.Node, error) {
 	var targetDecl ast.Node
 	var targetUsage ast.Node
 	var minLen int = 9999999
@@ -31,29 +31,48 @@ func getRenameTarget(chk *type_checker.TypeChecker, pos protocol.Position) (ast.
 	if targetDecl == nil {
 		for _, declNode := range chk.Definitions {
 			if declNode != nil && isPosInside(pos, declNode.Start(), declNode.End()) {
-				targetDecl = declNode
-				targetUsage = declNode
-				break
+				length := (declNode.End().Line-declNode.Start().Line)*1000 + (declNode.End().Column - declNode.Start().Column)
+				if length < minLen {
+					minLen = length
+					targetDecl = declNode
+					targetUsage = declNode
+				}
 			}
 		}
 	}
 
 	if targetDecl == nil {
-		return nil, fmt.Errorf("symbol not found")
+		return nil, nil, fmt.Errorf("symbol not found at this position")
 	}
 
 	if tp, ok := chk.TypesInfo[targetUsage]; ok {
 		if _, isBuiltin := tp.(*types.BuiltinFunc); isBuiltin {
-			return nil, fmt.Errorf("cannot rename builtin '%s'", targetUsage.TokenLiteral())
+			return nil, nil, fmt.Errorf("cannot rename builtin function '%s'", targetUsage.TokenLiteral())
 		}
 	}
 
 	start := targetDecl.Start()
 	if start.Line == -1 && start.Column == -1 {
-		return nil, fmt.Errorf("cannot rename system identifier")
+		return nil, nil, fmt.Errorf("cannot rename this system identifier")
 	}
 
-	return targetDecl, nil
+	return targetDecl, targetUsage, nil
+}
+
+func textDocumentPrepareRename(context *glsp.Context, params *protocol.PrepareRenameParams) (any, error) {
+	defer handlePanic(context)
+
+	chk, ok := documentStates[params.TextDocument.URI]
+	if !ok {
+		return nil, nil
+	}
+
+	_, targetUsageNode, err := getRenameTarget(chk, params.Position)
+	if err != nil {
+		return nil, err
+	}
+
+	return createLspRange(targetUsageNode.Start(), targetUsageNode.End()), nil
 }
 
 func textDocumentRename(context *glsp.Context, params *protocol.RenameParams) (*protocol.WorkspaceEdit, error) {
@@ -64,7 +83,7 @@ func textDocumentRename(context *glsp.Context, params *protocol.RenameParams) (*
 		return nil, nil
 	}
 
-	targetDeclNode, err := getRenameTarget(chk, params.Position)
+	targetDeclNode, _, err := getRenameTarget(chk, params.Position)
 	if err != nil {
 		return nil, err
 	}
