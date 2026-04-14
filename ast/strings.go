@@ -115,9 +115,11 @@ func (returnStmt *ReturnStatement) String() string {
 
 func (blockStmt *BlockStatement) String() string {
 	var out bytes.Buffer
+	out.WriteString("{\n")
 	for _, s := range blockStmt.Statements {
 		out.WriteString(s.String())
 	}
+	out.WriteString("}")
 	return out.String()
 }
 
@@ -162,7 +164,7 @@ func (ifExpr *IfExpression) String() string {
 	out.WriteString(" ")
 	out.WriteString(ifExpr.Consequence.String())
 	if ifExpr.Alternative != nil {
-		out.WriteString("else ")
+		out.WriteString(" else ")
 		out.WriteString(ifExpr.Alternative.String())
 	}
 	return out.String()

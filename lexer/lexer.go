@@ -1,6 +1,7 @@
 package lexer
 
 import (
+	"fmt"
 	"funlang/token"
 	"unicode"
 	"unicode/utf8"
@@ -108,7 +109,7 @@ func (lxr *Lexer) NextToken() token.Token {
 		}
 	case '"':
 		nextTok.Type = token.STRING
-		nextTok.Literal = lxr.readString()
+		nextTok.Literal = fmt.Sprintf("%q", lxr.readString())
 	case 0:
 		nextTok = token.Token{Type: token.EOF, Literal: ""}
 		nextTok.Start = startPos
