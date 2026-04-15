@@ -63,3 +63,4 @@ changelog:
       - '^docs:'
       - '^test:'
       - 'ci:'
+      - 'dev:'
