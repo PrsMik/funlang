@@ -10,9 +10,6 @@ import (
 	"github.com/tliron/glsp/server"
 )
 
-// TODO
-// 6. Автоформатирование (и комментарии?)
-
 var (
 	handler        protocol.Handler
 	version        string = "0.1.0"
@@ -47,6 +44,7 @@ func StartServer() {
 		TextDocumentSemanticTokensFull: textDocumentSemanticTokensFull,
 		TextDocumentRename:             textDocumentRename,
 		TextDocumentPrepareRename:      textDocumentPrepareRename,
+		TextDocumentFormatting:         textDocumentFormatting,
 	}
 
 	srv := server.NewServer(&handler, "funlang-lsp", false)
@@ -103,6 +101,9 @@ func initialize(context *glsp.Context, params *protocol.InitializeParams) (any, 
 	capabilities.RenameProvider = protocol.RenameOptions{
 		PrepareProvider: &prepareSupport,
 	}
+
+	documentFormattingProvider := true
+	capabilities.DocumentFormattingProvider = &documentFormattingProvider
 
 	return protocol.InitializeResult{
 		Capabilities: capabilities,

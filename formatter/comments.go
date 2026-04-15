@@ -59,7 +59,13 @@ func alignComments(raw string) string {
 					maxCodeLen = length
 				}
 			}
-			ind++
+
+			if ind+1 < len(lines) && (strings.Contains(lines[ind], "{") || strings.Contains(lines[ind+1], "}")) {
+				ind++
+				break
+			} else {
+				ind++
+			}
 		}
 
 		// обработка блока
@@ -86,6 +92,6 @@ func alignComments(raw string) string {
 		}
 	}
 
-	// Гарантируем, что файл заканчивается ровно одним переносом строки
+	// файл заканчивается ровно одним переносом строки
 	return strings.TrimRight(out.String(), "\n") + "\n"
 }

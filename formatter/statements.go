@@ -26,13 +26,13 @@ func (fmtr *Formatter) formatStatement(stmt ast.StatementNode) {
 	switch node := stmt.(type) {
 	case *ast.LetStatement:
 		fmtr.formatLetStatement(node)
+		fmtr.writeInlineComment(stmt)
 	case *ast.ReturnStatement:
 		fmtr.formatReturnStatement(node)
+		fmtr.writeInlineComment(stmt)
 	case *ast.BlockStatement:
 		fmtr.formatBlockStatement(node)
 	}
-
-	fmtr.writeInlineComment(stmt)
 }
 
 func (fmtr *Formatter) formatLetStatement(node *ast.LetStatement) {
@@ -92,7 +92,7 @@ func (fmtr *Formatter) formatBlockStatement(n *ast.BlockStatement) {
 func (fmtr *Formatter) writeInlineComment(stmt ast.StatementNode) {
 	if fmtr.commentIndex < len(fmtr.comments) {
 		nextComment := fmtr.comments[fmtr.commentIndex]
-		if nextComment.Start.Line == stmt.End().Line {
+		if nextComment.Start.Line == stmt.End().Line && !fmtr.hasOuterOnSameLine(stmt.End().Line) {
 			fmtr.out.WriteString("\x00")
 			fmtr.out.WriteString(FormatCommentText(nextComment))
 			fmtr.commentIndex++
