@@ -1,9 +1,0 @@
-let counter: fn(int) -> int = fn(n) {
-  return if (n == 0) {
-    return 0;
-  } else {
-    return counter(n - 1);
-  };
-};
-
-return puts(counter(1000000));

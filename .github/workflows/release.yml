@@ -22,6 +22,9 @@ jobs:
         with:
           go-version-file: 'go.mod'
 
+      - name: Install UPX
+        run: sudo apt-get install -y upx-ucl
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
         with:
