@@ -115,11 +115,11 @@ func (returnStmt *ReturnStatement) String() string {
 
 func (blockStmt *BlockStatement) String() string {
 	var out bytes.Buffer
-	out.WriteString("{\n")
+	// out.WriteString("{\n")
 	for _, s := range blockStmt.Statements {
 		out.WriteString(s.String())
 	}
-	out.WriteString("}")
+	// out.WriteString("}")
 	return out.String()
 }
 

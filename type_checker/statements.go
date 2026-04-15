@@ -33,8 +33,8 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 
 	chk.curExpectedType = expectedType
 
-	chk.TypesInfo[stmt.Name] = expectedType
-	chk.ExpectedTypes[stmt.Value] = expectedType
+	chk.recordType(stmt.Name, expectedType)
+	chk.recordExpectedType(stmt.Value, expectedType)
 
 	funcLit, isFuncLit := stmt.Value.(*ast.FunctionLiteral)
 	if isFuncLit {
@@ -63,7 +63,7 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 		chk.env.Set(stmt.Name.Value, expectedType, stmt.Name)
 	} else {
 		chk.env.Set(stmt.Name.Value, actualType, stmt.Name)
-		chk.TypesInfo[stmt.Name] = actualType
+		chk.recordType(stmt.Name, actualType)
 	}
 
 	chk.curExpectedType = nil
@@ -82,7 +82,7 @@ func (chk *TypeChecker) checkReturnStatement(stmt *ast.ReturnStatement) types.Ty
 	}
 
 	if chk.curExpectedType != nil {
-		chk.ExpectedTypes[stmt.Value] = chk.curExpectedType
+		chk.recordExpectedType(stmt.Value, chk.curExpectedType)
 	}
 
 	returnType := chk.checkExpression(stmt.Value)
@@ -100,7 +100,7 @@ func (chk *TypeChecker) checkBlockStatement(stmt *ast.BlockStatement) types.Type
 	}
 
 	chk.env = types.NewEnclosedTypeEviroment(chk.env)
-	chk.Scopes[stmt] = chk.env
+	chk.recordScope(stmt, chk.env)
 
 	var returnType types.Type = &types.IllegalType{}
 

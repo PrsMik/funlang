@@ -11,20 +11,20 @@ import (
 func (chk *TypeChecker) checkExpression(expr ast.ExpressionNode) types.Type {
 	exprType := reflect.TypeOf(expr)
 	if chk.curExpectedType != nil {
-		chk.ExpectedTypes[expr] = chk.curExpectedType
+		chk.recordExpectedType(expr, chk.curExpectedType)
 	}
 	if checkFun, ok := chk.expressionCheckFns[exprType]; ok {
 		tp := checkFun(expr)
-		chk.TypesInfo[expr] = tp
+		chk.recordType(expr, tp)
 		return tp
 	}
 	chk.typeError("unknown expression type", expr)
 	return &types.IllegalType{}
 }
 
-func (chk *TypeChecker) checkVirtualNode(expr ast.ExpressionNode) types.Type {
+func (chk *TypeChecker) checkBadExpression(expr ast.ExpressionNode) types.Type {
 	if chk.curExpectedType != nil {
-		chk.ExpectedTypes[expr] = chk.curExpectedType
+		chk.recordExpectedType(expr, chk.curExpectedType)
 		return chk.curExpectedType
 	}
 	return &types.IllegalType{}
@@ -73,7 +73,7 @@ func (chk *TypeChecker) checkArrayLiteral(expr ast.ExpressionNode) types.Type {
 
 	chk.curExpectedType = oldType
 
-	if _, ok := arrLit.Elements[0].(*ast.VirtualNode); len(arrLit.Elements) == 1 && ok {
+	if _, ok := arrLit.Elements[0].(*ast.BadExpression); len(arrLit.Elements) == 1 && ok {
 		arrLit.Elements = arrLit.Elements[1:]
 	}
 
@@ -203,7 +203,7 @@ func (chk *TypeChecker) checkIdentifier(expr ast.ExpressionNode) types.Type {
 	}
 
 	if symbolInfo.DeclNode != nil {
-		chk.Definitions[expr] = symbolInfo.DeclNode
+		chk.recordDefinition(expr, symbolInfo.DeclNode)
 	}
 
 	return symbolInfo.SymbolType
@@ -304,12 +304,12 @@ func (chk *TypeChecker) checkIfExpression(expr ast.ExpressionNode) types.Type {
 		endPos = ifExpr.End()
 	}
 
-	condArea := &ast.VirtualNode{
+	condArea := &ast.BadExpression{
 		From: startPos,
 		To:   endPos,
 	}
 
-	chk.ExpectedTypes[condArea] = &types.BoolType{}
+	chk.recordExpectedType(condArea, &types.BoolType{})
 
 	// --- ПРОВЕРКА ТИПА ---
 	oldType := chk.curExpectedType
@@ -385,14 +385,14 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 	}
 
 	chk.env = types.NewEnclosedTypeEviroment(chk.env)
-	chk.Scopes[expr] = chk.env
+	chk.recordScope(expr, chk.env)
 
 	// спуск типов из ожидаемого типа функции на переменные в литерале
 	for i, param := range funLiteral.Parameters {
 		parameter := types.FuncParam{Name: param.Value, Type: expectedFuncType.Params[i].Type}
 		resFuncType.Params = append(resFuncType.Params, parameter)
 
-		chk.TypesInfo[param] = expectedFuncType.Params[i].Type
+		chk.recordType(param, expectedFuncType.Params[i].Type)
 		chk.env.Set(param.Value, expectedFuncType.Params[i].Type, param)
 	}
 
@@ -430,7 +430,7 @@ func (chk *TypeChecker) checkCallExpression(expr ast.ExpressionNode) types.Type 
 				chk.typeError(fmt.Sprintf(`wrong number of arguments for "%s"`, callExpr.Function.String()), expr)
 				return &types.IllegalType{}
 			} else {
-				if _, ok := callExpr.Arguments[0].(*ast.VirtualNode); ok {
+				if _, ok := callExpr.Arguments[0].(*ast.BadExpression); ok {
 					callExpr.Arguments = callExpr.Arguments[1:]
 				}
 			}

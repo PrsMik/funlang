@@ -27,14 +27,14 @@ const (
 func textDocumentSemanticTokensFull(context *glsp.Context, params *protocol.SemanticTokensParams) (*protocol.SemanticTokens, error) {
 	defer handlePanic(context)
 
-	chk, ok := documentStates[params.TextDocument.URI]
+	info, ok := documentStates[params.TextDocument.URI]
 	if !ok {
 		return nil, nil
 	}
 
 	var rawTokens []semToken
 
-	for node, nodeType := range chk.TypesInfo {
+	for node, nodeType := range info.TypesInfo {
 		ident, isIdent := node.(*ast.Identifier)
 		if !isIdent {
 			continue
@@ -61,7 +61,7 @@ func textDocumentSemanticTokensFull(context *glsp.Context, params *protocol.Sema
 		})
 	}
 
-	for typeNode := range chk.TypeNodes {
+	for typeNode := range info.TypeNodes {
 		start := typeNode.Start()
 		rawTokens = append(rawTokens, semToken{
 			line:      uint32(start.Line),

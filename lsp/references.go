@@ -10,7 +10,7 @@ import (
 func textDocumentReferences(context *glsp.Context, params *protocol.ReferenceParams) ([]protocol.Location, error) {
 	defer handlePanic(context)
 
-	chk, ok := documentStates[params.TextDocument.URI]
+	info, ok := documentStates[params.TextDocument.URI]
 	if !ok {
 		return nil, nil
 	}
@@ -20,7 +20,7 @@ func textDocumentReferences(context *glsp.Context, params *protocol.ReferencePar
 	var minLen int = 9999999
 
 	// проверка что узел - исопльзование
-	for usageNode, declNode := range chk.Definitions {
+	for usageNode, declNode := range info.Definitions {
 		start := usageNode.Start()
 		end := usageNode.End()
 
@@ -35,7 +35,7 @@ func textDocumentReferences(context *glsp.Context, params *protocol.ReferencePar
 
 	// проверка что узел - объявление
 	if targetDeclNode == nil {
-		for _, declNode := range chk.Definitions {
+		for _, declNode := range info.Definitions {
 			if declNode == nil {
 				continue
 			}
@@ -66,7 +66,7 @@ func textDocumentReferences(context *glsp.Context, params *protocol.ReferencePar
 	}
 
 	// поиск использований, которые ссылаются на найденное объявление
-	for usageNode, declNode := range chk.Definitions {
+	for usageNode, declNode := range info.Definitions {
 
 		if declNode == targetDeclNode {
 			locations = append(locations, protocol.Location{

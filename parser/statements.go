@@ -56,7 +56,7 @@ func (prs *Parser) parseLetStatement() *ast.LetStatement {
 	statement.Value = prs.parseExpression(LOWEST)
 	if statement.Value == nil {
 		// return nil
-		statement.Value = &ast.VirtualNode{From: reserveCurToken.End, To: prs.curToken.Start}
+		statement.Value = &ast.BadExpression{From: reserveCurToken.End, To: prs.curToken.Start}
 	}
 
 	reserveCurToken = prs.curToken
@@ -85,7 +85,7 @@ func (prs *Parser) parseReturnStatement() *ast.ReturnStatement {
 	statement.Value = prs.parseExpression(LOWEST)
 	if statement.Value == nil {
 		// return nil
-		statement.Value = &ast.VirtualNode{From: reserveCurToken.End, To: prs.curToken.Start}
+		statement.Value = &ast.BadExpression{From: reserveCurToken.End, To: prs.curToken.Start}
 	}
 
 	reserveCurToken = prs.curToken

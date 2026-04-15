@@ -31,7 +31,7 @@ func FormatFile(program string, out io.Writer) (string, error) {
 		return "", fmt.Errorf("Parser erorrs!")
 	}
 
-	chk := type_checker.New(typeEnv)
+	chk := type_checker.New(typeEnv, nil)
 	chk.CheckProgram(prg)
 	if len(chk.Errors()) != 0 {
 		repl.PrintCheckerErrors(out, chk.Errors())
@@ -55,7 +55,7 @@ func InterpretProgram(program string, out io.Writer) {
 		return
 	}
 
-	chk := type_checker.New(typeEnv)
+	chk := type_checker.New(typeEnv, nil)
 	chk.CheckProgram(prg)
 	if len(chk.Errors()) != 0 {
 		repl.PrintCheckerErrors(out, chk.Errors())

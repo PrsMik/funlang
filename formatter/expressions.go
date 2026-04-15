@@ -176,7 +176,7 @@ type kvPair struct {
 func getSortedHashMapPairs(n *ast.HashMapLiteral) []kvPair {
 	var pairs []kvPair
 	for k, v := range n.Pairs {
-		if _, ok := k.(*ast.VirtualNode); ok {
+		if _, ok := k.(*ast.BadExpression); ok {
 			continue
 		}
 		pairs = append(pairs, kvPair{k, v})

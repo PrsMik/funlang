@@ -2,7 +2,7 @@ package lsp
 
 import (
 	"fmt"
-	"funlang/type_checker"
+	"funlang/types"
 	"runtime/debug"
 
 	"github.com/tliron/glsp"
@@ -14,7 +14,7 @@ var (
 	handler        protocol.Handler
 	version        string = "0.1.0"
 	documents             = make(map[string]string)
-	documentStates        = make(map[string]*type_checker.TypeChecker)
+	documentStates        = make(map[string]*types.Info)
 )
 
 var semanticTokenTypes = []string{

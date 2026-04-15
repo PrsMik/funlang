@@ -22,7 +22,7 @@ let veryLongVar :  string=  "hello"; // long comment
 
 
 let y:bool= true;
-let z:bool= true;
+let z:string= "true";
 `,
 			// Ожидаем:
 			// 1. Схлопывание 2 пустых строк в 1
@@ -32,7 +32,7 @@ let z:bool= true;
 let veryLongVar: string = "hello"; // long comment
 
 let y: bool = true;
-let z: bool = true;
+let z: string = "true";
 `,
 		},
 		{

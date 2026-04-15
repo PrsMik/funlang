@@ -5,7 +5,6 @@ import (
 	"funlang/ast"
 	"funlang/lexer"
 	"funlang/token"
-	"funlang/type_checker"
 	"funlang/types"
 
 	"github.com/tliron/glsp"
@@ -15,7 +14,7 @@ import (
 func textDocumentCompletion(context *glsp.Context, params *protocol.CompletionParams) (any, error) {
 	defer handlePanic(context)
 
-	chk, ok := documentStates[params.TextDocument.URI]
+	info, ok := documentStates[params.TextDocument.URI]
 	if !ok {
 		return nil, nil
 	}
@@ -23,7 +22,7 @@ func textDocumentCompletion(context *glsp.Context, params *protocol.CompletionPa
 	var closestScope *ast.BlockStatement
 	var minLen int = 999999
 
-	for node := range chk.Scopes {
+	for node := range info.Scopes {
 		block, isBlock := node.(*ast.BlockStatement)
 		if !isBlock {
 			continue
@@ -44,7 +43,7 @@ func textDocumentCompletion(context *glsp.Context, params *protocol.CompletionPa
 	var hoveredNode ast.Node
 	var hoveredType types.Type
 
-	for node, tp := range chk.ExpectedTypes {
+	for node, tp := range info.ExpectedTypes {
 		start := node.Start()
 		end := node.End()
 
@@ -59,9 +58,9 @@ func textDocumentCompletion(context *glsp.Context, params *protocol.CompletionPa
 		}
 	}
 
-	env := chk.GetEnv()
+	env := *info.GlobalScope
 	if closestScope != nil {
-		env = *chk.Scopes[closestScope]
+		env = *info.Scopes[closestScope]
 	}
 
 	docText, ok := documents[params.TextDocument.URI]
@@ -78,22 +77,27 @@ func textDocumentCompletion(context *glsp.Context, params *protocol.CompletionPa
 	}
 
 	// fmt.Fprintf(os.Stderr, "Node hovered %v with type %T expected type: %T\n",
-	// 	hoveredNode, hoveredNode, chk.ExpectedTypes[hoveredNode])
+	// 	hoveredNode, hoveredNode, info.ExpectedTypes[hoveredNode])
 
 	if isExpectedTypeContext(tokensUpToCursor) {
+		// fmt.Fprintf(os.Stderr, "Is type context\n")
 		items = append(items, getTypesCompletions()...)
 	} else {
 		switch lastTok.Type {
 		case token.ASSIGN, token.LPAREN, token.COMMA, token.PLUS, token.ASTERISK:
-			items = append(items, getValueCompletions(chk, &env, hoveredNode, hoveredType)...)
+			// fmt.Fprintf(os.Stderr, "Is assign context\n")
+			items = append(items, getValueCompletions(info, &env, hoveredNode, hoveredType)...)
 
 		case token.LET, token.INT_TYPE, token.BOOL_TYPE, token.STRING_TYPE:
+			// fmt.Fprintf(os.Stderr, "Is let context\n")
 			items = append(items, []protocol.CompletionItem{}...)
 
 		default:
+			// fmt.Fprintf(os.Stderr, "Is default context\n")
 			var res []protocol.CompletionItem
 			if hoveredNode != nil {
-				res = getValueCompletions(chk, &env, hoveredNode, hoveredType)
+				// fmt.Fprintf(os.Stderr, "Is value context\n")
+				res = getValueCompletions(info, &env, hoveredNode, hoveredType)
 			}
 			keywords := getKeywords()
 			for _, kw := range keywords {
@@ -151,13 +155,13 @@ func getTypesCompletions() []protocol.CompletionItem {
 	return items
 }
 
-func getValueCompletions(chk *type_checker.TypeChecker, env *types.TypeEviroment,
+func getValueCompletions(info *types.Info, env *types.TypeEviroment,
 	hoveredNode ast.Node, hoveredType types.Type) []protocol.CompletionItem {
 	// fmt.Fprintf(os.Stderr, "Node hovered %v with type %T expected type: %T",
-	// 	hoveredNode, hoveredNode, chk.ExpectedTypes[hoveredNode])
+	// 	hoveredNode, hoveredNode, info.ExpectedTypes[hoveredNode])
 	// fmt.Fprintf(os.Stderr, "Final map: ")
 
-	// for key, value := range chk.ExpectedTypes {
+	// for key, value := range info.ExpectedTypes {
 	// 	fmt.Fprintf(os.Stderr, "Key: %+v, Value: %T\n", key, value)
 	// }
 
@@ -174,10 +178,10 @@ func getValueCompletions(chk *type_checker.TypeChecker, env *types.TypeEviroment
 		}
 
 		matches := false
-		if chk.ExpectedTypes[hoveredNode] == nil {
+		if info.ExpectedTypes[hoveredNode] == nil {
 			matches = true
 		} else {
-			matches = types.Equals(symbolInfo.SymbolType, chk.ExpectedTypes[hoveredNode])
+			matches = types.Equals(symbolInfo.SymbolType, info.ExpectedTypes[hoveredNode])
 			// fmt.Fprintf(os.Stderr, "symb %T v. %T is %+v\n", symbolInfo.SymbolType, chk.ExpectedTypes[hoveredNode], matches)
 		}
 
@@ -188,13 +192,13 @@ func getValueCompletions(chk *type_checker.TypeChecker, env *types.TypeEviroment
 		case *types.FuncType:
 			kind = protocol.CompletionItemKindFunction
 			if !matches {
-				matches = types.Equals(innerType.ReturnType, chk.ExpectedTypes[hoveredNode])
+				matches = types.Equals(innerType.ReturnType, info.ExpectedTypes[hoveredNode])
 				insertText = name + "($1)"
 			}
 		case *types.BuiltinFunc:
 			kind = protocol.CompletionItemKindFunction
 			if !matches {
-				matches = types.Equals(innerType.ReturnType, chk.ExpectedTypes[hoveredNode])
+				matches = types.Equals(innerType.ReturnType, info.ExpectedTypes[hoveredNode])
 				insertText = name + "($1)"
 			}
 		default:

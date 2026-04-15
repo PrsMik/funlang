@@ -412,7 +412,7 @@ func testEval(t *testing.T, input string) object.Object {
 	program := p.ParseProgram()
 	checkParserErrors(t, p)
 	type_env := types.NewTypeEviroment()
-	chk := type_checker.New(type_env)
+	chk := type_checker.New(type_env, nil)
 	chk.CheckProgram(program)
 	checkCheckerErrors(t, chk)
 

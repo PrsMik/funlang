@@ -5,19 +5,18 @@ import (
 	"funlang/ast"
 	"funlang/lexer"
 	"funlang/token"
-	"funlang/type_checker"
 	"funlang/types"
 
 	"github.com/tliron/glsp"
 	protocol "github.com/tliron/glsp/protocol_3_16"
 )
 
-func getRenameTarget(chk *type_checker.TypeChecker, pos protocol.Position) (ast.Node, ast.Node, error) {
+func getRenameTarget(info *types.Info, pos protocol.Position) (ast.Node, ast.Node, error) {
 	var targetDecl ast.Node
 	var targetUsage ast.Node
 	var minLen int = 9999999
 
-	for usageNode, declNode := range chk.Definitions {
+	for usageNode, declNode := range info.Definitions {
 		if isPosInside(pos, usageNode.Start(), usageNode.End()) {
 			length := (usageNode.End().Line-usageNode.Start().Line)*1000 + (usageNode.End().Column - usageNode.Start().Column)
 			if length < minLen {
@@ -29,7 +28,7 @@ func getRenameTarget(chk *type_checker.TypeChecker, pos protocol.Position) (ast.
 	}
 
 	if targetDecl == nil {
-		for _, declNode := range chk.Definitions {
+		for _, declNode := range info.Definitions {
 			if declNode != nil && isPosInside(pos, declNode.Start(), declNode.End()) {
 				length := (declNode.End().Line-declNode.Start().Line)*1000 + (declNode.End().Column - declNode.Start().Column)
 				if length < minLen {
@@ -45,7 +44,7 @@ func getRenameTarget(chk *type_checker.TypeChecker, pos protocol.Position) (ast.
 		return nil, nil, fmt.Errorf("symbol not found at this position")
 	}
 
-	if tp, ok := chk.TypesInfo[targetUsage]; ok {
+	if tp, ok := info.TypesInfo[targetUsage]; ok {
 		if _, isBuiltin := tp.(*types.BuiltinFunc); isBuiltin {
 			return nil, nil, fmt.Errorf("cannot rename builtin function '%s'", targetUsage.TokenLiteral())
 		}
@@ -62,12 +61,12 @@ func getRenameTarget(chk *type_checker.TypeChecker, pos protocol.Position) (ast.
 func textDocumentPrepareRename(context *glsp.Context, params *protocol.PrepareRenameParams) (any, error) {
 	defer handlePanic(context)
 
-	chk, ok := documentStates[params.TextDocument.URI]
+	info, ok := documentStates[params.TextDocument.URI]
 	if !ok {
 		return nil, nil
 	}
 
-	_, targetUsageNode, err := getRenameTarget(chk, params.Position)
+	_, targetUsageNode, err := getRenameTarget(info, params.Position)
 	if err != nil {
 		return nil, err
 	}
@@ -78,12 +77,12 @@ func textDocumentPrepareRename(context *glsp.Context, params *protocol.PrepareRe
 func textDocumentRename(context *glsp.Context, params *protocol.RenameParams) (*protocol.WorkspaceEdit, error) {
 	defer handlePanic(context)
 
-	chk, ok := documentStates[params.TextDocument.URI]
+	info, ok := documentStates[params.TextDocument.URI]
 	if !ok {
 		return nil, nil
 	}
 
-	targetDeclNode, _, err := getRenameTarget(chk, params.Position)
+	targetDeclNode, _, err := getRenameTarget(info, params.Position)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +107,7 @@ func textDocumentRename(context *glsp.Context, params *protocol.RenameParams) (*
 
 	addEdit(targetDeclNode)
 
-	for usageNode, declNode := range chk.Definitions {
+	for usageNode, declNode := range info.Definitions {
 		if declNode == targetDeclNode {
 			addEdit(usageNode)
 		}

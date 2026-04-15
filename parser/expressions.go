@@ -52,7 +52,7 @@ func (prs *Parser) parsePrefixExpression() ast.ExpressionNode {
 	expression.Right = prs.parseExpression(PREFIX)
 
 	if expression.Right == nil {
-		expression.Right = &ast.VirtualNode{
+		expression.Right = &ast.BadExpression{
 			From: operatorEnd,
 			To:   prs.curToken.Start,
 		}
@@ -72,7 +72,7 @@ func (prs *Parser) parseInfixExpression(left ast.ExpressionNode) ast.ExpressionN
 	expression.Right = prs.parseExpression(precedence)
 
 	if expression.Right == nil {
-		expression.Right = &ast.VirtualNode{
+		expression.Right = &ast.BadExpression{
 			From: operatorEnd,
 			To:   prs.curToken.Start,
 		}
@@ -97,7 +97,7 @@ func (prs *Parser) parseIfExpression() ast.ExpressionNode {
 	expr.Condition = prs.parseExpression(LOWEST)
 
 	if expr.Condition == nil {
-		expr.Condition = &ast.VirtualNode{From: reserveCurToken.End, To: reserveEndToken.Start}
+		expr.Condition = &ast.BadExpression{From: reserveCurToken.End, To: reserveEndToken.Start}
 	}
 
 	// if !prs.expectPeek(token.RPAREN) {
@@ -172,7 +172,7 @@ func (prs *Parser) parseIntegerLiteral() ast.ExpressionNode {
 }
 
 func (prs *Parser) parseStringLiteral() ast.ExpressionNode {
-	return &ast.StringLiteral{Token: prs.curToken, Value: prs.curToken.Literal}
+	return &ast.StringLiteral{Token: prs.curToken, Value: prs.curToken.Literal[1 : len(prs.curToken.Literal)-1]}
 }
 
 func (prs *Parser) parseBoolean() ast.ExpressionNode {
@@ -202,7 +202,7 @@ func (prs *Parser) parseHashMapLiteral() ast.ExpressionNode {
 		prs.expectPeek(token.COLON)
 
 		if key == nil {
-			key = &ast.VirtualNode{From: reserveCurToken.Start, To: prs.curToken.Start}
+			key = &ast.BadExpression{From: reserveCurToken.Start, To: prs.curToken.Start}
 		}
 
 		reserveCurToken = prs.curToken
@@ -212,7 +212,7 @@ func (prs *Parser) parseHashMapLiteral() ast.ExpressionNode {
 		value := prs.parseExpression(LOWEST)
 
 		if value == nil {
-			hashMapLiteral.Pairs[key] = &ast.VirtualNode{From: reserveCurToken.Start, To: prs.curToken.Start}
+			hashMapLiteral.Pairs[key] = &ast.BadExpression{From: reserveCurToken.Start, To: prs.curToken.Start}
 		} else {
 			hashMapLiteral.Pairs[key] = value
 		}
@@ -232,9 +232,9 @@ func (prs *Parser) parseHashMapLiteral() ast.ExpressionNode {
 
 		prs.expectPeek(token.RBRACE)
 
-		tailVirtualExpr := &ast.VirtualNode{From: resTailCurToken.End, To: prs.curToken.Start}
+		tailVirtualExpr := &ast.BadExpression{From: resTailCurToken.End, To: prs.curToken.Start}
 
-		hashMapLiteral.Pairs[tailVirtualExpr] = &ast.VirtualNode{
+		hashMapLiteral.Pairs[tailVirtualExpr] = &ast.BadExpression{
 			From: token.Position{Line: -1, Column: -1},
 			To:   token.Position{Line: -1, Column: -1},
 		}
@@ -257,7 +257,7 @@ func (prs *Parser) parseIndexExpression(left ast.ExpressionNode) ast.ExpressionN
 	expression.Index = prs.parseExpression(LOWEST)
 
 	if expression.Index == nil {
-		expression.Index = &ast.VirtualNode{From: reserveCurToken.Start, To: prs.curToken.End}
+		expression.Index = &ast.BadExpression{From: reserveCurToken.Start, To: prs.curToken.End}
 	}
 
 	// if !prs.expectPeek(token.RBRACKET) {
@@ -276,7 +276,7 @@ func (prs *Parser) parseExpressionList(end token.TokenType) []ast.ExpressionNode
 	if prs.peekTokenIs(end) {
 		reserveCurToken := prs.curToken
 		prs.nextToken()
-		expr := &ast.VirtualNode{From: reserveCurToken.End, To: prs.curToken.Start}
+		expr := &ast.BadExpression{From: reserveCurToken.End, To: prs.curToken.Start}
 		list = append(list, expr)
 		return list
 	}
@@ -300,7 +300,7 @@ func (prs *Parser) parseExpressionList(end token.TokenType) []ast.ExpressionNode
 
 		expr = prs.parseExpression(LOWEST)
 		if expr == nil {
-			expr = &ast.VirtualNode{From: reservePrevToken.End, To: reserveCurToken.Start}
+			expr = &ast.BadExpression{From: reservePrevToken.End, To: reserveCurToken.Start}
 		}
 
 		list = append(list, expr)

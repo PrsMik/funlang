@@ -38,7 +38,7 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		chk := type_checker.New(typeEnv)
+		chk := type_checker.New(typeEnv, nil)
 		chk.CheckProgram(prg)
 		if len(chk.Errors()) != 0 {
 			PrintCheckerErrors(out, chk.Errors())

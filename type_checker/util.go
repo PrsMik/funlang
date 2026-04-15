@@ -7,8 +7,38 @@ import (
 	"funlang/types"
 )
 
+func (chk *TypeChecker) recordType(node ast.Node, tp types.Type) {
+	if chk.Info != nil && node != nil {
+		chk.Info.TypesInfo[node] = tp
+	}
+}
+
+func (chk *TypeChecker) recordTypeNode(node ast.Node, bl bool) {
+	if chk.Info != nil && node != nil {
+		chk.Info.TypeNodes[node] = bl
+	}
+}
+
+func (chk *TypeChecker) recordDefinition(usage ast.Node, decl ast.Node) {
+	if chk.Info != nil && usage != nil && decl != nil {
+		chk.Info.Definitions[usage] = decl
+	}
+}
+
+func (chk *TypeChecker) recordScope(node ast.Node, env *types.TypeEviroment) {
+	if chk.Info != nil && node != nil {
+		chk.Info.Scopes[node] = env
+	}
+}
+
+func (chk *TypeChecker) recordExpectedType(node ast.Node, tp types.Type) {
+	if chk.Info != nil && node != nil && tp != nil {
+		chk.Info.ExpectedTypes[node] = tp
+	}
+}
+
 func (chk *TypeChecker) resolveType(inType ast.TypeNode) types.Type {
-	chk.TypeNodes[inType] = true
+	chk.recordTypeNode(inType, true)
 	switch tp := inType.(type) {
 	case *ast.SimpleType:
 		switch tp.Token.Type {

@@ -23,25 +23,15 @@ type TypeChecker struct {
 	curExpectedType    types.Type
 	errors             []TypeError
 
-	// для сервера
-	TypesInfo     map[ast.Node]types.Type
-	TypeNodes     map[ast.Node]bool
-	Definitions   map[ast.Node]ast.Node // лучше хранить по самому идентификатору, но так проще перебирать в сервере
-	Scopes        map[ast.Node]*types.TypeEviroment
-	ExpectedTypes map[ast.Node]types.Type
+	Info *types.Info
 }
 
-func New(curEnv *types.TypeEviroment) *TypeChecker {
-	chk := &TypeChecker{env: curEnv,
-		TypesInfo:     make(map[ast.Node]types.Type),
-		TypeNodes:     make(map[ast.Node]bool),
-		Definitions:   make(map[ast.Node]ast.Node),
-		Scopes:        make(map[ast.Node]*types.TypeEviroment),
-		ExpectedTypes: make(map[ast.Node]types.Type)}
+func New(curEnv *types.TypeEviroment, info *types.Info) *TypeChecker {
+	chk := &TypeChecker{env: curEnv, Info: info}
 
 	chk.expressionCheckFns = make(map[reflect.Type]expressionCheckFn)
 
-	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.VirtualNode](), chk.checkVirtualNode)
+	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.BadExpression](), chk.checkBadExpression)
 
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.IntegerLiteral](), chk.checkIntegerLiteral)
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.BooleanLiteral](), chk.checkBooleanLiteral)

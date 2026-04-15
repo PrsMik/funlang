@@ -71,7 +71,7 @@ func TestCheckLetStatement(t *testing.T) {
 
 		env := types.NewTypeEviroment()
 
-		chk := New(env)
+		chk := New(env, nil)
 		chk.CheckProgram(prg)
 		if len(chk.errors) != 0 && tt.want != false {
 			checkCheckerErrors(t, chk)
@@ -103,7 +103,7 @@ func TestCheckReturnSatement(t *testing.T) {
 
 		env := types.NewTypeEviroment()
 
-		chk := New(env)
+		chk := New(env, nil)
 		chk.CheckProgram(prg)
 		if len(chk.errors) != 0 && tt.want != false {
 			checkCheckerErrors(t, chk)
@@ -138,7 +138,7 @@ func TestCheckIdentifier(t *testing.T) {
 
 		env := types.NewTypeEviroment()
 
-		chk := New(env)
+		chk := New(env, nil)
 		chk.CheckProgram(prg)
 		if len(chk.errors) != 0 && tt.want != false {
 			checkCheckerErrors(t, chk)
@@ -172,7 +172,7 @@ func TestCheckFunctionLiteral(t *testing.T) {
 
 		env := types.NewTypeEviroment()
 
-		chk := New(env)
+		chk := New(env, nil)
 		chk.CheckProgram(prg)
 		if len(chk.errors) != 0 && tt.want != false {
 			checkCheckerErrors(t, chk)
@@ -200,7 +200,7 @@ func TestCheckCallExpression(t *testing.T) {
 
 		env := types.NewTypeEviroment()
 
-		chk := New(env)
+		chk := New(env, nil)
 		chk.CheckProgram(prg)
 		if len(chk.errors) != 0 && tt.want != false {
 			checkCheckerErrors(t, chk)

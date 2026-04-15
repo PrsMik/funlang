@@ -13,7 +13,7 @@ import (
 func textDocumentHover(context *glsp.Context, params *protocol.HoverParams) (*protocol.Hover, error) {
 	defer handlePanic(context)
 
-	chk, ok := documentStates[params.TextDocument.URI]
+	info, ok := documentStates[params.TextDocument.URI]
 	if !ok {
 		return nil, nil
 	}
@@ -24,7 +24,7 @@ func textDocumentHover(context *glsp.Context, params *protocol.HoverParams) (*pr
 	var hoveredType types.Type
 	var minLen int = 9999999
 
-	for node, tp := range chk.TypesInfo {
+	for node, tp := range info.TypesInfo {
 		start := node.Start()
 		end := node.End()
 

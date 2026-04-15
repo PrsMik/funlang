@@ -425,9 +425,9 @@ func TestParsingHashLiteralsStringKeys(t *testing.T) {
 		t.Errorf("hash.Pairs has wrong length. got=%d", len(hash.Pairs))
 	}
 	expected := map[string]int{
-		"one":   1,
-		"two":   2,
-		"three": 3,
+		"\"one\"":   1,
+		"\"two\"":   2,
+		"\"three\"": 3,
 	}
 	for key, value := range hash.Pairs {
 		literal, ok := key.(*ast.StringLiteral)
@@ -479,13 +479,13 @@ func TestParsingHashLiteralsWithExpressions(t *testing.T) {
 	}
 
 	tests := map[string]func(ast.ExpressionNode){
-		"one": func(e ast.ExpressionNode) {
+		"\"one\"": func(e ast.ExpressionNode) {
 			testInfixExpression(t, e, 0, "+", 1)
 		},
-		"two": func(e ast.ExpressionNode) {
+		"\"two\"": func(e ast.ExpressionNode) {
 			testInfixExpression(t, e, 10, "-", 8)
 		},
-		"three": func(e ast.ExpressionNode) {
+		"\"three\"": func(e ast.ExpressionNode) {
 			testInfixExpression(t, e, 15, "/", 5)
 		},
 	}

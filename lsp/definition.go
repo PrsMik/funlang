@@ -20,7 +20,7 @@ func textDocumentDefinition(context *glsp.Context, params *protocol.DefinitionPa
 	// 	})
 	// }()
 
-	chk, ok := documentStates[params.TextDocument.URI]
+	info, ok := documentStates[params.TextDocument.URI]
 	if !ok {
 		return nil, nil
 	}
@@ -30,7 +30,7 @@ func textDocumentDefinition(context *glsp.Context, params *protocol.DefinitionPa
 	var clickedNode ast.Node
 	var minLen int = 9999999
 
-	for node := range chk.Definitions {
+	for node := range info.Definitions {
 		start := node.Start()
 		end := node.End()
 
@@ -44,7 +44,7 @@ func textDocumentDefinition(context *glsp.Context, params *protocol.DefinitionPa
 	}
 
 	if clickedNode != nil {
-		declNode := chk.Definitions[clickedNode]
+		declNode := info.Definitions[clickedNode]
 		if declNode != nil {
 			return []protocol.Location{
 				{

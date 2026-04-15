@@ -14,7 +14,7 @@ import (
 func textDocumentSignatureHelp(context *glsp.Context, params *protocol.SignatureHelpParams) (*protocol.SignatureHelp, error) {
 	defer handlePanic(context)
 
-	chk, ok := documentStates[params.TextDocument.URI]
+	info, ok := documentStates[params.TextDocument.URI]
 	if !ok {
 		return nil, nil
 	}
@@ -24,7 +24,7 @@ func textDocumentSignatureHelp(context *glsp.Context, params *protocol.Signature
 	var targetCall *ast.CallExpression
 	var minLen int = 9999999
 
-	for node := range chk.TypesInfo {
+	for node := range info.TypesInfo {
 		callExpr, isCall := node.(*ast.CallExpression)
 		if !isCall {
 			continue
@@ -49,10 +49,10 @@ func textDocumentSignatureHelp(context *glsp.Context, params *protocol.Signature
 		return nil, nil
 	}
 
-	funcType, ok := chk.TypesInfo[targetCall.Function]
+	funcType, ok := info.TypesInfo[targetCall.Function]
 	fmt.Fprintf(os.Stderr, "Final map: ")
 
-	for key, value := range chk.TypesInfo {
+	for key, value := range info.TypesInfo {
 		fmt.Printf("Key: %+v, Value: %T\n", key, value)
 	}
 
