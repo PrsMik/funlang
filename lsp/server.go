@@ -3,6 +3,7 @@ package lsp
 import (
 	"fmt"
 	"funlang/types"
+	"os"
 	"runtime/debug"
 
 	"github.com/tliron/glsp"
@@ -152,7 +153,7 @@ func handlePanic(context *glsp.Context) {
 
 		errorMessage := fmt.Sprintf("LSP Panic recovered: %v\nStack trace:\n%s", r, stack)
 
-		fmt.Println(errorMessage)
+		fmt.Fprintf(os.Stderr, "%s", errorMessage)
 
 		context.Notify(protocol.ServerWindowLogMessage, protocol.LogMessageParams{
 			Type:    protocol.MessageTypeError,
