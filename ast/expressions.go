@@ -139,7 +139,12 @@ type IfExpression struct {
 func (ifExpr *IfExpression) expressionNode()       {}
 func (ifExpr *IfExpression) TokenLiteral() string  { return ifExpr.Token.Literal }
 func (ifExpr *IfExpression) Start() token.Position { return ifExpr.Token.Start }
-func (ifExpr *IfExpression) End() token.Position   { return ifExpr.Alternative.End() }
+func (ifExpr *IfExpression) End() token.Position {
+	if ifExpr.Alternative != nil {
+		return ifExpr.Alternative.End()
+	}
+	return ifExpr.Consequence.End()
+}
 
 type IndexExpression struct {
 	Token     token.Token

@@ -40,5 +40,16 @@ func (prg *Program) TokenLiteral() string {
 	return ""
 }
 
-func (prg *Program) Start() token.Position { return prg.Statements[0].Start() }
-func (prg *Program) End() token.Position   { return prg.Statements[len(prg.Statements)-1].End() }
+func (prg *Program) Start() token.Position {
+	if len(prg.Statements) > 0 {
+		return prg.Statements[0].Start()
+	}
+	return token.Position{Line: 0, Column: 0}
+}
+
+func (prg *Program) End() token.Position {
+	if len(prg.Statements) > 0 {
+		return prg.Statements[len(prg.Statements)-1].End()
+	}
+	return token.Position{Line: 0, Column: 0}
+}
