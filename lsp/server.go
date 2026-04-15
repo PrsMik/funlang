@@ -29,7 +29,7 @@ var semanticTokenModifiers = []string{
 	string(protocol.SemanticTokenModifierReadonly),
 }
 
-func StartServer() {
+func StartServer(runTCP bool) {
 	handler = protocol.Handler{
 		Initialize:                     initialize,
 		Initialized:                    initialized,
@@ -49,8 +49,11 @@ func StartServer() {
 
 	srv := server.NewServer(&handler, "funlang-lsp", false)
 
-	// srv.RunStdio()
-	srv.RunTCP("127.0.0.1:5007")
+	if runTCP {
+		srv.RunTCP("127.0.0.1:5007")
+	} else {
+		srv.RunStdio()
+	}
 }
 
 func initialize(context *glsp.Context, params *protocol.InitializeParams) (any, error) {

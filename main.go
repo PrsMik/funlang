@@ -91,6 +91,8 @@ func main() {
 		runCmd.PrintDefaults()
 	}
 
+	lspMode := lspCmd.String("mode", "tcp", "Mode to run lsp. Can be \"tcp\" or \"stdio\"")
+
 	lspCmd.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: fun lsp\n This will start a LSP server on 127.0.0.1:5007\n")
 		lspCmd.PrintDefaults()
@@ -118,7 +120,11 @@ func main() {
 			InterpretProgram(string(file), os.Stdout)
 		case "lsp":
 			lspCmd.Parse(os.Args[2:])
-			lsp.StartServer()
+			mode := true
+			if *lspMode == "stdio" {
+				mode = false
+			}
+			lsp.StartServer(mode)
 			return
 		case "fmt":
 			fmtCmd.Parse(os.Args[2:])

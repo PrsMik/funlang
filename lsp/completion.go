@@ -7,7 +7,6 @@ import (
 	"funlang/token"
 	"funlang/type_checker"
 	"funlang/types"
-	"os"
 
 	"github.com/tliron/glsp"
 	protocol "github.com/tliron/glsp/protocol_3_16"
@@ -78,8 +77,8 @@ func textDocumentCompletion(context *glsp.Context, params *protocol.CompletionPa
 		lastTok = tokensUpToCursor[len(tokensUpToCursor)-1]
 	}
 
-	fmt.Fprintf(os.Stderr, "Node hovered %v with type %T expected type: %T\n",
-		hoveredNode, hoveredNode, chk.ExpectedTypes[hoveredNode])
+	// fmt.Fprintf(os.Stderr, "Node hovered %v with type %T expected type: %T\n",
+	// 	hoveredNode, hoveredNode, chk.ExpectedTypes[hoveredNode])
 
 	if isExpectedTypeContext(tokensUpToCursor) {
 		items = append(items, getTypesCompletions()...)
