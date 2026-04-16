@@ -27,7 +27,7 @@ func textDocumentFormatting(context *glsp.Context, params *protocol.DocumentForm
 	}
 
 	var out bytes.Buffer
-	fmtr := formatter.New(out)
+	fmtr := formatter.New(&out)
 	formattedText := fmtr.FormatProgram(program)
 
 	lineCount := uint32(0)

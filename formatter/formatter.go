@@ -7,7 +7,7 @@ import (
 )
 
 type Formatter struct {
-	out            bytes.Buffer
+	out            *bytes.Buffer
 	indentLevel    int
 	comments       []token.Token
 	commentIndex   int
@@ -15,7 +15,7 @@ type Formatter struct {
 	activeEndLines []int
 }
 
-func New(out bytes.Buffer) *Formatter {
+func New(out *bytes.Buffer) *Formatter {
 	return &Formatter{out: out, indentLevel: 0, comments: make([]token.Token, 0), commentIndex: 0, prevEndLine: -1}
 }
 

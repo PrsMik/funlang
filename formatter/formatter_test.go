@@ -147,7 +147,7 @@ let z: int = 0;
 			lxr := lexer.New(tt.input)
 			prs := parser.New(lxr)
 			prog := prs.ParseProgram()
-			fmtr := New(out)
+			fmtr := New(&out)
 
 			if len(prs.Errors()) != 0 {
 				t.Fatalf("Parser encountered errors: %v", prs.Errors())

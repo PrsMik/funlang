@@ -38,7 +38,7 @@ func FormatFile(program string, out io.Writer) (string, error) {
 		return "", fmt.Errorf("Parser erorrs!")
 	}
 
-	fmtr := formatter.New(newFileText)
+	fmtr := formatter.New(&newFileText)
 	return fmtr.FormatProgram(prg), nil
 }
 
