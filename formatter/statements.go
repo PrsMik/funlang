@@ -61,32 +61,42 @@ func (fmtr *Formatter) formatReturnStatement(node *ast.ReturnStatement) {
 	fmtr.prevEndLine = node.SemiToken.End.Line
 }
 
-func (fmtr *Formatter) formatBlockStatement(n *ast.BlockStatement) {
+func (fmtr *Formatter) formatBlockStatement(node *ast.BlockStatement) {
 	fmtr.out.WriteString("{")
-	fmtr.prevEndLine = n.Token.End.Line
+	fmtr.prevEndLine = node.Token.End.Line
 
-	if len(n.Statements) > 0 {
+	if len(node.Statements) > 0 {
 		fmtr.indentLevel++
-		for _, s := range n.Statements {
+		for _, s := range node.Statements {
 			fmtr.formatStatement(s)
 		}
 		fmtr.indentLevel--
 
-		fmtr.printTrailingComments(n.End().Line)
+		// fmtr.printTrailingComments(node.End().Line)
 
-		delta := n.End().Line - fmtr.prevEndLine
-		if delta > 1 {
-			fmtr.out.WriteString("\n\n")
-		} else {
-			fmtr.out.WriteString("\n")
-		}
-		fmtr.writeIndent()
+		// delta := node.End().Line - fmtr.prevEndLine
+		// if delta > 1 {
+		// 	fmtr.out.WriteString("\n\n")
+		// } else {
+		// 	fmtr.out.WriteString("\n")
+		// }
+		// fmtr.writeIndent()
 	} else {
-		fmtr.printTrailingComments(n.End().Line)
+		// fmtr.printTrailingComments(node.End().Line)
 	}
 
+	fmtr.printTrailingComments(node.End().Line)
+
+	delta := node.End().Line - fmtr.prevEndLine
+	if delta > 1 {
+		fmtr.out.WriteString("\n\n")
+	} else {
+		fmtr.out.WriteString("\n")
+	}
+	fmtr.writeIndent()
+
 	fmtr.out.WriteString("}")
-	fmtr.prevEndLine = n.End().Line
+	fmtr.prevEndLine = node.End().Line
 }
 
 func (fmtr *Formatter) writeInlineComment(stmt ast.StatementNode) {
