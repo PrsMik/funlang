@@ -1,4 +1,4 @@
-package ast
+package ast_test
 
 import "funlang/token"
 

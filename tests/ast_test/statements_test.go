@@ -1,6 +1,7 @@
-package ast
+package ast_test
 
 import (
+	"funlang/ast"
 	"funlang/token"
 	"testing"
 )
@@ -8,7 +9,7 @@ import (
 func TestStatements(t *testing.T) {
 	tests := []struct {
 		name                 string
-		node                 StatementNode
+		node                 ast.StatementNode
 		expectedTokenLiteral string
 		expectedString       string
 		expectedStart        token.Position
@@ -16,11 +17,11 @@ func TestStatements(t *testing.T) {
 	}{
 		{
 			name: "LetStatement (with value)",
-			node: &LetStatement{
+			node: &ast.LetStatement{
 				Token:     createToken(token.LET, "let", 1, 1),
-				Name:      &Identifier{Value: "x"},
-				Type:      &SimpleType{Value: "int"},
-				Value:     &IntegerLiteral{Token: createToken(token.INT, "5", 1, 13), Value: 5},
+				Name:      &ast.Identifier{Value: "x"},
+				Type:      &ast.SimpleType{Value: "int"},
+				Value:     &ast.IntegerLiteral{Token: createToken(token.INT, "5", 1, 13), Value: 5},
 				SemiToken: createToken(token.SEMICOLON, ";", 1, 14),
 			},
 			expectedTokenLiteral: "let",
@@ -30,10 +31,10 @@ func TestStatements(t *testing.T) {
 		},
 		{
 			name: "LetStatement (without value)",
-			node: &LetStatement{
+			node: &ast.LetStatement{
 				Token:     createToken(token.LET, "let", 1, 1),
-				Name:      &Identifier{Value: "x"},
-				Type:      &SimpleType{Value: "int"},
+				Name:      &ast.Identifier{Value: "x"},
+				Type:      &ast.SimpleType{Value: "int"},
 				Value:     nil,
 				SemiToken: createToken(token.SEMICOLON, ";", 1, 10),
 			},
@@ -44,9 +45,9 @@ func TestStatements(t *testing.T) {
 		},
 		{
 			name: "ReturnStatement (with value)",
-			node: &ReturnStatement{
+			node: &ast.ReturnStatement{
 				Token:     createToken(token.RETURN, "return", 1, 1),
-				Value:     &IntegerLiteral{Token: createToken(token.INT, "5", 1, 8), Value: 5},
+				Value:     &ast.IntegerLiteral{Token: createToken(token.INT, "5", 1, 8), Value: 5},
 				SemiToken: createToken(token.SEMICOLON, ";", 1, 9),
 			},
 			expectedTokenLiteral: "return",
@@ -56,7 +57,7 @@ func TestStatements(t *testing.T) {
 		},
 		{
 			name: "ReturnStatement (without value)",
-			node: &ReturnStatement{
+			node: &ast.ReturnStatement{
 				Token:     createToken(token.RETURN, "return", 1, 1),
 				Value:     nil,
 				SemiToken: createToken(token.SEMICOLON, ";", 1, 7),
@@ -68,10 +69,10 @@ func TestStatements(t *testing.T) {
 		},
 		{
 			name: "BlockStatement",
-			node: &BlockStatement{
+			node: &ast.BlockStatement{
 				Token: createToken(token.LBRACE, "{", 1, 1),
-				Statements: []StatementNode{
-					&ReturnStatement{
+				Statements: []ast.StatementNode{
+					&ast.ReturnStatement{
 						Token: createToken(token.RETURN, "return", 1, 3),
 					},
 				},
@@ -86,7 +87,7 @@ func TestStatements(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.node.statementNode()
+			// tt.node.statementNode()
 
 			if got := tt.node.TokenLiteral(); got != tt.expectedTokenLiteral {
 				t.Errorf("TokenLiteral() wrong. expected=%q, got=%q", tt.expectedTokenLiteral, got)

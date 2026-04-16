@@ -1,6 +1,7 @@
-package ast
+package ast_test
 
 import (
+	"funlang/ast"
 	"funlang/token"
 	"testing"
 )
@@ -8,7 +9,7 @@ import (
 func TestTypes(t *testing.T) {
 	tests := []struct {
 		name                 string
-		node                 TypeNode
+		node                 ast.TypeNode
 		expectedTokenLiteral string
 		expectedString       string
 		expectedStart        token.Position
@@ -16,7 +17,7 @@ func TestTypes(t *testing.T) {
 	}{
 		{
 			name: "SimpleType",
-			node: &SimpleType{
+			node: &ast.SimpleType{
 				Token: createToken(token.INT_TYPE, "int", 1, 1),
 				Value: "int",
 			},
@@ -27,9 +28,9 @@ func TestTypes(t *testing.T) {
 		},
 		{
 			name: "ArrayType",
-			node: &ArrayType{
+			node: &ast.ArrayType{
 				Token: createToken(token.LBRACKET, "[", 1, 1),
-				ElementsType: &SimpleType{
+				ElementsType: &ast.SimpleType{
 					Token: createToken(token.INT_TYPE, "int", 1, 2),
 					Value: "int",
 				},
@@ -41,10 +42,10 @@ func TestTypes(t *testing.T) {
 		},
 		{
 			name: "HashMapType",
-			node: &HashMapType{
+			node: &ast.HashMapType{
 				Token:   createToken(token.LBRACE, "{", 1, 1),
-				KeyType: &SimpleType{Value: "string"},
-				ElementType: &SimpleType{
+				KeyType: &ast.SimpleType{Value: "string"},
+				ElementType: &ast.SimpleType{
 					Token: createToken(token.INT_TYPE, "int", 1, 10),
 					Value: "int",
 				},
@@ -56,13 +57,13 @@ func TestTypes(t *testing.T) {
 		},
 		{
 			name: "FunctionType (with params and return)",
-			node: &FunctionType{
+			node: &ast.FunctionType{
 				Token: createToken(token.FN, "fn", 1, 1),
-				ParamsTypes: []TypeNode{
-					&SimpleType{Value: "int"},
-					&SimpleType{Value: "string"},
+				ParamsTypes: []ast.TypeNode{
+					&ast.SimpleType{Value: "int"},
+					&ast.SimpleType{Value: "string"},
 				},
-				ReturnType: &SimpleType{
+				ReturnType: &ast.SimpleType{
 					Token: createToken(token.BOOL_TYPE, "bool", 1, 25),
 					Value: "bool",
 				},
@@ -75,7 +76,7 @@ func TestTypes(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.node.typeNode()
+			// tt.node.typeNode()
 
 			if got := tt.node.TokenLiteral(); got != tt.expectedTokenLiteral {
 				t.Errorf("TokenLiteral() wrong. expected=%q, got=%q", tt.expectedTokenLiteral, got)

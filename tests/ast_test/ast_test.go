@@ -1,22 +1,23 @@
-package ast
+package ast_test
 
 import (
+	"funlang/ast"
 	"funlang/token"
 	"testing"
 )
 
 func TestProgram(t *testing.T) {
-	mockStatement := &LetStatement{
+	mockStatement := &ast.LetStatement{
 		Token: createToken(token.LET, "let", 1, 1),
-		Name: &Identifier{
+		Name: &ast.Identifier{
 			Token: createToken(token.IDENT, "myVar", 1, 5),
 			Value: "myVar",
 		},
-		Type: &SimpleType{
+		Type: &ast.SimpleType{
 			Token: createToken(token.INT_TYPE, "int", 1, 12),
 			Value: "int",
 		},
-		Value: &Identifier{
+		Value: &ast.Identifier{
 			Token: createToken(token.IDENT, "anotherVar", 1, 18),
 			Value: "anotherVar",
 		},
@@ -25,22 +26,22 @@ func TestProgram(t *testing.T) {
 
 	tests := []struct {
 		name                 string
-		program              *Program
+		program              *ast.Program
 		expectedString       string
 		expectedTokenLiteral string
 	}{
 		{
 			name: "Non-empty program",
-			program: &Program{
-				Statements: []StatementNode{mockStatement},
+			program: &ast.Program{
+				Statements: []ast.StatementNode{mockStatement},
 			},
 			expectedString:       "let myVar: int = anotherVar;",
 			expectedTokenLiteral: "let",
 		},
 		{
 			name: "Empty program",
-			program: &Program{
-				Statements: []StatementNode{},
+			program: &ast.Program{
+				Statements: []ast.StatementNode{},
 			},
 			expectedString:       "",
 			expectedTokenLiteral: "",
