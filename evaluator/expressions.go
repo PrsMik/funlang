@@ -32,7 +32,9 @@ func evalArrayIndexExpression(array, index object.Object) object.Object {
 	idx := index.(*object.Integer).Value
 	max := len(arrayObject.Elements) - 1
 	if idx < 0 || idx > max {
-		return NULL
+		// return NULL
+		return newError("runtime error: array index %d is out of bounds (max is %d)",
+			idx, len(arrayObject.Elements)-1)
 	}
 	return arrayObject.Elements[idx]
 }
@@ -115,7 +117,13 @@ func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 	return &object.Integer{Value: -value}
 }
 
-func evalInfixExpression(operator string, left, right object.Object) object.Object {
+func evalInfixExpression(operator string, left, right object.Object) (res object.Object) {
+	defer func() {
+		if r := recover(); r != nil {
+			res = newError("%s", r)
+		}
+	}()
+
 	switch operator {
 	case "-", "*", "/":
 		leftVal := left.(*object.Integer).Value
