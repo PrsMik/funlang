@@ -10,7 +10,7 @@ func TestCommentCollection(t *testing.T) {
 	input := `
 let x: int = 5; // comment 1
 // comment 2
-return x; // comment 3
+return x; //                       comment 3
 `
 	l := lexer.New(input)
 	p := parser.New(l)
@@ -18,9 +18,9 @@ return x; // comment 3
 	checkParserErrors(t, p)
 
 	expectedComments := []string{
-		" comment 1",
-		" comment 2",
-		" comment 3",
+		"comment 1",
+		"comment 2",
+		"comment 3",
 	}
 
 	if len(program.Comments) != len(expectedComments) {
