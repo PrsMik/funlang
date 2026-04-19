@@ -56,7 +56,7 @@ func getMapWithBuiltins() map[string]SymbolInfo {
 				return &IllegalType{}, fmt.Errorf("push does not support type %s", args[0].Signature())
 			}
 
-			if !Equals(firstArg.ElementsType, args[1]) {
+			if !Equals(firstArg.ElementsType, args[1]) && firstArg.ElementsType != nil {
 				return &IllegalType{}, fmt.Errorf("push cannot be performed on %s with 2nd arg as %s",
 					args[0].Signature(), args[1].Signature())
 			}
