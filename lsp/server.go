@@ -30,7 +30,7 @@ var semanticTokenModifiers = []string{
 	string(protocol.SemanticTokenModifierReadonly),
 }
 
-func StartServer(runTCP bool) {
+func StartServer(runTCP bool, port string) {
 	handler = protocol.Handler{
 		Initialize:                     initialize,
 		Initialized:                    initialized,
@@ -51,7 +51,8 @@ func StartServer(runTCP bool) {
 	srv := server.NewServer(&handler, "funlang-lsp", false)
 
 	if runTCP {
-		srv.RunTCP("127.0.0.1:5007")
+		// srv.RunTCP("127.0.0.1:5007")
+		srv.RunTCP(port)
 	} else {
 		srv.RunStdio()
 	}
