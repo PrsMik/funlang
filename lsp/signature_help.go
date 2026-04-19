@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"funlang/ast"
 	"funlang/types"
-	"os"
 	"strings"
 
 	"github.com/tliron/glsp"
@@ -50,11 +49,6 @@ func textDocumentSignatureHelp(context *glsp.Context, params *protocol.Signature
 	}
 
 	funcType, ok := info.TypesInfo[targetCall.Function]
-	fmt.Fprintf(os.Stderr, "Final map: ")
-
-	for key, value := range info.TypesInfo {
-		fmt.Printf("Key: %+v, Value: %T\n", key, value)
-	}
 
 	if !ok {
 		return nil, nil
