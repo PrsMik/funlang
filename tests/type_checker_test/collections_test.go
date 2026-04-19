@@ -15,8 +15,8 @@ func TestArrays(t *testing.T) {
 func TestHashMaps(t *testing.T) {
 	tests := []TestCase{
 		{"Valid int map", `let x: {string : int} = {"a": 1, "b": 2};`, ""},
-		{"Mismatch map keys", `let x: {string : int} = {"a": 1, true: 2};`, "type error: map literal has keys of different types <bool> & <string>"},
-		{"Mismatch map values", `let x: {string : int} = {"a": 1, "b": true};`, "type error: map literal has elements of different types <int> & <bool>"},
+		{"Mismatch map keys", `let x: {string : int} = {"a": 1, true: 2};`, "type error: map literal has keys of different types"},
+		{"Mismatch map values", `let x: {string : int} = {"a": 1, "b": true};`, "type error: map literal has elements of different types"},
 		{"Invalid map key type", `let x: {[int] : int} = {};`, "type error: cannot use type <[<int>]> for hash map key"},
 	}
 	runTypeCheckerTests(t, tests)
