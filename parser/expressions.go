@@ -342,9 +342,9 @@ func (prs *Parser) parseFunctionLiteral() ast.ExpressionNode {
 	return fnLiteral
 }
 
-func (prs *Parser) parseFunctionParameters() ([]*ast.Identifier, []ast.TypeNode) {
+func (prs *Parser) parseFunctionParameters() ([]*ast.Identifier, []ast.ExpressionNode) {
 	literals := []*ast.Identifier{}
-	paramTypes := []ast.TypeNode{}
+	paramTypes := []ast.ExpressionNode{}
 
 	if prs.peekTokenIs(token.RPAREN) {
 		prs.nextToken()

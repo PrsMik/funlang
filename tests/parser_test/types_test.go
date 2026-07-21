@@ -11,12 +11,12 @@ func TestTypeParsing(t *testing.T) {
 	tests := []struct {
 		name  string
 		input string
-		check func(*testing.T, ast.TypeNode)
+		check func(*testing.T, ast.ExpressionNode)
 	}{
 		{
 			name:  "Simple Type Int",
 			input: "let x: int = 1;",
-			check: func(t *testing.T, node ast.TypeNode) {
+			check: func(t *testing.T, node ast.ExpressionNode) {
 				st, ok := node.(*ast.SimpleType)
 				if !ok {
 					t.Fatalf("expected *ast.SimpleType, got %T", node)
@@ -29,7 +29,7 @@ func TestTypeParsing(t *testing.T) {
 		{
 			name:  "Array Type",
 			input: "let x: [string] =[];",
-			check: func(t *testing.T, node ast.TypeNode) {
+			check: func(t *testing.T, node ast.ExpressionNode) {
 				at, ok := node.(*ast.ArrayType)
 				if !ok {
 					t.Fatalf("expected *ast.ArrayType, got %T", node)
@@ -43,7 +43,7 @@ func TestTypeParsing(t *testing.T) {
 		{
 			name:  "HashMap Type",
 			input: "let x: {string: int} = {};",
-			check: func(t *testing.T, node ast.TypeNode) {
+			check: func(t *testing.T, node ast.ExpressionNode) {
 				ht, ok := node.(*ast.HashMapType)
 				if !ok {
 					t.Fatalf("expected *ast.HashMapType, got %T", node)
@@ -58,7 +58,7 @@ func TestTypeParsing(t *testing.T) {
 		{
 			name:  "Function Type",
 			input: "let x: fn(int, bool) -> string = fn(a, b) { return \"\"; };",
-			check: func(t *testing.T, node ast.TypeNode) {
+			check: func(t *testing.T, node ast.ExpressionNode) {
 				ft, ok := node.(*ast.FunctionType)
 				if !ok {
 					t.Fatalf("expected *ast.FunctionType, got %T", node)

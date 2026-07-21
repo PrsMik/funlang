@@ -9,7 +9,7 @@ import (
 func TestTypes(t *testing.T) {
 	tests := []struct {
 		name                 string
-		node                 ast.TypeNode
+		node                 ast.ExpressionNode
 		expectedTokenLiteral string
 		expectedString       string
 		expectedStart        token.Position
@@ -59,7 +59,7 @@ func TestTypes(t *testing.T) {
 			name: "FunctionType (with params and return)",
 			node: &ast.FunctionType{
 				Token: createToken(token.FN, "fn", 1, 1),
-				ParamsTypes: []ast.TypeNode{
+				ParamsTypes: []ast.ExpressionNode{
 					&ast.SimpleType{Value: "int"},
 					&ast.SimpleType{Value: "string"},
 				},

@@ -2,7 +2,7 @@ package formatter
 
 import "funlang/ast"
 
-func (fmtr *Formatter) formatType(node ast.TypeNode) {
+func (fmtr *Formatter) formatType(node ast.ExpressionNode) {
 	if node == nil {
 		return
 	}

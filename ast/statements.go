@@ -7,7 +7,7 @@ import "funlang/token"
 type LetStatement struct {
 	Token     token.Token
 	Name      *Identifier
-	Type      TypeNode
+	Type      ExpressionNode
 	Value     ExpressionNode
 	SemiToken token.Token
 }

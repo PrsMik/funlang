@@ -5,7 +5,7 @@ import (
 	"funlang/token"
 )
 
-func (prs *Parser) parseType() ast.TypeNode {
+func (prs *Parser) parseType() ast.ExpressionNode {
 	switch prs.curToken.Type {
 	case token.INT_TYPE, token.BOOL_TYPE, token.STRING_TYPE:
 		return &ast.SimpleType{Token: prs.curToken, Value: prs.curToken.Literal}
@@ -21,7 +21,7 @@ func (prs *Parser) parseType() ast.TypeNode {
 	}
 }
 
-func (prs *Parser) parseArrayType() ast.TypeNode {
+func (prs *Parser) parseArrayType() ast.ExpressionNode {
 	arrType := &ast.ArrayType{Token: prs.curToken}
 
 	if prs.peekTokenIs(token.RBRACKET) {
@@ -39,7 +39,7 @@ func (prs *Parser) parseArrayType() ast.TypeNode {
 	return arrType
 }
 
-func (prs *Parser) parseHashMapType() ast.TypeNode {
+func (prs *Parser) parseHashMapType() ast.ExpressionNode {
 	hashMapType := &ast.HashMapType{Token: prs.curToken}
 
 	if prs.peekTokenIs(token.RBRACE) {
@@ -65,7 +65,7 @@ func (prs *Parser) parseHashMapType() ast.TypeNode {
 	return hashMapType
 }
 
-func (prs *Parser) parseFunctionType() ast.TypeNode {
+func (prs *Parser) parseFunctionType() ast.ExpressionNode {
 	fnType := &ast.FunctionType{Token: prs.curToken}
 
 	if !prs.expectPeek(token.LPAREN) {
@@ -88,8 +88,8 @@ func (prs *Parser) parseFunctionType() ast.TypeNode {
 	return fnType
 }
 
-func (prs *Parser) parseFunctionParamsTypes() []ast.TypeNode {
-	params := []ast.TypeNode{}
+func (prs *Parser) parseFunctionParamsTypes() []ast.ExpressionNode {
+	params := []ast.ExpressionNode{}
 
 	if prs.peekTokenIs(token.RPAREN) {
 		prs.nextToken()

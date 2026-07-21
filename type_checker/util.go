@@ -37,7 +37,7 @@ func (chk *TypeChecker) recordExpectedType(node ast.Node, tp types.Type) {
 	}
 }
 
-func (chk *TypeChecker) resolveType(inType ast.TypeNode) types.Type {
+func (chk *TypeChecker) resolveType(inType ast.ExpressionNode) types.Type {
 	chk.recordTypeNode(inType, true)
 	switch tp := inType.(type) {
 	case *ast.SimpleType:

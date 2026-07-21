@@ -21,12 +21,6 @@ type ExpressionNode interface {
 	expressionNode()
 }
 
-// узел является типом
-type TypeNode interface {
-	Node
-	typeNode()
-}
-
 // корневой узел
 type Program struct {
 	Statements []StatementNode

@@ -73,8 +73,8 @@ func (hashMapLit *HashMapLiteral) End() token.Position   { return hashMapLit.Sem
 type FunctionLiteral struct {
 	Token      token.Token
 	Parameters []*Identifier
-	ParamTypes []TypeNode
-	ReturnType TypeNode
+	ParamTypes []ExpressionNode
+	ReturnType ExpressionNode
 	Body       *BlockStatement
 }
 

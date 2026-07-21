@@ -15,6 +15,8 @@ func (prg *Program) String() string {
 
 // ----- ТИПЫ -----
 
+func (typeType *TypeType) String() string { return typeType.Value }
+
 func (simpType *SimpleType) String() string { return simpType.Value }
 
 func (arrType *ArrayType) String() string { return "[" + arrType.ElementsType.String() + "]" }
