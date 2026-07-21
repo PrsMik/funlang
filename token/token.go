@@ -13,6 +13,11 @@ const (
 	FALSE
 	IF
 	ELSE
+	SWITCH
+	CASE
+	INTERFACE
+	IMPL
+	TYPE
 
 	// идентификаторы и литералы
 	COMMENT
@@ -41,9 +46,13 @@ const (
 	LESS_OR_EQUAL
 	GREATER_OR_EQUAL
 	// булева алгебра (&&, ||, !)
-	AND
-	OR
+	TWO_AMPERSANDS
+	TWO_PIPES
 	BANG
+	// типы (|, &, .)
+	PIPE
+	AMPERSAND
+	DOT
 
 	// спецсимволы
 	COMMA     // ,

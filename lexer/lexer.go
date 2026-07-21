@@ -96,13 +96,13 @@ func (lxr *Lexer) NextToken() token.Token {
 		nextTok = newToken(token.RBRACKET, ']')
 	case '&':
 		var ok bool
-		nextTok, ok = newTwoCharToken(lxr, token.AND)
+		nextTok, ok = newTwoCharToken(lxr, token.TWO_AMPERSANDS)
 		if !ok {
 			nextTok = newToken(token.ILLEGAL, lxr.curChar)
 		}
 	case '|':
 		var ok bool
-		nextTok, ok = newTwoCharToken(lxr, token.OR)
+		nextTok, ok = newTwoCharToken(lxr, token.TWO_PIPES)
 		if !ok {
 			nextTok = newToken(token.ILLEGAL, lxr.curChar)
 		}

@@ -8,13 +8,18 @@ func (pos *Position) String() string {
 
 var Keywords = map[string]TokenType{
 	// ключевые слова (выражения)
-	"let":    LET,
-	"fn":     FN,
-	"return": RETURN,
-	"if":     IF,
-	"else":   ELSE,
-	"true":   TRUE,
-	"false":  FALSE,
+	"let":       LET,
+	"fn":        FN,
+	"return":    RETURN,
+	"if":        IF,
+	"else":      ELSE,
+	"true":      TRUE,
+	"false":     FALSE,
+	"switch":    SWITCH,
+	"case":      CASE,
+	"interface": INTERFACE,
+	"impl":      IMPL,
+	"type":      TYPE,
 }
 
 var Operators = map[string]TokenType{
@@ -39,9 +44,13 @@ var Operators = map[string]TokenType{
 	"<=": LESS_OR_EQUAL,
 	">=": GREATER_OR_EQUAL,
 	// булева алгебра (&&, ||, !)
-	"&&": AND,
-	"||": OR,
+	"&&": TWO_AMPERSANDS,
+	"||": TWO_PIPES,
 	"!":  BANG,
+	// типы (|, &, .)
+	"|": PIPE,
+	"&": AMPERSAND,
+	".": DOT,
 }
 
 var Symbols = map[string]TokenType{
@@ -102,6 +111,11 @@ var tokenStrings = map[TokenType]string{
 	FALSE:             "FALSE",
 	IF:                "IF",
 	ELSE:              "ELSE",
+	SWITCH:            "SWITCH",
+	CASE:              "CASE",
+	INTERFACE:         "INTERFACE",
+	IMPL:              "IMPL",
+	TYPE:              "TYPE",
 	COMMENT:           "COMMENT",
 	IDENT:             "IDENT",
 	INT:               "INT",
@@ -121,9 +135,12 @@ var tokenStrings = map[TokenType]string{
 	GREATER:           "GREATER",
 	LESS_OR_EQUAL:     "LESS_OR_EQUAL",
 	GREATER_OR_EQUAL:  "GREATER_OR_EQUAL",
-	AND:               "AND",
-	OR:                "OR",
+	TWO_AMPERSANDS:    "AND",
+	TWO_PIPES:         "OR",
 	BANG:              "BANG",
+	PIPE:              "UNION",
+	AMPERSAND:         "INTERSECTION",
+	DOT:               "DOT",
 	COMMA:             "COMMA",
 	COLON:             "COLON",
 	SEMICOLON:         "SEMICOLON",
