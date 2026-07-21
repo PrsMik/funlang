@@ -1,5 +1,5 @@
 Токены и лексический анализ (token, lexer)
-1.  Добавление ключевых слов interface, impl, switch, case и type в файлы token/token.go и token/strings.go.
+1.  Добавление ключевых слов interface, impl, switch, case, default и type в файлы token/token.go и token/strings.go.
 2.  Добавление операторов | (Union), & (Intersection) и . (Dot) в token/token.go и token/strings.go.
 
 Абстрактное синтаксическое дерево (ast) 

@@ -90,6 +90,9 @@ let error_text: string = switch res.(type) {
     case ErrType(string) {
         return res.error; 
     }
+	default {
+		return res.error;
+	}
 };`
 
 	tests := []struct {
@@ -173,6 +176,21 @@ let error_text: string = switch res.(type) {
 
 		// }
 		{token.RBRACE, "}"},
+
+		// default {
+		{token.DEFAULT, "default"},
+		{token.LBRACE, "{"},
+
+		// return res.error;
+		{token.RETURN, "return"},
+		{token.IDENT, "res"},
+		{token.DOT, "."}, // Member Access
+		{token.IDENT, "error"},
+		{token.SEMICOLON, ";"},
+
+		// }
+		{token.RBRACE, "}"},
+
 		// };
 		{token.RBRACE, "}"},
 		{token.SEMICOLON, ";"},
