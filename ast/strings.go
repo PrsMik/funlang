@@ -88,6 +88,29 @@ func (funcLit *FunctionLiteral) String() string {
 	return out.String()
 }
 
+func (interLit *InterfaceLiteral) String() string {
+	var out bytes.Buffer
+	out.WriteString(interLit.TokenLiteral())
+	out.WriteString("{")
+	out.WriteString(interLit.Body.String())
+	out.WriteString("}")
+	return out.String()
+}
+
+func (implLiteral *ImplLiteral) String() string {
+	var out bytes.Buffer
+	types := []string{}
+	for _, i := range implLiteral.TargetTypes {
+		types = append(types, (*i).String())
+	}
+	out.WriteString(implLiteral.TokenLiteral())
+	out.WriteString("(")
+	out.WriteString(strings.Join(types, ", "))
+	out.WriteString(")")
+	out.WriteString(implLiteral.Body.String())
+	return out.String()
+}
+
 func (ident *Identifier) String() string { return ident.Value }
 
 // ----- ИНСТРУКЦИИ -----

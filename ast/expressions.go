@@ -83,6 +83,29 @@ func (funcLit *FunctionLiteral) TokenLiteral() string  { return funcLit.Token.Li
 func (funcLit *FunctionLiteral) Start() token.Position { return funcLit.Token.Start }
 func (funcLit *FunctionLiteral) End() token.Position   { return funcLit.Body.End() }
 
+// литерал объявления интерфейса ( например, interface { let x: type = int; } )
+type InterfaceLiteral struct {
+	Token token.Token
+	Body  *BlockStatement
+}
+
+func (ident *InterfaceLiteral) expressionNode()       {}
+func (ident *InterfaceLiteral) TokenLiteral() string  { return ident.Token.Literal }
+func (ident *InterfaceLiteral) Start() token.Position { return ident.Token.Start }
+func (ident *InterfaceLiteral) End() token.Position   { return ident.Body.End() }
+
+// литерал объявления реализации (например, impl { let x: int = 1; } )
+type ImplLiteral struct {
+	Token       token.Token
+	TargetTypes []*ExpressionNode
+	Body        *BlockStatement
+}
+
+func (ident *ImplLiteral) expressionNode()       {}
+func (ident *ImplLiteral) TokenLiteral() string  { return ident.Token.Literal }
+func (ident *ImplLiteral) Start() token.Position { return ident.Token.Start }
+func (ident *ImplLiteral) End() token.Position   { return ident.Body.End() }
+
 // идентификатор - токен и литерал
 type Identifier struct {
 	Token token.Token

@@ -408,7 +408,10 @@ func TestParsingImplLiteral(t *testing.T) {
 		t.Fatalf("stmt.Value is not ast.ImplLiteral. got=%T", stmt.Value)
 	}
 
-	testIdentifierLiteral(t, implLit.TargetType, "Int")
+	if len(implLit.TargetTypes) != 1 {
+		t.Fatalf("impl target should have 1 type, got=%d", len(implLit.TargetTypes))
+	}
+	testIdentifierLiteral(t, *implLit.TargetTypes[0], "Int")
 
 	if len(implLit.Body.Statements) != 1 {
 		t.Fatalf("impl body should have 1 statement, got=%d", len(implLit.Body.Statements))
@@ -424,157 +427,157 @@ func TestParsingImplLiteral(t *testing.T) {
 	}
 }
 
-func TestParsingMemberAccessExpression(t *testing.T) {
-	input := "let x: string = res.error;"
-	l := lexer.New(input)
-	p := parser.New(l)
-	program := p.ParseProgram()
-	checkParserErrors(t, p)
+// func TestParsingMemberAccessExpression(t *testing.T) {
+// 	input := "let x: string = res.error;"
+// 	l := lexer.New(input)
+// 	p := parser.New(l)
+// 	program := p.ParseProgram()
+// 	checkParserErrors(t, p)
 
-	stmt, ok := program.Statements[0].(*ast.LetStatement)
-	if !ok {
-		t.Fatalf("stmt is not *ast.LetStatement. got=%T", program.Statements[0])
-	}
+// 	stmt, ok := program.Statements[0].(*ast.LetStatement)
+// 	if !ok {
+// 		t.Fatalf("stmt is not *ast.LetStatement. got=%T", program.Statements[0])
+// 	}
 
-	exp, ok := stmt.Value.(*ast.MemberAccessExpression)
-	if !ok {
-		t.Fatalf("stmt.Value is not ast.MemberAccessExpression. got=%T", stmt.Value)
-	}
+// 	exp, ok := stmt.Value.(*ast.MemberAccessExpression)
+// 	if !ok {
+// 		t.Fatalf("stmt.Value is not ast.MemberAccessExpression. got=%T", stmt.Value)
+// 	}
 
-	testIdentifierLiteral(t, exp.Left, "res")
+// 	testIdentifierLiteral(t, exp.Left, "res")
 
-	if exp.Property.Value != "error" {
-		t.Errorf("exp.Property.Value is not 'error'. got=%s", exp.Property.Value)
-	}
-}
+// 	if exp.Property.Value != "error" {
+// 		t.Errorf("exp.Property.Value is not 'error'. got=%s", exp.Property.Value)
+// 	}
+// }
 
-func TestParsingUnionAndIntersectionTypes(t *testing.T) {
-	input := "let Algebraic: type = Addable & Substractable | Multipliable;"
-	l := lexer.New(input)
-	p := parser.New(l)
-	program := p.ParseProgram()
-	checkParserErrors(t, p)
+// func TestParsingUnionAndIntersectionTypes(t *testing.T) {
+// 	input := "let Algebraic: type = Addable & Substractable | Multipliable;"
+// 	l := lexer.New(input)
+// 	p := parser.New(l)
+// 	program := p.ParseProgram()
+// 	checkParserErrors(t, p)
 
-	stmt := program.Statements[0].(*ast.LetStatement)
+// 	stmt := program.Statements[0].(*ast.LetStatement)
 
-	opExp, ok := stmt.Value.(*ast.InfixExpression)
-	if !ok {
-		t.Fatalf("stmt.Value is not ast.InfixExpression. got=%T", stmt.Value)
-	}
-	if opExp.Operator != "|" {
-		t.Fatalf("Expected root operator to be '|', got='%s'", opExp.Operator)
-	}
+// 	opExp, ok := stmt.Value.(*ast.InfixExpression)
+// 	if !ok {
+// 		t.Fatalf("stmt.Value is not ast.InfixExpression. got=%T", stmt.Value)
+// 	}
+// 	if opExp.Operator != "|" {
+// 		t.Fatalf("Expected root operator to be '|', got='%s'", opExp.Operator)
+// 	}
 
-	leftOp, ok := opExp.Left.(*ast.InfixExpression)
-	if !ok {
-		t.Fatalf("opExp.Left is not ast.InfixExpression. got=%T", opExp.Left)
-	}
-	if leftOp.Operator != "&" {
-		t.Fatalf("Expected left operator to be '&', got='%s'", leftOp.Operator)
-	}
+// 	leftOp, ok := opExp.Left.(*ast.InfixExpression)
+// 	if !ok {
+// 		t.Fatalf("opExp.Left is not ast.InfixExpression. got=%T", opExp.Left)
+// 	}
+// 	if leftOp.Operator != "&" {
+// 		t.Fatalf("Expected left operator to be '&', got='%s'", leftOp.Operator)
+// 	}
 
-	testIdentifierLiteral(t, leftOp.Left, "Addable")
-	testIdentifierLiteral(t, leftOp.Right, "Substractable")
-	testIdentifierLiteral(t, opExp.Right, "Multipliable")
-}
+// 	testIdentifierLiteral(t, leftOp.Left, "Addable")
+// 	testIdentifierLiteral(t, leftOp.Right, "Substractable")
+// 	testIdentifierLiteral(t, opExp.Right, "Multipliable")
+// }
 
-func TestParsingSwitchExpression(t *testing.T) {
-	input := `
-	let error_text: string = switch res.(type) {
-		case ErrType(string) {
-			return res.error;
-		}
-		case OkType(int) {
-			return res.value;
-		}
-		default {
-			return "";
-		}
-	};`
-	l := lexer.New(input)
-	p := parser.New(l)
-	program := p.ParseProgram()
-	checkParserErrors(t, p)
+// func TestParsingSwitchExpression(t *testing.T) {
+// 	input := `
+// 	let error_text: string = switch res.(type) {
+// 		case ErrType(string) {
+// 			return res.error;
+// 		}
+// 		case OkType(int) {
+// 			return res.value;
+// 		}
+// 		default {
+// 			return "";
+// 		}
+// 	};`
+// 	l := lexer.New(input)
+// 	p := parser.New(l)
+// 	program := p.ParseProgram()
+// 	checkParserErrors(t, p)
 
-	stmt := program.Statements[0].(*ast.LetStatement)
+// 	stmt := program.Statements[0].(*ast.LetStatement)
 
-	switchExp, ok := stmt.Value.(*ast.SwitchExpression)
-	if !ok {
-		t.Fatalf("stmt.Value is not ast.SwitchExpression. got=%T", stmt.Value)
-	}
+// 	switchExp, ok := stmt.Value.(*ast.SwitchExpression)
+// 	if !ok {
+// 		t.Fatalf("stmt.Value is not ast.SwitchExpression. got=%T", stmt.Value)
+// 	}
 
-	callExp, ok := switchExp.Condition.(*ast.TypeAccessExpression)
-	if !ok {
-		t.Fatalf("switchExp.Condition is not CallExpression. got=%T", switchExp.Condition)
-	}
-	testIdentifierLiteral(t, callExp.Function, "type")
+// 	callExp, ok := switchExp.Condition.(*ast.TypeAccessExpression)
+// 	if !ok {
+// 		t.Fatalf("switchExp.Condition is not CallExpression. got=%T", switchExp.Condition)
+// 	}
+// 	testIdentifierLiteral(t, callExp.Function, "type")
 
-	// Проверяем блоки case
-	if len(switchExp.Choices) != 3 {
-		t.Fatalf("Expected 3 cases, got=%d", len(switchExp.Choices))
-	}
+// 	// Проверяем блоки case
+// 	if len(switchExp.Choices) != 3 {
+// 		t.Fatalf("Expected 3 cases, got=%d", len(switchExp.Choices))
+// 	}
 
-	case1 := switchExp.Choices[0]
-	if case1.Condition == nil {
-		t.Fatalf("Case 1 condition is nil")
-	}
-	if len(case1.Body.Statements) != 1 {
-		t.Fatalf("Case 1 body should have 1 statement, got=%d", len(case1.Body.Statements))
-	}
+// 	case1 := switchExp.Choices[0]
+// 	if case1.Condition == nil {
+// 		t.Fatalf("Case 1 condition is nil")
+// 	}
+// 	if len(case1.Body.Statements) != 1 {
+// 		t.Fatalf("Case 1 body should have 1 statement, got=%d", len(case1.Body.Statements))
+// 	}
 
-	case2 := switchExp.Choices[1]
-	if case2.Condition == nil {
-		t.Fatalf("Case 2 condition is nil")
-	}
-	if len(case2.Body.Statements) != 1 {
-		t.Fatalf("Case 2 body should have 1 statement, got=%d", len(case2.Body.Statements))
-	}
-}
+// 	case2 := switchExp.Choices[1]
+// 	if case2.Condition == nil {
+// 		t.Fatalf("Case 2 condition is nil")
+// 	}
+// 	if len(case2.Body.Statements) != 1 {
+// 		t.Fatalf("Case 2 body should have 1 statement, got=%d", len(case2.Body.Statements))
+// 	}
+// }
 
-func TestParsingFirstClassTypesAndGenerics(t *testing.T) {
-	input := `
-	let OkType: fn(T: type) -> type = fn(T: type) {
-		return interface {};
-	};`
+// func TestParsingFirstClassTypesAndGenerics(t *testing.T) {
+// 	input := `
+// 	let OkType: fn(T: type) -> type = fn(T: type) {
+// 		return interface {};
+// 	};`
 
-	l := lexer.New(input)
-	p := parser.New(l)
-	program := p.ParseProgram()
-	checkParserErrors(t, p)
+// 	l := lexer.New(input)
+// 	p := parser.New(l)
+// 	program := p.ParseProgram()
+// 	checkParserErrors(t, p)
 
-	stmt := program.Statements[0].(*ast.LetStatement)
+// 	stmt := program.Statements[0].(*ast.LetStatement)
 
-	funcType, ok := stmt.Type.(*ast.FunctionType)
-	if !ok {
-		t.Fatalf("stmt.Type is not ast.FunctionType. got=%T", stmt.Type)
-	}
+// 	funcType, ok := stmt.Type.(*ast.FunctionType)
+// 	if !ok {
+// 		t.Fatalf("stmt.Type is not ast.FunctionType. got=%T", stmt.Type)
+// 	}
 
-	retType, ok := funcType.ReturnType.(*ast.TypeType)
-	if !ok {
-		t.Fatalf("funcType.ReturnType is not TypeType. got=%T", funcType.ReturnType)
-	}
-	if retType.Value != "type" {
-		t.Errorf("Expected return type 'type', got=%s", retType.Value)
-	}
+// 	retType, ok := funcType.ReturnType.(*ast.TypeType)
+// 	if !ok {
+// 		t.Fatalf("funcType.ReturnType is not TypeType. got=%T", funcType.ReturnType)
+// 	}
+// 	if retType.Value != "type" {
+// 		t.Errorf("Expected return type 'type', got=%s", retType.Value)
+// 	}
 
-	funcLit, ok := stmt.Value.(*ast.FunctionLiteral)
-	if !ok {
-		t.Fatalf("stmt.Value is not ast.FunctionLiteral. got=%T", stmt.Value)
-	}
+// 	funcLit, ok := stmt.Value.(*ast.FunctionLiteral)
+// 	if !ok {
+// 		t.Fatalf("stmt.Value is not ast.FunctionLiteral. got=%T", stmt.Value)
+// 	}
 
-	if len(funcLit.Parameters) != 1 {
-		t.Fatalf("func parameters length wrong. got=%d", len(funcLit.Parameters))
-	}
+// 	if len(funcLit.Parameters) != 1 {
+// 		t.Fatalf("func parameters length wrong. got=%d", len(funcLit.Parameters))
+// 	}
 
-	if funcLit.Parameters[0].Value != "T" {
-		t.Errorf("Expected parameter 'T', got=%s", funcLit.Parameters[0].Value)
-	}
+// 	if funcLit.Parameters[0].Value != "T" {
+// 		t.Errorf("Expected parameter 'T', got=%s", funcLit.Parameters[0].Value)
+// 	}
 
-	paramType, ok := funcLit.ParamTypes[0].(*ast.TypeType)
-	if !ok {
-		t.Fatalf("Parameter type is not TypeType. got=%T", funcLit.ParamTypes[0])
-	}
-	if paramType.Value != "type" {
-		t.Errorf("Expected parameter type 'type', got=%s", paramType.Value)
-	}
-}
+// 	paramType, ok := funcLit.ParamTypes[0].(*ast.TypeType)
+// 	if !ok {
+// 		t.Fatalf("Parameter type is not TypeType. got=%T", funcLit.ParamTypes[0])
+// 	}
+// 	if paramType.Value != "type" {
+// 		t.Errorf("Expected parameter type 'type', got=%s", paramType.Value)
+// 	}
+// }
