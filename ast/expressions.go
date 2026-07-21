@@ -169,6 +169,34 @@ func (ifExpr *IfExpression) End() token.Position {
 	return ifExpr.Consequence.End()
 }
 
+type CaseBlock struct {
+	Token   token.Token
+	Pattern ExpressionNode
+	Body    *BlockStatement
+}
+
+func (caseBlock *CaseBlock) TokenLiteral() string  { return caseBlock.Token.Literal }
+func (caseBlock *CaseBlock) Start() token.Position { return caseBlock.Token.Start }
+func (caseBlock *CaseBlock) End() token.Position {
+	if caseBlock.Body != nil {
+		return caseBlock.Body.End()
+	}
+	return caseBlock.Token.End
+}
+
+type SwitchExpression struct {
+	Token     token.Token
+	Value     ExpressionNode
+	Cases     []*CaseBlock
+	Default   *BlockStatement
+	SemiToken token.Token
+}
+
+func (swExp *SwitchExpression) expressionNode()       {}
+func (swExp *SwitchExpression) TokenLiteral() string  { return swExp.Token.Literal }
+func (swExp *SwitchExpression) Start() token.Position { return swExp.Token.Start }
+func (swExp *SwitchExpression) End() token.Position   { return swExp.SemiToken.End }
+
 type IndexExpression struct {
 	Token     token.Token
 	Left      ExpressionNode
@@ -180,3 +208,25 @@ func (indExpr *IndexExpression) expressionNode()       {}
 func (indExpr *IndexExpression) TokenLiteral() string  { return indExpr.Token.Literal }
 func (indExpr *IndexExpression) Start() token.Position { return indExpr.Token.Start }
 func (indExpr *IndexExpression) End() token.Position   { return indExpr.SemiToken.End }
+
+type MemberAccessExpression struct {
+	Token    token.Token
+	Left     ExpressionNode
+	Property *Identifier
+}
+
+func (indExpr *MemberAccessExpression) expressionNode()       {}
+func (indExpr *MemberAccessExpression) TokenLiteral() string  { return indExpr.Token.Literal }
+func (indExpr *MemberAccessExpression) Start() token.Position { return indExpr.Left.Start() }
+func (indExpr *MemberAccessExpression) End() token.Position   { return indExpr.Property.End() }
+
+type TypeAccessExpression struct {
+	Token     token.Token
+	Left      ExpressionNode
+	SemiToken token.Token
+}
+
+func (tae *TypeAccessExpression) expressionNode()       {}
+func (tae *TypeAccessExpression) TokenLiteral() string  { return tae.Token.Literal }
+func (tae *TypeAccessExpression) Start() token.Position { return tae.Left.Start() }
+func (tae *TypeAccessExpression) End() token.Position   { return tae.SemiToken.End }

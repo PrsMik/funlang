@@ -117,9 +117,11 @@ func (ident *Identifier) String() string { return ident.Value }
 
 func (letStmt *LetStatement) String() string {
 	var out bytes.Buffer
-	out.WriteString(letStmt.TokenLiteral() + " ")
+	out.WriteString(letStmt.TokenLiteral())
+	out.WriteString(" ")
 	out.WriteString(letStmt.Name.String())
-	out.WriteString(": " + letStmt.Type.String())
+	out.WriteString(": ")
+	out.WriteString(letStmt.Type.String())
 	out.WriteString(" = ")
 	if letStmt.Value != nil {
 		out.WriteString(letStmt.Value.String())
@@ -130,7 +132,8 @@ func (letStmt *LetStatement) String() string {
 
 func (returnStmt *ReturnStatement) String() string {
 	var out bytes.Buffer
-	out.WriteString(returnStmt.TokenLiteral() + " ")
+	out.WriteString(returnStmt.TokenLiteral())
+	out.WriteString(" ")
 	if returnStmt.Value != nil {
 		out.WriteString(returnStmt.Value.String())
 	}
@@ -176,7 +179,9 @@ func (infixExpr *InfixExpression) String() string {
 	var out bytes.Buffer
 	out.WriteString("(")
 	out.WriteString(infixExpr.Left.String())
-	out.WriteString(" " + infixExpr.Operator + " ")
+	out.WriteString(" ")
+	out.WriteString(infixExpr.Operator)
+	out.WriteString(" ")
 	out.WriteString(infixExpr.Right.String())
 	out.WriteString(")")
 	return out.String()
@@ -195,6 +200,30 @@ func (ifExpr *IfExpression) String() string {
 	return out.String()
 }
 
+func (caseBlock *CaseBlock) String() string {
+	var out bytes.Buffer
+	out.WriteString("case")
+	out.WriteString(caseBlock.Pattern.String())
+	out.WriteString("{")
+	out.WriteString(caseBlock.Body.String())
+	out.WriteString("}")
+	return out.String()
+}
+
+func (swExp *SwitchExpression) String() string {
+	var out bytes.Buffer
+	out.WriteString("switch")
+	out.WriteString(swExp.Value.String())
+	out.WriteString("{")
+	for _, caseBlock := range swExp.Cases {
+		out.WriteString(caseBlock.String())
+	}
+	out.WriteString("default")
+	out.WriteString(swExp.Default.String())
+	out.WriteString("}")
+	return out.String()
+}
+
 func (indExpr *IndexExpression) String() string {
 	var out bytes.Buffer
 	out.WriteString("(")
@@ -202,5 +231,20 @@ func (indExpr *IndexExpression) String() string {
 	out.WriteString("[")
 	out.WriteString(indExpr.Index.String())
 	out.WriteString("])")
+	return out.String()
+}
+
+func (membExpr *MemberAccessExpression) String() string {
+	var out bytes.Buffer
+	out.WriteString(membExpr.Left.String())
+	out.WriteString(".")
+	out.WriteString(membExpr.Property.String())
+	return out.String()
+}
+
+func (tae *TypeAccessExpression) String() string {
+	var out bytes.Buffer
+	out.WriteString(tae.Left.String())
+	out.WriteString(".(type)")
 	return out.String()
 }

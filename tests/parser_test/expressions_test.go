@@ -427,8 +427,88 @@ func TestParsingImplLiteral(t *testing.T) {
 	}
 }
 
-// func TestParsingMemberAccessExpression(t *testing.T) {
-// 	input := "let x: string = res.error;"
+func TestParsingSwitchExpression(t *testing.T) {
+	input := `
+	let error_text: string = switch res.(type) {
+		case ErrType(string) {
+			return res.error;
+		}
+		case OkType(int) {
+			return res.value;
+		}
+		default {
+			return "";
+		}
+	};`
+	l := lexer.New(input)
+	p := parser.New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	stmt := program.Statements[0].(*ast.LetStatement)
+
+	switchExp, ok := stmt.Value.(*ast.SwitchExpression)
+	if !ok {
+		t.Fatalf("stmt.Value is not ast.SwitchExpression. got=%T", stmt.Value)
+	}
+
+	if _, ok := switchExp.Value.(*ast.TypeAccessExpression); !ok {
+		t.Fatalf("switchExp.Value is not TypeAccessExpression. got=%T", switchExp.Value)
+	}
+	// testIdentifierLiteral(t, callExp.Function, "type")
+
+	if len(switchExp.Cases) != 2 {
+		t.Fatalf("Expected 2 cases, got=%d", len(switchExp.Cases))
+	}
+
+	case1 := switchExp.Cases[0]
+	if case1.Pattern == nil {
+		t.Fatalf("Case 1 condition is nil")
+	}
+	if len(case1.Body.Statements) != 1 {
+		t.Fatalf("Case 1 body should have 1 statement, got=%d", len(case1.Body.Statements))
+	}
+
+	case2 := switchExp.Cases[1]
+	if case2.Pattern == nil {
+		t.Fatalf("Case 2 condition is nil")
+	}
+	if len(case2.Body.Statements) != 1 {
+		t.Fatalf("Case 2 body should have 1 statement, got=%d", len(case2.Body.Statements))
+	}
+
+	def := switchExp.Default
+	if def == nil {
+		t.Fatalf("Default case is nil")
+	}
+}
+
+func TestParsingMemberAccessExpression(t *testing.T) {
+	input := "let x: string = res.error;"
+	l := lexer.New(input)
+	p := parser.New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	stmt, ok := program.Statements[0].(*ast.LetStatement)
+	if !ok {
+		t.Fatalf("stmt is not *ast.LetStatement. got=%T", program.Statements[0])
+	}
+
+	exp, ok := stmt.Value.(*ast.MemberAccessExpression)
+	if !ok {
+		t.Fatalf("stmt.Value is not ast.MemberAccessExpression. got=%T", stmt.Value)
+	}
+
+	testIdentifierLiteral(t, exp.Left, "res")
+
+	if exp.Property.Value != "error" {
+		t.Errorf("exp.Property.Value is not 'error'. got=%s", exp.Property.Value)
+	}
+}
+
+// func TestParsingTypeAccessExpression(t *testing.T) {
+// 	input := "let x: type = res.(type);"
 // 	l := lexer.New(input)
 // 	p := parser.New(l)
 // 	program := p.ParseProgram()
@@ -439,9 +519,9 @@ func TestParsingImplLiteral(t *testing.T) {
 // 		t.Fatalf("stmt is not *ast.LetStatement. got=%T", program.Statements[0])
 // 	}
 
-// 	exp, ok := stmt.Value.(*ast.MemberAccessExpression)
+// 	exp, ok := stmt.Value.(*ast.TypeAccessExpression)
 // 	if !ok {
-// 		t.Fatalf("stmt.Value is not ast.MemberAccessExpression. got=%T", stmt.Value)
+// 		t.Fatalf("stmt.Value is not ast.TypeAccessExpression. got=%T", stmt.Value)
 // 	}
 
 // 	testIdentifierLiteral(t, exp.Left, "res")
@@ -479,59 +559,6 @@ func TestParsingImplLiteral(t *testing.T) {
 // 	testIdentifierLiteral(t, leftOp.Left, "Addable")
 // 	testIdentifierLiteral(t, leftOp.Right, "Substractable")
 // 	testIdentifierLiteral(t, opExp.Right, "Multipliable")
-// }
-
-// func TestParsingSwitchExpression(t *testing.T) {
-// 	input := `
-// 	let error_text: string = switch res.(type) {
-// 		case ErrType(string) {
-// 			return res.error;
-// 		}
-// 		case OkType(int) {
-// 			return res.value;
-// 		}
-// 		default {
-// 			return "";
-// 		}
-// 	};`
-// 	l := lexer.New(input)
-// 	p := parser.New(l)
-// 	program := p.ParseProgram()
-// 	checkParserErrors(t, p)
-
-// 	stmt := program.Statements[0].(*ast.LetStatement)
-
-// 	switchExp, ok := stmt.Value.(*ast.SwitchExpression)
-// 	if !ok {
-// 		t.Fatalf("stmt.Value is not ast.SwitchExpression. got=%T", stmt.Value)
-// 	}
-
-// 	callExp, ok := switchExp.Condition.(*ast.TypeAccessExpression)
-// 	if !ok {
-// 		t.Fatalf("switchExp.Condition is not CallExpression. got=%T", switchExp.Condition)
-// 	}
-// 	testIdentifierLiteral(t, callExp.Function, "type")
-
-// 	// Проверяем блоки case
-// 	if len(switchExp.Choices) != 3 {
-// 		t.Fatalf("Expected 3 cases, got=%d", len(switchExp.Choices))
-// 	}
-
-// 	case1 := switchExp.Choices[0]
-// 	if case1.Condition == nil {
-// 		t.Fatalf("Case 1 condition is nil")
-// 	}
-// 	if len(case1.Body.Statements) != 1 {
-// 		t.Fatalf("Case 1 body should have 1 statement, got=%d", len(case1.Body.Statements))
-// 	}
-
-// 	case2 := switchExp.Choices[1]
-// 	if case2.Condition == nil {
-// 		t.Fatalf("Case 2 condition is nil")
-// 	}
-// 	if len(case2.Body.Statements) != 1 {
-// 		t.Fatalf("Case 2 body should have 1 statement, got=%d", len(case2.Body.Statements))
-// 	}
 // }
 
 // func TestParsingFirstClassTypesAndGenerics(t *testing.T) {
