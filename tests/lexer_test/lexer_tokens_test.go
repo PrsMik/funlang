@@ -31,7 +31,7 @@ func testTokenStream(t *testing.T, input string, tests []expectedToken) {
 }
 
 func TestLexer_OperatorsAndDelimiters(t *testing.T) {
-	input := `= + - * / ! < > == != && || : ; , ( ) { } [ ] ->`
+	input := `= + - * / ! < > == != && || | & . : ; , ( ) { } [ ] ->`
 
 	tests := []expectedToken{
 		{token.ASSIGN, "="},
@@ -44,8 +44,11 @@ func TestLexer_OperatorsAndDelimiters(t *testing.T) {
 		{token.GREATER, ">"},
 		{token.EQUAL, "=="},
 		{token.NOT_EQUAL, "!="},
-		{token.AND, "&&"},
-		{token.OR, "||"},
+		{token.TWO_AMPERSANDS, "&&"},
+		{token.TWO_PIPES, "||"},
+		{token.PIPE, "|"},
+		{token.AMPERSAND, "&"},
+		{token.DOT, "."},
 		{token.COLON, ":"},
 		{token.SEMICOLON, ";"},
 		{token.COMMA, ","},
@@ -63,7 +66,7 @@ func TestLexer_OperatorsAndDelimiters(t *testing.T) {
 }
 
 func TestLexer_KeywordsAndTypes(t *testing.T) {
-	input := `let fn return if else true false int bool string`
+	input := `let fn return if else true false interface impl switch case type int bool string`
 
 	tests := []expectedToken{
 		{token.LET, "let"},
@@ -73,6 +76,11 @@ func TestLexer_KeywordsAndTypes(t *testing.T) {
 		{token.ELSE, "else"},
 		{token.TRUE, "true"},
 		{token.FALSE, "false"},
+		{token.INTERFACE, "interface"},
+		{token.IMPL, "impl"},
+		{token.SWITCH, "switch"},
+		{token.CASE, "case"},
+		{token.TYPE, "type"},
 		{token.INT_TYPE, "int"},
 		{token.BOOL_TYPE, "bool"},
 		{token.STRING_TYPE, "string"},

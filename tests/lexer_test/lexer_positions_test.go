@@ -47,7 +47,7 @@ let x: fn(bool) -> bool = fn(y) {
 		// строка 2
 		{token.RETURN, "return", token.Position{Line: 2, Column: 2}, token.Position{Line: 2, Column: 8}},
 		{token.IDENT, "y", token.Position{Line: 2, Column: 9}, token.Position{Line: 2, Column: 10}},
-		{token.AND, "&&", token.Position{Line: 2, Column: 11}, token.Position{Line: 2, Column: 13}},
+		{token.TWO_AMPERSANDS, "&&", token.Position{Line: 2, Column: 11}, token.Position{Line: 2, Column: 13}},
 		{token.TRUE, "true", token.Position{Line: 2, Column: 14}, token.Position{Line: 2, Column: 18}},
 		{token.SEMICOLON, ";", token.Position{Line: 2, Column: 18}, token.Position{Line: 2, Column: 19}},
 
