@@ -98,14 +98,16 @@ func (lxr *Lexer) NextToken() token.Token {
 		var ok bool
 		nextTok, ok = newTwoCharToken(lxr, token.TWO_AMPERSANDS)
 		if !ok {
-			nextTok = newToken(token.ILLEGAL, lxr.curChar)
+			nextTok = newToken(token.AMPERSAND, '&')
 		}
 	case '|':
 		var ok bool
 		nextTok, ok = newTwoCharToken(lxr, token.TWO_PIPES)
 		if !ok {
-			nextTok = newToken(token.ILLEGAL, lxr.curChar)
+			nextTok = newToken(token.PIPE, '|')
 		}
+	case '.':
+		nextTok = newToken(token.DOT, '.')
 	case '"':
 		nextTok.Type = token.STRING
 		nextTok.Literal = fmt.Sprintf("%q", lxr.readString())
@@ -123,7 +125,6 @@ func (lxr *Lexer) NextToken() token.Token {
 				nextTok.Type = token.LookupIdentifier(nextTok.Literal)
 			}
 		} else if isDigit(lxr.curChar) {
-
 			nextTok.Literal = lxr.readNumber()
 
 			nextTok.Type = token.INT
