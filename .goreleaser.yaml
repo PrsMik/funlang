@@ -62,5 +62,5 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
-      - 'ci:'
-      - 'dev:'
+      - '^ci:'
+      - '^dev:'

@@ -1,40 +1,125 @@
-// ОБЩЕЕ НАЗНАЧЕНИЕ - ПОЛИМОРФИЗМ
-// ВЕЗДЕ ГДЕ ОЖИДАЕТСЯ Printable МОЖНО ИСПОЛЬЗОВАТЬ ВСЕХ КТО ЕГО РЕАЛИЗУЕТ
+let Logical: type = interface {
+    let and: type = fn(Logical, Logical) -> Logical;
+    let or: type = fn(Logical, Logical) -> Logical;
+    let not: type = fn(Logical) -> Logical;
+};
 
-let equal: type = fn(type, Equalable, Equalable) -> Logical;
-// описание сигнатуры функции, первым параметром идёт type для избежания кофликтов имён в реализациях
+let Equalable: type = interface {
+    let equal: type = fn(Equalable, Equalable) -> Logical; 
+    let notEqual: type = fn(Equalable, Equalable) -> Logical; 
+};
 
-let not_equal: type = fn(type, Equalable, Equalable) -> Logical; 
-let Equalable: type = equal | not_equal; // интерфейсный тип
+let Comparable: type = interface{
+    let less: type = fn(Comparable, Comparable) -> Logical; 
+    let greater: type = fn(Comparable, Comparable) -> Logical; 
+};
 
-let less: type = fn(type, Comparable, Comparable) -> Logical; 
-let greater: type = fn(type, Comparable, Comparable) -> Logical; 
-let Comparable: type = less | greater;
+let Addable: type = interface {
+    let add: type = fn(Addable, Addable) -> Addable;
+};
 
-let add: type = fn(type, Addable, Addable) -> Algebraic;
-let Addable: type = add;
+let Substractable: type = interface {
+    let sub: type = fn(Substractable, Substractable) -> Substractable;
+};
 
-let sub: type = fn(type, Substractable, Substractable) -> Algebraic;
-let Substractable: type = sub;
+let Multipliable: type = interface {
+    let mul: type = fn(Multipliable, Multipliable) -> Multipliable;
+};
 
-let mul: type = fn(type, Multipliable, Multipliable) -> Algebraic;
-let Multipliable: type = mul;
+let Diviable: type = interface {
+    let div: type = fn(Diviable, Diviable) -> Diviable;
+};
 
-let div: type = fn(type, Diviable, Diviable) -> Algebraic;
-let Diviable: type = div;
+let Algebraic: type = Addable & Substractable & Multipliable & Diviable;
 
-let Algebraic: type = Addable | Substractable | Multipliable | Diviable;
+let Int: type = Algebraic & interface {
+    let floatToInt: type = fn(Float) -> Int;
+};
 
-let and: type = fn(type, Logical, Logical) -> Logical;
-let or: type = fn(type, Logical, Logical) -> Logical;
-let not: type = fn(type, Logical) -> Logical;
-let Logical: type = and | or | not;
+let Float: type = Algebraic & interface {
+    let intToFloat: type = fn(Int) -> Float;
+};
 
-let int: type = type(Algebraic | Comparable | Equalable); // конкретная реализация типа
+// int как и bool - встроенные типы, это просто пример
+// =================================================== 
+let int: type = impl (Int) {
+    let floatToInt: fn(Float) -> int = fn(a) {
+        return __internalFloatToIntConvert(a);
+    }
 
-// реализация функции интерфейса через . для избежания конфликтов имён в интерфейсах, обращение также через .
-let Algebraic.add: fn(type, int, int) -> int = fn(T, a, b) {
-    return a + b;
+    let add, sub, let mul, let div... etc. 
+};
+
+let andBoolImpl: fn(bool, bool) -> bool = fn(a, b) {
+    return a && b;
 }
 
-let Algebraic.sub, let Algebraic.mul, let Algebraic.div... etc. 
+let orBoolImpl, let notBoolImpl, let equalBoolImpl... etc. 
+
+let bool: type = impl (Logical & Equalable) {
+    let and: fn(bool, bool) -> bool = andBoolImpl;
+    let or: fn(bool, bool) -> bool = orBoolImpl;
+    let not: fn(bool) -> bool = notBoolImpl;
+
+    let equal: fn(bool, bool) -> bool = equalBoolImpl; 
+    let notEqual: fn(bool, bool) -> bool = notEqualBoolImpl;
+};
+// ===================================================
+
+??? let array: type = Addable | Equalable;
+??? let hashMap: type = ;
+
+??? let map: fn(T: type, U: type, [T], fn(T) -> U) -> [U] 
+
+// ===================================================
+// ОБРАБОТКА ОШИБОК
+
+let OkType: fn(T: type) -> type = fn(T: type) {
+    return interface {
+        let value: type = T;
+    };
+};
+
+let ErrType: fn(E: type) -> type = fn(E: type) {
+    return interface {
+        let error: type = E;
+    };
+};
+
+let Result: fn(T: type, E: type) -> type = fn(T: type, E: type) {
+    return OkType(T) | ErrType(E); 
+};
+
+let Ok: fn(T: type, val: T) -> OkType(T) = fn(T: type, val: T) {
+    return impl (OkType(T)) {
+        let value: T = val;
+    };
+};
+
+let Err: fn(E: type, err_val: E) -> ErrType(E) = fn(E: type, err_val: E) {
+    return impl (ErrType(E)) {
+        let error: E = err_val;
+    };
+};
+
+let divide: fn(int, int) -> Result(int, string) = fn(a, b) {
+    if (b == 0) {
+        return Err(string, "Division by zero"); 
+    } else {
+        return Ok(int, a / b); 
+    }
+};
+
+let res: Result(int, string) = divide(10, 0);
+
+let error_text: string = switch res.(type) {
+    case ErrType(string) {
+        return res.error; 
+    }
+    case OkType(int) {
+        return "Ошибки нет, результат: " + intToString(res.value); // псевдовызов
+    }
+};
+
+puts(error_text);
+// ===================================================
