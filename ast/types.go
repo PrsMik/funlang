@@ -45,6 +45,7 @@ func (hashMapType *HashMapType) End() token.Position   { return hashMapType.Elem
 
 type FunctionType struct {
 	Token       token.Token
+	Parameters  []*Identifier
 	ParamsTypes []ExpressionNode
 	ReturnType  ExpressionNode
 }
