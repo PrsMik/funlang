@@ -53,7 +53,12 @@ func (prs *Parser) parseLetStatement() *ast.LetStatement {
 
 	prs.nextToken()
 
-	statement.Value = prs.parseExpression(LOWEST)
+	if _, ok := statement.Type.(*ast.TypeType); ok {
+		statement.Value = prs.parseType()
+	} else {
+		statement.Value = prs.parseExpression(LOWEST)
+	}
+
 	if statement.Value == nil {
 		// return nil
 		statement.Value = &ast.BadExpression{From: reserveCurToken.End, To: prs.curToken.Start}

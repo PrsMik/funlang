@@ -27,6 +27,20 @@ func TestTypeParsing(t *testing.T) {
 			},
 		},
 		{
+			name:  "Complex Type Int",
+			input: "let x: if (2 > 1) {return int;} else {return int;} = 1;",
+			check: func(t *testing.T, node ast.ExpressionNode) {
+				st, ok := node.(*ast.IfExpression)
+				if !ok {
+					t.Fatalf("expected *ast.SimpleType, got %T", node)
+				}
+				ret, ok := st.Consequence.Statements[0].(*ast.ReturnStatement)
+				if ret.Value.TokenLiteral() != "int" {
+					t.Errorf("expected 'int', got %s", ret.Value.TokenLiteral())
+				}
+			},
+		},
+		{
 			name:  "Array Type",
 			input: "let x: [string] =[];",
 			check: func(t *testing.T, node ast.ExpressionNode) {

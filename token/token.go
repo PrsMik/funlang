@@ -24,7 +24,6 @@ const (
 	COMMENT
 	IDENT
 	INT
-	BOOL
 	STRING
 
 	// операторы

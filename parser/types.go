@@ -17,9 +17,11 @@ func (prs *Parser) parseType() ast.ExpressionNode {
 		return prs.parseHashMapType()
 	case token.FN:
 		return prs.parseFunctionType()
-	default:
+	case token.INT, token.STRING, token.TRUE, token.FALSE, token.BANG, token.MINUS:
 		prs.typeError()
 		return nil
+	default:
+		return prs.parseExpression(LOWEST)
 	}
 }
 

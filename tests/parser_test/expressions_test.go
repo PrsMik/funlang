@@ -361,7 +361,7 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 func TestParsingInterfaceLiteral(t *testing.T) {
 	input := `
 	let Algebraic: type = interface {
-		let add: type = fn(Addable, Addable) -> Addable;
+		let add: type = fn(Algebraic, Algebraic) -> Algebraic;
 	};`
 	l := lexer.New(input)
 	p := parser.New(l)
@@ -386,6 +386,10 @@ func TestParsingInterfaceLiteral(t *testing.T) {
 
 	if letStmt.Name.Value != "add" {
 		t.Errorf("Expected let name 'add', got='%s'", letStmt.Name.Value)
+	}
+
+	if _, ok := letStmt.Value.(*ast.FunctionType); !ok {
+		t.Errorf("Expected let value to be ast.FunctionType, got='%T'", letStmt.Value)
 	}
 }
 

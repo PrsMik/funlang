@@ -65,6 +65,7 @@ func New(lxr *lexer.Lexer) *Parser {
 	prs.registerPrefix(token.STRING_TYPE, prs.parseType)
 
 	prs.registerPrefix(token.IDENT, prs.parseIdentifier)
+
 	prs.registerPrefix(token.INT, prs.parseIntegerLiteral)
 	prs.registerPrefix(token.STRING, prs.parseStringLiteral)
 
@@ -79,8 +80,10 @@ func New(lxr *lexer.Lexer) *Parser {
 	prs.registerPrefix(token.LBRACE, prs.parseHashMapLiteral)
 
 	prs.registerPrefix(token.FN, prs.parseFunctionLiteral)
+
 	prs.registerPrefix(token.IF, prs.parseIfExpression)
 	prs.registerPrefix(token.SWITCH, prs.parseSwitchExpression)
+
 	prs.registerPrefix(token.INTERFACE, prs.parseInterfaceLiteral)
 	prs.registerPrefix(token.IMPL, prs.parseImplLiteral)
 

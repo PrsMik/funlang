@@ -200,6 +200,11 @@ func (prs *Parser) parseIdentifier() ast.ExpressionNode {
 
 func (prs *Parser) parseInterfaceLiteral() ast.ExpressionNode {
 	expr := &ast.InterfaceLiteral{Token: prs.curToken}
+
+	prs.expectPeek(token.LBRACE)
+
+	expr.Body = prs.parseBlockStatement()
+
 	return expr
 }
 

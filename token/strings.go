@@ -121,7 +121,6 @@ var tokenStrings = map[TokenType]string{
 	COMMENT:           "COMMENT",
 	IDENT:             "IDENT",
 	INT:               "INT",
-	BOOL:              "BOOL",
 	STRING:            "STRING",
 	ASSIGN:            "ASSIGN",
 	LARROW:            "LARROW",
