@@ -395,7 +395,7 @@ func TestParsingInterfaceLiteral(t *testing.T) {
 
 func TestParsingImplLiteral(t *testing.T) {
 	input := `
-	let int: type = impl (Int) {
+	let myInt: type = impl (Int, Hashable) {
 		let floatToInt: fn(Float) -> int = fn(a) {
 			return a;
 		};
@@ -412,10 +412,15 @@ func TestParsingImplLiteral(t *testing.T) {
 		t.Fatalf("stmt.Value is not ast.ImplLiteral. got=%T", stmt.Value)
 	}
 
-	if len(implLit.TargetTypes) != 1 {
-		t.Fatalf("impl target should have 1 type, got=%d", len(implLit.TargetTypes))
+	// if implLit.TargetTypes != nil {
+	// 	t.Fatalf("impl target should be nil")
+	// }
+
+	if len(implLit.TargetTypes) != 2 {
+		t.Fatalf("impl target should have 2 type, got=%d", len(implLit.TargetTypes))
 	}
-	testIdentifierLiteral(t, *implLit.TargetTypes[0], "Int")
+	testIdentifierLiteral(t, implLit.TargetTypes[0], "Int")
+	testIdentifierLiteral(t, implLit.TargetTypes[1], "Hashable")
 
 	if len(implLit.Body.Statements) != 1 {
 		t.Fatalf("impl body should have 1 statement, got=%d", len(implLit.Body.Statements))

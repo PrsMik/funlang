@@ -101,7 +101,7 @@ func (implLiteral *ImplLiteral) String() string {
 	var out bytes.Buffer
 	types := []string{}
 	for _, i := range implLiteral.TargetTypes {
-		types = append(types, (*i).String())
+		types = append(types, i.String())
 	}
 	out.WriteString(implLiteral.TokenLiteral())
 	out.WriteString("(")

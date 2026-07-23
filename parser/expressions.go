@@ -210,6 +210,18 @@ func (prs *Parser) parseInterfaceLiteral() ast.ExpressionNode {
 
 func (prs *Parser) parseImplLiteral() ast.ExpressionNode {
 	expr := &ast.ImplLiteral{Token: prs.curToken}
+
+	if prs.peekTokenIs(token.LPAREN) {
+		prs.expectPeek(token.LPAREN)
+		expr.TargetTypes = prs.parseExpressionList(token.RPAREN)
+	} else {
+		expr.TargetTypes = nil
+	}
+
+	prs.expectPeek(token.LBRACE)
+
+	expr.Body = prs.parseBlockStatement()
+
 	return expr
 }
 
