@@ -135,6 +135,46 @@ func (prs *Parser) parseIfExpression() ast.ExpressionNode {
 	return expr
 }
 
+func (prs *Parser) parseSwitchExpression() ast.ExpressionNode {
+	expr := &ast.SwitchExpression{Token: prs.curToken}
+
+	prs.nextToken()
+
+	expr.Value = prs.parseExpression(LOWEST)
+
+	if !prs.curTokenIs(token.LBRACE) {
+		prs.expectPeek(token.LBRACE)
+	}
+
+	for prs.peekTokenIs(token.CASE) {
+		prs.expectPeek(token.CASE)
+
+		caseBlock := &ast.CaseBlock{Token: prs.curToken}
+
+		prs.nextToken()
+
+		caseBlock.Pattern = prs.parseExpression(LOWEST)
+
+		if !prs.curTokenIs(token.LBRACE) {
+			prs.expectPeek(token.LBRACE)
+		}
+
+		caseBlock.Body = prs.parseBlockStatement()
+
+		expr.Cases = append(expr.Cases, caseBlock)
+	}
+
+	prs.expectPeek(token.DEFAULT)
+
+	prs.expectPeek(token.LBRACE)
+
+	expr.Default = prs.parseBlockStatement()
+
+	prs.expectPeek(token.RBRACE)
+
+	return expr
+}
+
 func (prs *Parser) parseGroupedExpression() ast.ExpressionNode {
 	prs.nextToken()
 
@@ -156,6 +196,16 @@ func (prs *Parser) parseCallExpression(function ast.ExpressionNode) ast.Expressi
 
 func (prs *Parser) parseIdentifier() ast.ExpressionNode {
 	return &ast.Identifier{Token: prs.curToken, Value: prs.curToken.Literal}
+}
+
+func (prs *Parser) parseInterfaceLiteral() ast.ExpressionNode {
+	expr := &ast.InterfaceLiteral{Token: prs.curToken}
+	return expr
+}
+
+func (prs *Parser) parseImplLiteral() ast.ExpressionNode {
+	expr := &ast.ImplLiteral{Token: prs.curToken}
+	return expr
 }
 
 func (prs *Parser) parseIntegerLiteral() ast.ExpressionNode {
