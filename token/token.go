@@ -6,55 +6,68 @@ const (
 	ILLEGAL TokenType = iota
 	EOF
 	// ключевые слова (выражения)
-	LET
-	FN
-	RETURN
-	TRUE
-	FALSE
-	IF
-	ELSE
-	SWITCH
-	CASE
-	DEFAULT
-	INTERFACE
-	IMPL
-	TYPE
+	LET       // let
+	FN        // fn
+	RETURN    // return
+	TRUE      // true
+	FALSE     // false
+	IF        // if
+	ELSE      // else
+	SWITCH    // switch
+	CASE      // case
+	DEFAULT   // default
+	INTERFACE // interface
+	IMPL      // impl
+	TYPE      // type
 
 	// идентификаторы и литералы
-	COMMENT
-	IDENT
-	INT
-	STRING
 
-	// операторы
+	COMMENT // // myComment
+	IDENT   // myVar
+	INT     // 123
+	STRING  // "123"
+
+	// ОПЕРАТОРЫ
 	// присваивание
-	ASSIGN
-	LARROW
-	RARROW
+
+	ASSIGN // =
+	LARROW // ->
+	RARROW // <-
+
 	// математика (+, -, *, /)
-	PLUS
-	MINUS
-	ASTERISK
-	SLASH
-	COMMENT_SEPARATOR // "//"
+
+	PLUS              // +
+	MINUS             // -
+	ASTERISK          // *
+	SLASH             // /
+	COMMENT_SEPARATOR // //
+
 	// сравнение (== и !=)
-	EQUAL
-	NOT_EQUAL
+
+	EQUAL     // ==
+	NOT_EQUAL // !=
+
 	// сравнение (<, >, <=, >=)
-	LESS
-	GREATER
-	LESS_OR_EQUAL
-	GREATER_OR_EQUAL
+
+	LESS             // <
+	GREATER          // >
+	LESS_OR_EQUAL    // <=
+	GREATER_OR_EQUAL // >=
+
 	// булева алгебра (&&, ||, !)
-	TWO_AMPERSANDS
-	TWO_PIPES
-	BANG
+
+	TWO_AMPERSANDS // &&
+	TWO_PIPES      // ||
+	BANG           // !
+
 	// типы (|, &, .)
-	PIPE
-	AMPERSAND
-	DOT
+
+	PIPE      // |
+	AMPERSAND // &
+	DOT       // .
 
 	// спецсимволы
+
 	COMMA     // ,
 	COLON     // :
 	SEMICOLON // ;
@@ -66,9 +79,10 @@ const (
 	RBRACKET  // ]
 
 	// типы
-	INT_TYPE
-	BOOL_TYPE
-	STRING_TYPE
+
+	INT_TYPE    // int
+	BOOL_TYPE   // bool
+	STRING_TYPE // string
 )
 
 type Position struct {

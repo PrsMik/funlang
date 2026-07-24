@@ -13,8 +13,8 @@ const (
 	LOG_PROD    // &&
 	EQUALS      // ==
 	LESSGREATER // >, <
-	SUM         // +
-	PRODUCT     // *
+	SUM         // +, |
+	PRODUCT     // *, &
 	PREFIX      // -X, !X
 	CALL        // myFunction(X)
 	INDEX       // arr[i]
@@ -32,8 +32,10 @@ var precedences = map[token.TokenType]int{
 	token.GREATER_OR_EQUAL: LESSGREATER,
 	token.PLUS:             SUM,
 	token.MINUS:            SUM,
+	token.PIPE:             SUM,
 	token.SLASH:            PRODUCT,
 	token.ASTERISK:         PRODUCT,
+	token.AMPERSAND:        PRODUCT,
 	token.LPAREN:           CALL,
 	token.LBRACKET:         INDEX,
 	token.DOT:              MEMBER,
@@ -103,6 +105,9 @@ func New(lxr *lexer.Lexer) *Parser {
 
 	prs.registerInfix(token.SLASH, prs.parseInfixExpression)
 	prs.registerInfix(token.ASTERISK, prs.parseInfixExpression)
+
+	prs.registerInfix(token.AMPERSAND, prs.parseInfixExpression)
+	prs.registerInfix(token.PIPE, prs.parseInfixExpression)
 
 	prs.registerInfix(token.TWO_AMPERSANDS, prs.parseInfixExpression)
 	prs.registerInfix(token.TWO_PIPES, prs.parseInfixExpression)
