@@ -76,7 +76,7 @@ func (prs *Parser) parseFunctionType() ast.ExpressionNode {
 		return nil
 	}
 
-	fnType.ParamsTypes = prs.parseFunctionParamsTypes()
+	fnType.Parameters, fnType.ParamsTypes = prs.parseFunctionParamsTypes()
 
 	if !prs.expectPeek(token.RARROW) {
 		return nil
@@ -92,27 +92,52 @@ func (prs *Parser) parseFunctionType() ast.ExpressionNode {
 	return fnType
 }
 
-func (prs *Parser) parseFunctionParamsTypes() []ast.ExpressionNode {
-	params := []ast.ExpressionNode{}
+func (prs *Parser) parseFunctionParamsTypes() ([]*ast.Identifier, []ast.ExpressionNode) {
+	params := []*ast.Identifier{}
+	paramTypes := []ast.ExpressionNode{}
 
 	if prs.peekTokenIs(token.RPAREN) {
 		prs.nextToken()
-		return params
+		return params, paramTypes
 	}
 
 	prs.nextToken()
 
-	params = append(params, prs.parseType())
+	if !prs.expectParseParamAndTypePair(&params, &paramTypes) {
+		return nil, nil
+	}
 
 	for prs.peekTokenIs(token.COMMA) {
 		prs.nextToken()
 		prs.nextToken()
-		params = append(params, prs.parseType())
+		if !prs.expectParseParamAndTypePair(&params, &paramTypes) {
+			return nil, nil
+		}
 	}
 
 	if !prs.expectPeek(token.RPAREN) {
-		return nil
+		return nil, nil
 	}
 
-	return params
+	return params, paramTypes
+}
+
+func (prs *Parser) expectParseParamAndTypePair(params *[]*ast.Identifier, paramTypes *[]ast.ExpressionNode) bool {
+	firstLiteral := prs.parseExpression(LOWEST)
+
+	if prs.peekTokenIs(token.COLON) {
+		firstParam, ok := firstLiteral.(*ast.Identifier)
+		if !ok {
+			prs.typeError()
+			return ok
+		}
+		*params = append(*params, firstParam)
+		prs.nextToken()
+		prs.nextToken()
+		*paramTypes = append(*paramTypes, prs.parseType())
+	} else {
+		*paramTypes = append(*paramTypes, firstLiteral)
+	}
+
+	return true
 }
