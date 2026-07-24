@@ -42,6 +42,7 @@ func textDocumentCompletion(context *glsp.Context, params *protocol.CompletionPa
 
 	var hoveredNode ast.Node
 	var hoveredType types.Type
+	minLen = 999999
 
 	for node, tp := range info.ExpectedTypes {
 		start := node.Start()
@@ -84,7 +85,7 @@ func textDocumentCompletion(context *glsp.Context, params *protocol.CompletionPa
 		items = append(items, getTypesCompletions()...)
 	} else {
 		switch lastTok.Type {
-		case token.ASSIGN, token.LPAREN, token.COMMA, token.PLUS, token.ASTERISK:
+		case token.ASSIGN, token.LPAREN, token.COMMA, token.PLUS, token.ASTERISK, token.RETURN:
 			// fmt.Fprintf(os.Stderr, "Is assign context\n")
 			items = append(items, getValueCompletions(info, &env, hoveredNode, hoveredType)...)
 
@@ -95,10 +96,10 @@ func textDocumentCompletion(context *glsp.Context, params *protocol.CompletionPa
 		default:
 			// fmt.Fprintf(os.Stderr, "Is default context\n")
 			var res []protocol.CompletionItem
-			if hoveredNode != nil {
-				// fmt.Fprintf(os.Stderr, "Is value context\n")
-				res = getValueCompletions(info, &env, hoveredNode, hoveredType)
-			}
+			// if hoveredNode != nil {
+			// fmt.Fprintf(os.Stderr, "Is value context\n")
+			res = getValueCompletions(info, &env, hoveredNode, hoveredType)
+			// }
 			keywords := getKeywords()
 			for _, kw := range keywords {
 				kind := protocol.CompletionItemKindKeyword
@@ -178,11 +179,15 @@ func getValueCompletions(info *types.Info, env *types.TypeEviroment,
 		}
 
 		matches := false
-		if info.ExpectedTypes[hoveredNode] == nil {
+		expectedTp := hoveredType
+		if hoveredNode != nil && info.ExpectedTypes[hoveredNode] != nil {
+			expectedTp = info.ExpectedTypes[hoveredNode]
+		}
+
+		if expectedTp == nil {
 			matches = true
 		} else {
-			matches = types.Equals(symbolInfo.SymbolType, info.ExpectedTypes[hoveredNode])
-			// fmt.Fprintf(os.Stderr, "symb %T v. %T is %+v\n", symbolInfo.SymbolType, chk.ExpectedTypes[hoveredNode], matches)
+			matches = types.Equals(symbolInfo.SymbolType, expectedTp)
 		}
 
 		// fmt.Fprintf(os.Stderr, "Matches %T symb %T with type %T is %v\n ", symbolInfo.SymbolType,
@@ -346,6 +351,9 @@ func isExpectedTypeContext(tokens []token.Token) bool {
 }
 
 func declaredLater(firstNode ast.Node, secondNode ast.Node) bool {
+	if firstNode == nil || secondNode == nil {
+		return false
+	}
 	if firstNode.Start().Line > secondNode.End().Line ||
 		(firstNode.Start().Line == secondNode.End().Line && firstNode.Start().Column > secondNode.End().Column) {
 		return true
@@ -354,6 +362,9 @@ func declaredLater(firstNode ast.Node, secondNode ast.Node) bool {
 }
 
 func declaredOnSameLine(firstNode ast.Node, secondNode ast.Node) bool {
+	if firstNode == nil || secondNode == nil {
+		return false
+	}
 	if firstNode.Start().Line != secondNode.Start().Line {
 		return false
 	}

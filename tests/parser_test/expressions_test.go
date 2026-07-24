@@ -461,10 +461,16 @@ func TestParsingSwitchExpression(t *testing.T) {
 		t.Fatalf("stmt.Value is not ast.SwitchExpression. got=%T", stmt.Value)
 	}
 
-	if _, ok := switchExp.Value.(*ast.TypeAccessExpression); !ok {
-		t.Fatalf("switchExp.Value is not TypeAccessExpression. got=%T", switchExp.Value)
+	tpAc, ok := switchExp.Value.(*ast.TypeAccessExpression)
+	if !ok {
+		t.Fatalf("switchExp.Value is not ast.TypeAccessExpression. got=%T", switchExp.Value)
 	}
-	// testIdentifierLiteral(t, callExp.Function, "type")
+
+	tpAcIdent, ok := tpAc.Left.(*ast.Identifier)
+	if !ok {
+		t.Fatalf("switchExp.Value.Left is not ast.Identifier. got=%T", switchExp.Value)
+	}
+	testIdentifierLiteral(t, tpAcIdent, "res")
 
 	if len(switchExp.Cases) != 2 {
 		t.Fatalf("Expected 2 cases, got=%d", len(switchExp.Cases))

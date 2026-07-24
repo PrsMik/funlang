@@ -131,7 +131,7 @@ func testIdentifierLiteral(t *testing.T, expression ast.ExpressionNode, value st
 		return false
 	}
 	if ident.Value != value {
-		t.Errorf("ident.Value is not %s; got :%s", value, ident.Value)
+		t.Errorf("ident.Value is not %s; got : %s", value, ident.Value)
 		return false
 	}
 	if ident.TokenLiteral() != value {

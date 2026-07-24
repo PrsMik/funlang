@@ -337,6 +337,41 @@ func (prs *Parser) parseIndexExpression(left ast.ExpressionNode) ast.ExpressionN
 	return expression
 }
 
+func (prs *Parser) parseDotOperatorExpression(left ast.ExpressionNode) ast.ExpressionNode {
+	if prs.peekTokenIs(token.LPAREN) {
+		return prs.parseTypeAccessExpression(left)
+	} else {
+		return prs.parseMemberAccessExpression(left)
+	}
+}
+
+func (prs *Parser) parseTypeAccessExpression(left ast.ExpressionNode) ast.ExpressionNode {
+	expr := &ast.TypeAccessExpression{Token: prs.curToken, Left: left}
+
+	prs.expectPeek(token.LPAREN)
+
+	if !prs.expectPeek(token.TYPE) {
+		return nil
+	}
+
+	prs.expectPeek(token.RPAREN)
+
+	expr.SemiToken = prs.curToken
+
+	return expr
+}
+
+func (prs *Parser) parseMemberAccessExpression(left ast.ExpressionNode) ast.ExpressionNode {
+	expr := &ast.MemberAccessExpression{Token: prs.curToken, Left: left}
+
+	if !prs.expectPeek(token.IDENT) {
+		return nil
+	}
+	expr.Property = &ast.Identifier{Token: prs.curToken, Value: prs.curToken.Literal}
+
+	return expr
+}
+
 func (prs *Parser) parseExpressionList(end token.TokenType) []ast.ExpressionNode {
 	list := []ast.ExpressionNode{}
 

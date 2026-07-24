@@ -18,6 +18,7 @@ const (
 	PREFIX      // -X, !X
 	CALL        // myFunction(X)
 	INDEX       // arr[i]
+	MEMBER      // myObj.myField
 )
 
 var precedences = map[token.TokenType]int{
@@ -35,6 +36,7 @@ var precedences = map[token.TokenType]int{
 	token.ASTERISK:         PRODUCT,
 	token.LPAREN:           CALL,
 	token.LBRACKET:         INDEX,
+	token.DOT:              MEMBER,
 }
 
 type ParseError struct {
@@ -107,6 +109,8 @@ func New(lxr *lexer.Lexer) *Parser {
 
 	prs.registerInfix(token.LPAREN, prs.parseCallExpression)
 	prs.registerInfix(token.LBRACKET, prs.parseIndexExpression)
+
+	prs.registerInfix(token.DOT, prs.parseDotOperatorExpression)
 
 	prs.nextToken()
 	prs.nextToken()
