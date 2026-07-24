@@ -9,6 +9,16 @@ import (
 
 func (n *Null) Inspect() string { return "null" }
 
+func (to *TypeObject) Inspect() string {
+	if to.Name != "" {
+		return to.Name
+	}
+	if to.TypeValue != nil {
+		return to.TypeValue.Signature()
+	}
+	return "<type>"
+}
+
 func (i *Integer) Inspect() string { return fmt.Sprintf("%d", i.Value) }
 
 func (b *Boolean) Inspect() string { return fmt.Sprintf("%t", b.Value) }

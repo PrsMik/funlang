@@ -2,6 +2,7 @@ package object
 
 import (
 	"funlang/ast"
+	"funlang/types"
 	"hash/fnv"
 )
 
@@ -27,6 +28,7 @@ const (
 	RETURN_VALUE_OBJ
 	FUNCTION_OBJ
 	TAIL_CALL_OBJ
+	TYPE_OBJ
 	BUILTIN_OBJ
 	ERROR_OBJ
 )
@@ -34,6 +36,13 @@ const (
 type Null struct{}
 
 func (n *Null) Type() ObjectType { return NULL_OBJ }
+
+type TypeObject struct {
+	Name      string
+	TypeValue types.Type
+}
+
+func (to *TypeObject) Type() ObjectType { return TYPE_OBJ }
 
 type Integer struct {
 	Value int
