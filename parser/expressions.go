@@ -213,9 +213,9 @@ func (prs *Parser) parseImplLiteral() ast.ExpressionNode {
 
 	if prs.peekTokenIs(token.LPAREN) {
 		prs.expectPeek(token.LPAREN)
-		expr.TargetTypes = prs.parseExpressionList(token.RPAREN)
+		expr.TargetType = prs.parseType()
 	} else {
-		expr.TargetTypes = nil
+		expr.TargetType = nil
 	}
 
 	prs.expectPeek(token.LBRACE)

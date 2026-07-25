@@ -395,7 +395,7 @@ func TestParsingInterfaceLiteral(t *testing.T) {
 
 func TestParsingImplLiteral(t *testing.T) {
 	input := `
-	let myInt: type = impl (Int, Hashable) {
+	let myInt: type = impl (Int & Hashable) {
 		let floatToInt: fn(Float) -> int = fn(a) {
 			return a;
 		};
@@ -416,11 +416,15 @@ func TestParsingImplLiteral(t *testing.T) {
 	// 	t.Fatalf("impl target should be nil")
 	// }
 
-	if len(implLit.TargetTypes) != 2 {
-		t.Fatalf("impl target should have 2 type, got=%d", len(implLit.TargetTypes))
+	tpExpr, ok := implLit.TargetType.(*ast.InfixExpression)
+	if !ok {
+		t.Fatalf("impl target should be ast.InfixExpression, got=%T", implLit.TargetType)
 	}
-	testIdentifierLiteral(t, implLit.TargetTypes[0], "Int")
-	testIdentifierLiteral(t, implLit.TargetTypes[1], "Hashable")
+	if tpExpr.Operator != "&" {
+		t.Fatalf("impl target should be &, got=%s", tpExpr.Operator)
+	}
+	testIdentifierLiteral(t, tpExpr.Left, "Int")
+	testIdentifierLiteral(t, tpExpr.Right, "Hashable")
 
 	if len(implLit.Body.Statements) != 1 {
 		t.Fatalf("impl body should have 1 statement, got=%d", len(implLit.Body.Statements))

@@ -96,9 +96,9 @@ func (ident *InterfaceLiteral) End() token.Position   { return ident.Body.End() 
 
 // литерал объявления реализации (например, impl { let x: int = 1; } )
 type ImplLiteral struct {
-	Token       token.Token
-	TargetTypes []ExpressionNode
-	Body        *BlockStatement
+	Token      token.Token
+	TargetType ExpressionNode
+	Body       *BlockStatement
 }
 
 func (ident *ImplLiteral) expressionNode()       {}

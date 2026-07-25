@@ -99,13 +99,9 @@ func (interLit *InterfaceLiteral) String() string {
 
 func (implLiteral *ImplLiteral) String() string {
 	var out bytes.Buffer
-	types := []string{}
-	for _, i := range implLiteral.TargetTypes {
-		types = append(types, i.String())
-	}
 	out.WriteString(implLiteral.TokenLiteral())
 	out.WriteString("(")
-	out.WriteString(strings.Join(types, ", "))
+	out.WriteString(implLiteral.TargetType.String())
 	out.WriteString(")")
 	out.WriteString(implLiteral.Body.String())
 	return out.String()
