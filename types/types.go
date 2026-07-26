@@ -1,5 +1,7 @@
 package types
 
+import "fmt"
+
 type Type interface {
 	isType()
 	Signature() string
@@ -12,6 +14,13 @@ type HashableType interface {
 type PrintableType interface {
 	isPrintable()
 }
+
+type TypeType struct {
+	Underlying Type
+}
+
+func (t *TypeType) isType()           {}
+func (t *TypeType) Signature() string { return fmt.Sprintf("<type(%s)>", t.Underlying.Signature()) }
 
 type IllegalType struct{}
 
@@ -112,62 +121,45 @@ func (t *FuncType) Signature() string {
 	return res
 }
 
-func Equals(rawLeftType, rawRightType Type) bool {
-	if rawLeftType == rawRightType {
-		return true
+type InterfaceType struct {
+	Name   string
+	Fields map[string]Type
+}
+
+func (t *InterfaceType) isType()           {}
+func (t *InterfaceType) Signature() string { return fmt.Sprintf("<inteface %s>", t.Name) }
+
+type ImplType struct {
+	Name            string
+	ImplementedType Type
+	Fields          map[string]Type
+}
+
+func (t *ImplType) isType() {}
+func (t *ImplType) Signature() string {
+	res := fmt.Sprintf("<impl %s (%s)>", t.Name, t.ImplementedType.Signature())
+	if t.ImplementedType != nil {
+		res = fmt.Sprintf("<impl %s (%s)>", t.Name, t.ImplementedType.Signature())
 	}
+	return res
+}
 
-	switch leftType := rawLeftType.(type) {
-	case *IntType:
-		_, ok := rawRightType.(*IntType)
-		return ok
-	case *BoolType:
-		_, ok := rawRightType.(*BoolType)
-		return ok
-	case *StringType:
-		_, ok := rawRightType.(*StringType)
-		return ok
-	case *ArrayType:
-		rightType, ok := rawRightType.(*ArrayType)
-		if !ok {
-			return false
-		}
+type UnionType struct {
+	Left  Type
+	Right Type
+}
 
-		if rightType.ElementsType == nil || leftType.ElementsType == nil {
-			return true
-		}
+func (t *UnionType) isType() {}
+func (t *UnionType) Signature() string {
+	return fmt.Sprintf("<union %s | %s>", t.Left.Signature(), t.Right.Signature())
+}
 
-		return Equals(leftType.ElementsType, rightType.ElementsType)
-	case *HashMapType:
-		rightType, ok := rawRightType.(*HashMapType)
-		if !ok {
-			return false
-		}
+type IntersectionType struct {
+	Left  Type
+	Right Type
+}
 
-		if (rightType.KeyType == nil && rightType.ElementType == nil) ||
-			(leftType.KeyType == nil && leftType.ElementType == nil) {
-			return true
-		}
-
-		return Equals(leftType.KeyType, rightType.KeyType) && Equals(leftType.ElementType, rightType.ElementType)
-	case *FuncType:
-		rightType, ok := rawRightType.(*FuncType)
-		if !ok {
-			return false
-		}
-
-		if len(leftType.Params) != len(rawRightType.(*FuncType).Params) {
-			return false
-		}
-
-		for i := range leftType.Params {
-			if !Equals(leftType.Params[i].Type, rightType.Params[i].Type) {
-				return false
-			}
-		}
-
-		return Equals(leftType.ReturnType, rightType.ReturnType)
-	default:
-		return false
-	}
+func (t *IntersectionType) isType() {}
+func (t *IntersectionType) Signature() string {
+	return fmt.Sprintf("<intersection %s & %s>", t.Left.Signature(), t.Right.Signature())
 }

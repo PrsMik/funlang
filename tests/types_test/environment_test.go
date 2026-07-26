@@ -61,6 +61,10 @@ func TestGetAllNames(t *testing.T) {
 		"tail":      true,
 		"push":      true,
 		"puts":      true,
+		"type":      true,
+		"int":       true,
+		"string":    true,
+		"bool":      true,
 	}
 
 	if len(names) != len(expectedNames) {
