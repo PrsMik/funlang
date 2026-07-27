@@ -557,7 +557,7 @@ func TestParsingTypeAccessExpression(t *testing.T) {
 }
 
 func TestParsingUnionAndIntersectionTypes(t *testing.T) {
-	input := "let Algebraic: type = Addable & Substractable | Multipliable;"
+	input := "let Algebraic: int | string & bool = Addable & Substractable | Multipliable;"
 	l := lexer.New(input)
 	p := parser.New(l)
 	program := p.ParseProgram()

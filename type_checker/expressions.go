@@ -18,7 +18,7 @@ func (chk *TypeChecker) checkExpression(expr ast.ExpressionNode) types.Type {
 		chk.recordType(expr, tp)
 		return tp
 	}
-	chk.typeError("unknown expression type", expr)
+	chk.typeError(fmt.Sprintf("unknown expression type %T", expr), expr)
 	return &types.IllegalType{}
 }
 
@@ -199,6 +199,20 @@ func (chk *TypeChecker) checkIdentifier(expr ast.ExpressionNode) types.Type {
 	symbolInfo, ok := chk.env.Get(expr.(*ast.Identifier).Value)
 	if !ok {
 		chk.typeError(fmt.Sprintf("unknown identifier: %s", expr.(*ast.Identifier).Value), expr)
+		return &types.IllegalType{}
+	}
+
+	if symbolInfo.DeclNode != nil {
+		chk.recordDefinition(expr, symbolInfo.DeclNode)
+	}
+
+	return symbolInfo.SymbolType
+}
+
+func (chk *TypeChecker) checkTypeIdentifier(expr ast.ExpressionNode) types.Type {
+	symbolInfo, ok := chk.env.Get(expr.String())
+	if !ok {
+		chk.typeError(fmt.Sprintf("unknown identifier: %s", expr.String()), expr)
 		return &types.IllegalType{}
 	}
 

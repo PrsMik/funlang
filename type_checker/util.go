@@ -37,17 +37,37 @@ func (chk *TypeChecker) recordExpectedType(node ast.Node, tp types.Type) {
 	}
 }
 
+func (chk *TypeChecker) resolveTypeExpression(expr ast.ExpressionNode) types.Type {
+	evaluatedType := chk.checkExpression(expr)
+
+	if typeType, ok := evaluatedType.(*types.TypeType); ok {
+		return typeType.Underlying
+	}
+
+	if _, ok := evaluatedType.(*types.IllegalType); !ok {
+		chk.typeError(fmt.Sprintf("expected a type, but got a value of type %s", evaluatedType.Signature()), expr)
+	}
+
+	return &types.IllegalType{}
+}
+
 func (chk *TypeChecker) resolveType(inType ast.ExpressionNode) types.Type {
 	chk.recordTypeNode(inType, true)
 	switch tp := inType.(type) {
+	case *ast.TypeType:
+		res, _ := chk.env.Get("type")
+		return res.SymbolType.(*types.TypeType).Underlying
 	case *ast.SimpleType:
 		switch tp.Token.Type {
 		case token.INT_TYPE:
-			return &types.IntType{}
+			res, _ := chk.env.Get("int")
+			return res.SymbolType.(*types.TypeType).Underlying
 		case token.BOOL_TYPE:
-			return &types.BoolType{}
+			res, _ := chk.env.Get("bool")
+			return res.SymbolType.(*types.TypeType).Underlying
 		case token.STRING_TYPE:
-			return &types.StringType{}
+			res, _ := chk.env.Get("string")
+			return res.SymbolType.(*types.TypeType).Underlying
 		}
 	case *ast.ArrayType:
 		return &types.ArrayType{ElementsType: chk.resolveType(tp.ElementsType)}
@@ -69,6 +89,8 @@ func (chk *TypeChecker) resolveType(inType ast.ExpressionNode) types.Type {
 		rtrnType := chk.resolveType(tp.ReturnType)
 
 		return &types.FuncType{Params: funcParams, ReturnType: rtrnType}
+	default:
+		return chk.resolveTypeExpression(inType)
 	}
 	chk.typeError(fmt.Sprintf("%s is not a valid type", inType.String()), inType)
 	return nil

@@ -36,6 +36,7 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 	chk.recordType(stmt.Name, expectedType)
 	chk.recordExpectedType(stmt.Value, expectedType)
 
+	// установка имен для параметров функции
 	funcLit, isFuncLit := stmt.Value.(*ast.FunctionLiteral)
 	if isFuncLit {
 		if expFnType, ok := expectedType.(*types.FuncType); ok {
@@ -51,7 +52,7 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 
 	actualType := chk.checkExpression(stmt.Value)
 
-	if !types.Equals(expectedType, actualType) {
+	if !types.IsAssignable(expectedType, actualType) {
 		if expectedType != nil && actualType != nil {
 			if len(chk.errors) == 0 {
 				chk.typeError(fmt.Sprintf("expected type %s, got %s", expectedType.Signature(), actualType.Signature()), stmt)
@@ -59,11 +60,16 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 		}
 	}
 
-	if !isFuncLit {
-		chk.env.Set(stmt.Name.Value, expectedType, stmt.Name)
-	} else {
+	_, isDeclaringType := expectedType.(*types.TypeType)
+
+	if isDeclaringType {
 		chk.env.Set(stmt.Name.Value, actualType, stmt.Name)
 		chk.recordType(stmt.Name, actualType)
+	} else if isFuncLit {
+		chk.env.Set(stmt.Name.Value, actualType, stmt.Name)
+		chk.recordType(stmt.Name, actualType)
+	} else {
+		chk.env.Set(stmt.Name.Value, expectedType, stmt.Name)
 	}
 
 	chk.curExpectedType = nil

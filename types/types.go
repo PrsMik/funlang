@@ -19,8 +19,14 @@ type TypeType struct {
 	Underlying Type
 }
 
-func (t *TypeType) isType()           {}
-func (t *TypeType) Signature() string { return fmt.Sprintf("<type(%s)>", t.Underlying.Signature()) }
+func (t *TypeType) isType() {}
+func (t *TypeType) Signature() string {
+	if t.Underlying != nil {
+		return fmt.Sprintf("<type(%s)>", t.Underlying.Signature())
+	} else {
+		return "<type>"
+	}
+}
 
 type IllegalType struct{}
 

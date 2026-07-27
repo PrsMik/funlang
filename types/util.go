@@ -1,5 +1,6 @@
 package types
 
+// проверяет можно ли expected (левому) присвоить значение с типом actual (правое)
 func IsAssignable(expected, actual Type) bool {
 	if Equals(expected, actual) {
 		return true
@@ -26,6 +27,8 @@ func Equals(rawLeftType, rawRightType Type) bool {
 	}
 
 	switch leftType := rawLeftType.(type) {
+	case *TypeType:
+		return true
 	case *IntType:
 		_, ok := rawRightType.(*IntType)
 		return ok
