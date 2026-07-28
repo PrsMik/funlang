@@ -5,24 +5,49 @@ import (
 	"funlang/token"
 )
 
-func (prs *Parser) parseType() ast.ExpressionNode {
-	switch prs.curToken.Type {
-	case token.TYPE:
-		return &ast.TypeType{Token: prs.curToken, Value: prs.curToken.Literal}
-	case token.INT_TYPE, token.BOOL_TYPE, token.STRING_TYPE:
-		return &ast.SimpleType{Token: prs.curToken, Value: prs.curToken.Literal}
-	case token.LBRACKET:
-		return prs.parseArrayType()
-	case token.LBRACE:
-		return prs.parseHashMapType()
-	case token.FN:
-		return prs.parseFunctionType()
-	case token.INT, token.STRING, token.TRUE, token.FALSE, token.BANG, token.MINUS:
-		prs.typeError()
-		return nil
-	default:
-		return prs.parseExpression(LOWEST)
+type parsExpr = func(int) ast.ExpressionNode
+
+func (prs *Parser) switchToTypePrefixes() {
+	prs.registerPrefix(token.LBRACKET, prs.parseArrayType)
+	prs.registerPrefix(token.LBRACE, prs.parseHashMapType)
+	prs.registerPrefix(token.FN, prs.parseFunctionType)
+}
+
+func (prs *Parser) convertToTypeContext(fn parsExpr) parsExpr {
+	return func(precedence int) ast.ExpressionNode {
+		prs.switchToTypePrefixes()
+
+		defer prs.registerPrefixParseFns()
+
+		res := fn(precedence)
+
+		switch res.(type) {
+		case *ast.IntegerLiteral,
+			*ast.BooleanLiteral,
+			*ast.StringLiteral,
+			*ast.ArrayLiteral,
+			*ast.HashMapLiteral,
+			*ast.FunctionLiteral,
+			*ast.PrefixExpression:
+
+			prs.typeError()
+			return nil
+		default:
+			return res
+		}
 	}
+}
+
+func (prs *Parser) parseType() ast.ExpressionNode {
+	return prs.convertToTypeContext(prs.parseExpression)(LOWEST)
+}
+
+func (prs *Parser) parseTypeType() ast.ExpressionNode {
+	return &ast.TypeType{Token: prs.curToken, Value: prs.curToken.Literal}
+}
+
+func (prs *Parser) parseSimpleType() ast.ExpressionNode {
+	return &ast.SimpleType{Token: prs.curToken, Value: prs.curToken.Literal}
 }
 
 func (prs *Parser) parseArrayType() ast.ExpressionNode {

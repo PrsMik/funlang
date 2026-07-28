@@ -59,14 +59,13 @@ type Parser struct {
 	Comments []token.Token
 }
 
-func New(lxr *lexer.Lexer) *Parser {
-	prs := &Parser{lxr: lxr, errors: []ParseError{}}
-
+func (prs *Parser) registerPrefixParseFns() {
 	prs.prefixParseFns = make(map[token.TokenType]prefixParseFn)
 
-	prs.registerPrefix(token.INT_TYPE, prs.parseType)
-	prs.registerPrefix(token.BOOL_TYPE, prs.parseType)
-	prs.registerPrefix(token.STRING_TYPE, prs.parseType)
+	prs.registerPrefix(token.TYPE, prs.parseTypeType)
+	prs.registerPrefix(token.INT_TYPE, prs.parseSimpleType)
+	prs.registerPrefix(token.BOOL_TYPE, prs.parseSimpleType)
+	prs.registerPrefix(token.STRING_TYPE, prs.parseSimpleType)
 
 	prs.registerPrefix(token.IDENT, prs.parseIdentifier)
 
@@ -90,7 +89,9 @@ func New(lxr *lexer.Lexer) *Parser {
 
 	prs.registerPrefix(token.INTERFACE, prs.parseInterfaceLiteral)
 	prs.registerPrefix(token.IMPL, prs.parseImplLiteral)
+}
 
+func (prs *Parser) registerInfixParseFns() {
 	prs.infixParseFns = make(map[token.TokenType]infixParseFn)
 	prs.registerInfix(token.EQUAL, prs.parseInfixExpression)
 	prs.registerInfix(token.NOT_EQUAL, prs.parseInfixExpression)
@@ -116,6 +117,14 @@ func New(lxr *lexer.Lexer) *Parser {
 	prs.registerInfix(token.LBRACKET, prs.parseIndexExpression)
 
 	prs.registerInfix(token.DOT, prs.parseDotOperatorExpression)
+}
+
+func New(lxr *lexer.Lexer) *Parser {
+	prs := &Parser{lxr: lxr, errors: []ParseError{}}
+
+	prs.registerPrefixParseFns()
+
+	prs.registerInfixParseFns()
 
 	prs.nextToken()
 	prs.nextToken()
