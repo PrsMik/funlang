@@ -201,7 +201,7 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 
 	resFuncType.ReturnType = chk.checkBlockStatement(funLiteral.Body)
 
-	if !types.Equals(resFuncType.ReturnType, expectedFuncType.ReturnType) {
+	if !types.Equals(expectedFuncType.ReturnType, resFuncType.ReturnType) {
 		chk.typeError(fmt.Sprintf("function literal has return type %s, but expected %s",
 			resFuncType.ReturnType.Signature(), expectedFuncType.ReturnType.Signature()), expr)
 		return &types.IllegalType{}

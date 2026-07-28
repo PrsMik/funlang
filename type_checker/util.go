@@ -56,7 +56,7 @@ func (chk *TypeChecker) resolveType(inType ast.ExpressionNode) types.Type {
 	switch tp := inType.(type) {
 	case *ast.TypeType:
 		res, _ := chk.env.Get("type")
-		return res.SymbolType.(*types.TypeType).Underlying
+		return res.SymbolType.(*types.TypeType)
 	case *ast.SimpleType:
 		switch tp.Token.Type {
 		case token.INT_TYPE:

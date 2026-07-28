@@ -1,5 +1,6 @@
 package types
 
+// !!!ПОРЯДОК ВАЖЕН!!!
 // проверяет можно ли expected (левому) присвоить значение с типом actual (правое)
 func IsAssignable(expected, actual Type) bool {
 	if Equals(expected, actual) {
@@ -22,13 +23,16 @@ func IsAssignable(expected, actual Type) bool {
 		return IsAssignable(expected, actualImpl.ImplementedType)
 	}
 
-	if actuaTypeType, ok := actual.(*TypeType); ok {
-		return IsAssignable(expected, actuaTypeType.Underlying)
+	if actualTypeType, ok := actual.(*TypeType); ok {
+		if actualUnderImpl, ok := actualTypeType.Underlying.(*ImplType); ok {
+			return IsAssignable(expected, actualUnderImpl)
+		}
 	}
 
 	return false
 }
 
+// !!!ПОРЯДОК ВАЖЕН!!! ЛЕВОЕ - ТО ЧЕМУ ПРИСВАИВАЕТСЯ ПРАВОЕ
 func Equals(rawLeftType, rawRightType Type) bool {
 	if rawLeftType == rawRightType {
 		return true
@@ -36,9 +40,11 @@ func Equals(rawLeftType, rawRightType Type) bool {
 
 	switch leftType := rawLeftType.(type) {
 	case *TypeType:
-		// return true
-		_, ok := rawRightType.(*TypeType)
-		return ok
+		if leftType == TrueTypeType {
+			_, ok := rawRightType.(*TypeType)
+			return ok
+		}
+		return false
 	case *IntType:
 		_, ok := rawRightType.(*IntType)
 		return ok
@@ -88,6 +94,23 @@ func Equals(rawLeftType, rawRightType Type) bool {
 		}
 
 		return Equals(leftType.ReturnType, rightType.ReturnType)
+	case *InterfaceType:
+		rightType, ok := rawRightType.(*InterfaceType)
+		if !ok {
+			return false
+		}
+
+		for leftFieldName, leftFieldType := range leftType.Fields {
+			rightFieldType, exists := rightType.Fields[leftFieldName]
+			if !exists {
+				return false
+			}
+			if !IsAssignable(leftFieldType, rightFieldType) {
+				return false
+			}
+		}
+
+		return true
 	default:
 		return false
 	}

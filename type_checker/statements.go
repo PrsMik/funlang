@@ -62,9 +62,9 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 
 	if !types.IsAssignable(expectedType, actualType) {
 		if expectedType != nil && actualType != nil {
-			if len(chk.errors) == 0 {
-				chk.typeError(fmt.Sprintf("expected type %s, got %s", expectedType.Signature(), actualType.Signature()), stmt)
-			}
+			// if len(chk.errors) == 0 {
+			chk.typeError(fmt.Sprintf("expected type %s, got %s", expectedType.Signature(), actualType.Signature()), stmt)
+			// }
 		}
 	}
 

@@ -107,7 +107,7 @@ func (chk *TypeChecker) checkInfixExpression(expr ast.ExpressionNode) types.Type
 			return &types.BoolType{}
 		}
 	case "|":
-		if types.Equals(leftType, &types.TypeType{}) && types.Equals(rightType, &types.TypeType{}) {
+		if types.Equals(types.TrueTypeType, leftType) && types.Equals(types.TrueTypeType, rightType) {
 			return &types.TypeType{
 				Underlying: &types.UnionType{
 					Left:  leftType.(*types.TypeType).Underlying,
@@ -116,7 +116,7 @@ func (chk *TypeChecker) checkInfixExpression(expr ast.ExpressionNode) types.Type
 			}
 		}
 	case "&":
-		if types.Equals(leftType, &types.TypeType{}) && types.Equals(rightType, &types.TypeType{}) {
+		if types.Equals(types.TrueTypeType, leftType) && types.Equals(types.TrueTypeType, rightType) {
 			return &types.TypeType{
 				Underlying: &types.IntersectionType{
 					Left:  leftType.(*types.TypeType).Underlying,

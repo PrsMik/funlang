@@ -10,6 +10,11 @@ func TestFirstClassTypes(t *testing.T) {
 			expectedErr: "",
 		},
 		{
+			name:        "Chain assign of types",
+			input:       "let T: type = int; let U: type = T; let V: type = U; let x: V = 5;",
+			expectedErr: "",
+		},
+		{
 			name:        "Type mismatch using type variable",
 			input:       "let T: type = string; let x: T = 5;",
 			expectedErr: "expected type <string>, got <int>",
@@ -40,9 +45,33 @@ func TestStructuralTyping(t *testing.T) {
 			expectedErr: "",
 		},
 		{
+			name: "Valid chain with structural subtyping (exact match)",
+			input: `
+				let HasName: type = interface { let name: type = string; };
+				let HasNameTwo: type = HasName;
+				let Person: type = impl (HasName) { let name: string = "Alice"; };
+				let obj: HasNameTwo = Person;
+			`,
+			expectedErr: "",
+		},
+		{
 			name: "Valid impl",
 			input: `
 				let Person: type = impl { let name: string = "Alice"; };
+			`,
+			expectedErr: "",
+		},
+		{
+			name: "Valid impl (interface)",
+			input: `
+				let obj: interface { let val: type = int; } = impl (interface { let val: type = int; }) { let val: int = 42; };
+			`,
+			expectedErr: "",
+		},
+		{
+			name: "Valid impl (empty interface)",
+			input: `
+				let obj: interface {} = impl (interface {let val: type = int;}) { let val: int = 42; };
 			`,
 			expectedErr: "",
 		},
@@ -66,10 +95,26 @@ func TestStructuralTyping(t *testing.T) {
 			expectedErr: "",
 		},
 		{
+			name: "Invalid impl (interface)",
+			input: `
+				let obj: interface { let val: type = string; } = impl (interface {}) { let val: int = 42; };
+			`,
+			expectedErr: "type error",
+		},
+		{
 			name: "Invalid structural subtyping (missing field)",
 			input: `
 				let HasName: type = interface { let name: type = string; };
 				let Box: type = impl (HasName) { let size: int = 10; };
+				let obj: HasName = Box;
+			`,
+			expectedErr: "type error",
+		},
+		{
+			name: "Invalid structural subtyping (not implemented)",
+			input: `
+				let HasName: type = interface { let name: type = string; };
+				let Box: type = impl { let size: string = "10"; };
 				let obj: HasName = Box;
 			`,
 			expectedErr: "type error",
@@ -105,6 +150,11 @@ func TestAlgebraicTypes(t *testing.T) {
 			expectedErr: "type error",
 		},
 		{
+			name:        "Invalid Union assignment",
+			input:       "let x: int | string = type;",
+			expectedErr: "type error",
+		},
+		{
 			name: "Valid Intersection assignment",
 			input: `
 				let A: type = interface { let a: type = int; };
@@ -131,10 +181,27 @@ func TestMemberAccess(t *testing.T) {
 		{
 			name: "Valid member access",
 			input: `
+				let MyIface: type = interface { let val: type = int; };
+				let obj: MyIface = impl (MyIface) { let val: int = 42; };
+				let x: int = obj.val;
+			`,
+			expectedErr: "",
+		},
+		{
+			name: "Valid member access (anonymous interfaces)",
+			input: `
 				let obj: interface { let val: type = int; } = impl (interface { let val: type = int; }) { let val: int = 42; };
 				let x: int = obj.val;
 			`,
 			expectedErr: "",
+		},
+		{
+			name: "Invalid member access",
+			input: `
+				let obj: type = impl { let val: int = 42; };
+				let x: int = obj.val;
+			`,
+			expectedErr: "type error",
 		},
 		{
 			name: "Invalid member access (unknown field)",
@@ -151,6 +218,51 @@ func TestMemberAccess(t *testing.T) {
 				let x: int = obj.val;
 			`,
 			expectedErr: "expected type <int>, got <string>",
+		},
+	}
+	runTypeCheckerTests(t, tests)
+}
+
+func TestTypeAccessExpression(t *testing.T) {
+	tests := []TestCase{
+		{
+			name: "Valid type access assignment",
+			input: `
+				let x: int = 5;
+				let T: type = x.(type);
+			`,
+			expectedErr: "",
+		},
+		{
+			name: "Type access assignment type mismatch",
+			input: `
+				let x: int = 5;
+				let y: int = x.(type); // ожидается int, а получает type
+			`,
+			expectedErr: "expected type <int>, got <type(<int>)>",
+		},
+		{
+			name: "Type access on complex expression",
+			input: `
+				let getNumber: fn() -> int = fn() { return 42; };
+				let ResultType: type = getNumber().(type);
+			`,
+			expectedErr: "",
+		},
+		{
+			name: "Type access on unresolved identifier",
+			input: `
+				let T: type = unknown_var.(type);
+			`,
+			expectedErr: "unknown identifier: unknown_var",
+		},
+		{
+			name: "Type access on Union type",
+			input: `
+				let val: int | string = "hello";
+				let ValType: type = val.(type);
+			`,
+			expectedErr: "",
 		},
 	}
 	runTypeCheckerTests(t, tests)
