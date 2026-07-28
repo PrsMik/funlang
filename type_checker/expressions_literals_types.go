@@ -92,11 +92,7 @@ func (chk *TypeChecker) checkImplLiteral(expr ast.ExpressionNode) types.Type {
 		chk.verifyImplementation(targetType, implType, expr)
 	}
 
-	if _, isExpectedType := chk.curExpectedType.(*types.TypeType); isExpectedType {
-		return &types.TypeType{Underlying: implType}
-	}
-
-	return implType
+	return &types.TypeType{Underlying: implType}
 }
 
 func (chk *TypeChecker) verifyImplementation(targetType types.Type, implType *types.ImplType, node ast.Node) {

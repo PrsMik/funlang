@@ -77,6 +77,8 @@ func (chk *TypeChecker) checkInfixExpression(expr ast.ExpressionNode) types.Type
 		}
 	case "==", "!=":
 		chk.curExpectedType = leftType
+	case "|", "&":
+		chk.curExpectedType = &types.TypeType{}
 	}
 
 	rightType := chk.checkExpression(expr.(*ast.InfixExpression).Right)
@@ -103,6 +105,24 @@ func (chk *TypeChecker) checkInfixExpression(expr ast.ExpressionNode) types.Type
 	case ">", "<", ">=", "<=":
 		if types.Equals(leftType, &types.IntType{}) && types.Equals(rightType, &types.IntType{}) {
 			return &types.BoolType{}
+		}
+	case "|":
+		if types.Equals(leftType, &types.TypeType{}) && types.Equals(rightType, &types.TypeType{}) {
+			return &types.TypeType{
+				Underlying: &types.UnionType{
+					Left:  leftType.(*types.TypeType).Underlying,
+					Right: rightType.(*types.TypeType).Underlying,
+				},
+			}
+		}
+	case "&":
+		if types.Equals(leftType, &types.TypeType{}) && types.Equals(rightType, &types.TypeType{}) {
+			return &types.TypeType{
+				Underlying: &types.IntersectionType{
+					Left:  leftType.(*types.TypeType).Underlying,
+					Right: rightType.(*types.TypeType).Underlying,
+				},
+			}
 		}
 	}
 

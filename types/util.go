@@ -11,11 +11,19 @@ func IsAssignable(expected, actual Type) bool {
 	}
 
 	if actualIntersection, ok := actual.(*IntersectionType); ok {
+		if exprectedIntersection, ok := expected.(*IntersectionType); ok {
+			return IsAssignable(exprectedIntersection.Left, actualIntersection.Left) &&
+				IsAssignable(exprectedIntersection.Right, actualIntersection.Right)
+		}
 		return IsAssignable(expected, actualIntersection.Left) || IsAssignable(expected, actualIntersection.Right)
 	}
 
 	if actualImpl, ok := actual.(*ImplType); ok {
 		return IsAssignable(expected, actualImpl.ImplementedType)
+	}
+
+	if actuaTypeType, ok := actual.(*TypeType); ok {
+		return IsAssignable(expected, actuaTypeType.Underlying)
 	}
 
 	return false
@@ -28,7 +36,9 @@ func Equals(rawLeftType, rawRightType Type) bool {
 
 	switch leftType := rawLeftType.(type) {
 	case *TypeType:
-		return true
+		// return true
+		_, ok := rawRightType.(*TypeType)
+		return ok
 	case *IntType:
 		_, ok := rawRightType.(*IntType)
 		return ok

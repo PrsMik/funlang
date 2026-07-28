@@ -143,7 +143,7 @@ type ImplType struct {
 
 func (t *ImplType) isType() {}
 func (t *ImplType) Signature() string {
-	res := fmt.Sprintf("<impl %s (%s)>", t.Name, t.ImplementedType.Signature())
+	res := fmt.Sprintf("<impl %s>", t.Name)
 	if t.ImplementedType != nil {
 		res = fmt.Sprintf("<impl %s (%s)>", t.Name, t.ImplementedType.Signature())
 	}
