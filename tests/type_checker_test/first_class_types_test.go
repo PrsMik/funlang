@@ -40,10 +40,27 @@ func TestStructuralTyping(t *testing.T) {
 			expectedErr: "",
 		},
 		{
+			name: "Valid impl",
+			input: `
+				let Person: type = impl { let name: string = "Alice"; };
+			`,
+			expectedErr: "",
+		},
+		{
 			name: "Valid structural subtyping (extra fields allowed)",
 			input: `
 				let HasName: type = interface { let name: type = string; };
 				let Person: type = impl (HasName) { let name: string = "Alice"; let age: int = 30; };
+				let obj: HasName = Person;
+			`,
+			expectedErr: "",
+		},
+		{
+			name: "Valid structural subtyping (multiple implentation)",
+			input: `
+				let HasName: type = interface { let name: type = string; };
+				let HasYear: type = interface { let age: type = int; };
+				let Person: type = impl (HasName & HasYear) { let name: string = "Alice"; let age: int = 30; };
 				let obj: HasName = Person;
 			`,
 			expectedErr: "",

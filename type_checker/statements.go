@@ -50,6 +50,14 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 		chk.env.Set(stmt.Name.Value, expectedType, stmt.Name)
 	}
 
+	_, isDeclaringType := expectedType.(*types.TypeType)
+
+	// для самоссылающихся интерфейсов
+	if isDeclaringType {
+		forwardIfaceDecl := &types.InterfaceType{Name: stmt.Name.Value}
+		chk.env.Set(stmt.Name.Value, &types.TypeType{Underlying: forwardIfaceDecl}, stmt.Name)
+	}
+
 	actualType := chk.checkExpression(stmt.Value)
 
 	if !types.IsAssignable(expectedType, actualType) {
@@ -60,9 +68,16 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 		}
 	}
 
-	_, isDeclaringType := expectedType.(*types.TypeType)
-
 	if isDeclaringType {
+		// перезапись имени анонимного интерфейса
+		if actTypeType, ok := actualType.(*types.TypeType); ok {
+			if interfaceType, ok := actTypeType.Underlying.(*types.InterfaceType); ok {
+				interfaceType.Name = stmt.Name.Value
+			}
+			if implType, ok := actTypeType.Underlying.(*types.ImplType); ok {
+				implType.Name = stmt.Name.Value
+			}
+		}
 		chk.env.Set(stmt.Name.Value, actualType, stmt.Name)
 		chk.recordType(stmt.Name, actualType)
 	} else if isFuncLit {
