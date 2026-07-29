@@ -112,6 +112,7 @@ func (chk *TypeChecker) checkReturnStatement(stmt *ast.ReturnStatement) types.Ty
 
 func (chk *TypeChecker) checkBlockStatement(stmt *ast.BlockStatement) types.Type {
 	if stmt == nil {
+		chk.typeError("missing block statement", stmt)
 		return &types.IllegalType{}
 	}
 

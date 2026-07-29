@@ -37,7 +37,7 @@ evaluator/expressions.go.
 22. Реализация механизма сужения типа внутри блоков case выражения SwitchExpression в \
 type_checker/expressions.go.
 23. Реализация проверки типов для MemberAccessExpression в type_checker/expressions.go. 
-24. Внедрение автобоксинга / неявного сопоставления примитивных типов (IntType, BoolType, StringType) \
+24. Внедрение неявного сопоставления примитивных типов (IntType, BoolType, StringType) \
 с их интерфейсными аналогами в type_checker/expressions.go.
 25. Реализация алгоритма обнаружения циклов в types/types.go \
 для предотвращения бесконечной рекурсии при проверке рекурсивных типов (таких как List(T)).

@@ -102,6 +102,17 @@ func TestStructuralTyping(t *testing.T) {
 			expectedErr: "type error",
 		},
 		{
+			name: "Invalid impl (interface)",
+			input: `
+				let Iface: type = interface { let val: type = int; };
+				let Iface1: type = interface { let val1: type = string; };
+				let fun: fn(Iface1) -> string = fn(a) { return a.val1; };
+				let obj: Iface = impl (Iface) { let val: int = 42; };
+				let i: int = fun(obj);
+			`,
+			expectedErr: "type error",
+		},
+		{
 			name: "Invalid structural subtyping (missing field)",
 			input: `
 				let HasName: type = interface { let name: type = string; };
@@ -268,6 +279,58 @@ func TestTypeAccessExpression(t *testing.T) {
 	runTypeCheckerTests(t, tests)
 }
 
+func TestSwitchExpression(t *testing.T) {
+	tests := []TestCase{
+		{
+			name: "Valid switch",
+			input: `
+				let res: type = int;
+				let final: int = switch res {
+					case int { return 1; }
+					case string { return 2; }
+					default { return 0; }
+				};
+			`,
+			expectedErr: "",
+		},
+		{
+			name: "Invalid switch (type mismatch between val and case)",
+			input: `
+				let res: int = 5;
+				let final: int = switch res {
+					case int {
+						// len expects string or array, not int
+						return len(res);
+					}
+					case string {
+						return len(res);
+					}
+					default {
+						return 0;
+					}
+				};
+			`,
+			expectedErr: "case pattern type",
+		},
+		{
+			name: "Invalid switch (no return)",
+			input: `
+				let res: int = 5;
+				let final: int = switch res {
+					case 1 { 
+					} 
+					case 2 { 
+					}
+					default { 
+					}
+				};
+			`,
+			expectedErr: "switch must return some value in case blocks",
+		},
+	}
+	runTypeCheckerTests(t, tests)
+}
+
 func TestTypeNarrowing(t *testing.T) {
 	tests := []TestCase{
 		{
@@ -275,8 +338,15 @@ func TestTypeNarrowing(t *testing.T) {
 			input: `
 				let res: int | string = 5;
 				let final: int = switch res.(type) {
-					case int { return res + 1; }
-					case string { return len(res); }
+					case int { 
+						return res + 1; 
+					}
+					case string { 
+						return len(res); 
+					}
+					default { 
+						return 0; 
+					}
 				};
 			`,
 			expectedErr: "",
@@ -286,8 +356,16 @@ func TestTypeNarrowing(t *testing.T) {
 			input: `
 				let res: int | string = 5;
 				let final: int = switch res.(type) {
-					case int { return len(res); } // len expects string or array, not int
-					case string { return len(res); }
+					case int { 
+						// len expects string or array, not int 
+						return len(res); 
+					} 
+					case string { 
+						return len(res); 
+					}
+					default { 
+						return 0; 
+					}
 				};
 			`,
 			expectedErr: "len does not support type",
@@ -301,8 +379,15 @@ func TestTypeNarrowing(t *testing.T) {
 				let res: OkType | ErrType = impl (OkType) { let value: int = 5; };
 				
 				let final: int = switch res.(type) {
-					case OkType { return res.value; } // Доступ разрешен, тип сужен
-					case ErrType { return 0; }
+					case OkType { 
+						return res.value; 
+					} 
+					case ErrType { 
+						return 0; 
+					}
+					default { 
+						return 0; 
+					}
 				};
 			`,
 			expectedErr: "",
@@ -315,9 +400,17 @@ func TestTypeNarrowing(t *testing.T) {
 				
 				let res: OkType | ErrType = impl (OkType) { let value: int = 5; };
 				
-				switch res.(type) {
-					case OkType { return res.error; } // Ошибка: у OkType нет поля error
-					case ErrType { return 0; }
+				let _: int = switch res.(type) {
+					case OkType { 
+						// у OkType нет поля error 
+						return res.error; 
+					} 
+					case ErrType { 
+						return 0; 
+					}
+					default { 
+						return 0; 
+					}
 				};
 			`,
 			expectedErr: "type error",

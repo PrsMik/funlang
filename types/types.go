@@ -31,7 +31,7 @@ func (t *TypeType) Signature() string {
 type IllegalType struct{}
 
 func (t *IllegalType) isType()           {}
-func (t *IllegalType) Signature() string { return "<none>" }
+func (t *IllegalType) Signature() string { return "<illegal/none type>" }
 func (t *IllegalType) isPrintable()      {}
 
 type NullType struct{}
