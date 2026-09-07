@@ -36,6 +36,16 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 	chk.recordType(stmt.Name, expectedType)
 	chk.recordExpectedType(stmt.Value, expectedType)
 
+	_, isDeclaringType := expectedType.(*types.TypeType)
+
+	// для самоссылающихся интерфейсов
+	if isDeclaringType {
+		forwardIfaceDecl := &types.InterfaceType{Name: stmt.Name.Value}
+		chk.env.Set(stmt.Name.Value, &types.TypeType{Underlying: forwardIfaceDecl}, stmt.Name)
+	} else if _, isIllegal := expectedType.(*types.IllegalType); !isIllegal {
+		chk.env.Set(stmt.Name.Value, expectedType, stmt.Name)
+	}
+
 	// установка имен для параметров функции
 	funcLit, isFuncLit := stmt.Value.(*ast.FunctionLiteral)
 	if isFuncLit {
@@ -46,16 +56,7 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 				}
 			}
 		}
-
-		chk.env.Set(stmt.Name.Value, expectedType, stmt.Name)
-	}
-
-	_, isDeclaringType := expectedType.(*types.TypeType)
-
-	// для самоссылающихся интерфейсов
-	if isDeclaringType {
-		forwardIfaceDecl := &types.InterfaceType{Name: stmt.Name.Value}
-		chk.env.Set(stmt.Name.Value, &types.TypeType{Underlying: forwardIfaceDecl}, stmt.Name)
+		// chk.env.Set(stmt.Name.Value, expectedType, stmt.Name)
 	}
 
 	actualType := chk.checkExpression(stmt.Value)

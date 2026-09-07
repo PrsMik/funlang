@@ -100,6 +100,14 @@ func Equals(rawLeftType, rawRightType Type) bool {
 			return false
 		}
 
+		if leftType.Name != "" && rightType.Name != "" {
+			return leftType.Name == rightType.Name
+		}
+
+		// if len(leftType.Fields) != len(rightType.Fields) {
+		// 	return false
+		// }
+
 		for leftFieldName, leftFieldType := range leftType.Fields {
 			rightFieldType, exists := rightType.Fields[leftFieldName]
 			if !exists {

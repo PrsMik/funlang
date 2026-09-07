@@ -9,6 +9,7 @@
 6. Создание структуры SwitchExpression в ast/expressions.go.
 7. Создание структуры MemberAccessExpression в ast/expressions.go для представления выражений вида res.error.
 7.1 Создание структуры TypeAccessExpression в ast/expressions.go для представления выражений вида res.(type).
+7.2 Создание структуры ImplInstantaionExpression в ast/expressions.go для представления выражений вида Res.{field : foo}.
 8. Изменение структуры FunctionType в ast/types.go для поддержки именования параметров типа (реализация зависимых типов).
 
 Парсер (parser) 

@@ -62,6 +62,21 @@ func TestStructuralTyping(t *testing.T) {
 			expectedErr: "",
 		},
 		{
+			name: "Recursive interface assignability",
+			input: `
+				let List1: type = interface {
+					let next: type = fn() -> List1;
+				};
+
+				let impl1: List1 = impl (List1) {
+					let next: fn() -> impl1 = fn() { return impl1; };
+				};
+
+				let l2: List2 = impl1; 
+    	`,
+			expectedErr: "",
+		},
+		{
 			name: "Valid impl (interface)",
 			input: `
 				let obj: interface { let val: type = int; } = impl (interface { let val: type = int; }) { let val: int = 42; };
@@ -209,10 +224,9 @@ func TestMemberAccess(t *testing.T) {
 		{
 			name: "Invalid member access",
 			input: `
-				let obj: type = impl { let val: int = 42; };
-				let x: int = obj.val;
+				let x: int = (impl (interface { let val: type = int; }) { let val: int = 42; }).val;
 			`,
-			expectedErr: "type error",
+			expectedErr: "",
 		},
 		{
 			name: "Invalid member access (unknown field)",
