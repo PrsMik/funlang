@@ -88,22 +88,22 @@ func (funcLit *FunctionLiteral) String() string {
 	return out.String()
 }
 
-func (interLit *InterfaceLiteral) String() string {
+func (iface *InterfaceLiteral) String() string {
 	var out bytes.Buffer
-	out.WriteString(interLit.TokenLiteral())
+	out.WriteString(iface.TokenLiteral())
 	out.WriteString("{")
-	out.WriteString(interLit.Body.String())
+	out.WriteString(iface.Body.String())
 	out.WriteString("}")
 	return out.String()
 }
 
-func (implLiteral *ImplLiteral) String() string {
+func (imp *ImplLiteral) String() string {
 	var out bytes.Buffer
-	out.WriteString(implLiteral.TokenLiteral())
+	out.WriteString(imp.TokenLiteral())
 	out.WriteString("(")
-	out.WriteString(implLiteral.TargetType.String())
+	out.WriteString(imp.TargetType.String())
 	out.WriteString(")")
-	out.WriteString(implLiteral.Body.String())
+	out.WriteString(imp.Body.String())
 	return out.String()
 }
 
@@ -235,6 +235,23 @@ func (membExpr *MemberAccessExpression) String() string {
 	out.WriteString(membExpr.Left.String())
 	out.WriteString(".")
 	out.WriteString(membExpr.Property.String())
+	return out.String()
+}
+
+func (instantiationExpr *ImplInstantiationExpression) String() string {
+	var out bytes.Buffer
+	out.WriteString(instantiationExpr.Left.String())
+	out.WriteString(".")
+	pairs := []string{}
+
+	for key, value := range instantiationExpr.Fields {
+		pairs = append(pairs, key.String()+":"+value.String())
+	}
+
+	out.WriteString("{")
+	out.WriteString(strings.Join(pairs, ", "))
+	out.WriteString("}")
+
 	return out.String()
 }
 

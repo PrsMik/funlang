@@ -89,10 +89,10 @@ type InterfaceLiteral struct {
 	Body  *BlockStatement
 }
 
-func (ident *InterfaceLiteral) expressionNode()       {}
-func (ident *InterfaceLiteral) TokenLiteral() string  { return ident.Token.Literal }
-func (ident *InterfaceLiteral) Start() token.Position { return ident.Token.Start }
-func (ident *InterfaceLiteral) End() token.Position   { return ident.Body.End() }
+func (iface *InterfaceLiteral) expressionNode()       {}
+func (iface *InterfaceLiteral) TokenLiteral() string  { return iface.Token.Literal }
+func (iface *InterfaceLiteral) Start() token.Position { return iface.Token.Start }
+func (iface *InterfaceLiteral) End() token.Position   { return iface.Body.End() }
 
 // литерал объявления реализации (например, impl { let x: int = 1; } )
 type ImplLiteral struct {
@@ -101,10 +101,23 @@ type ImplLiteral struct {
 	Body       *BlockStatement
 }
 
-func (ident *ImplLiteral) expressionNode()       {}
-func (ident *ImplLiteral) TokenLiteral() string  { return ident.Token.Literal }
-func (ident *ImplLiteral) Start() token.Position { return ident.Token.Start }
-func (ident *ImplLiteral) End() token.Position   { return ident.Body.End() }
+func (imp *ImplLiteral) expressionNode()       {}
+func (imp *ImplLiteral) TokenLiteral() string  { return imp.Token.Literal }
+func (imp *ImplLiteral) Start() token.Position { return imp.Token.Start }
+func (imp *ImplLiteral) End() token.Position   { return imp.Body.End() }
+
+// выражение создания экземпляра (например, foo.{bar : 42} )
+type ImplInstantiationExpression struct {
+	Token     token.Token
+	Left      ExpressionNode
+	Fields    map[ExpressionNode]ExpressionNode
+	SemiToken token.Token
+}
+
+func (impInst *ImplInstantiationExpression) expressionNode()       {}
+func (impInst *ImplInstantiationExpression) TokenLiteral() string  { return impInst.Token.Literal }
+func (impInst *ImplInstantiationExpression) Start() token.Position { return impInst.Token.Start }
+func (impInst *ImplInstantiationExpression) End() token.Position   { return impInst.SemiToken.End }
 
 // идентификатор - токен и литерал
 type Identifier struct {

@@ -1,26 +1,26 @@
 Токены и лексический анализ (token, lexer)
-1.  Добавление ключевых слов interface, impl, switch, case, default и type в файлы token/token.go и token/strings.go.
-2.  Добавление операторов | (Union), & (Intersection) и . (Dot) в token/token.go и token/strings.go.
+1.  Добавление ключевых слов interface, impl, switch, case, default и type в файлы token/token.go и token/strings.go. +
+2.  Добавление операторов | (Union), & (Intersection) и . (Dot) в token/token.go и token/strings.go. +
 
 Абстрактное синтаксическое дерево (ast) 
-3. Слияние интерфейсов TypeNode и ExpressionNode в ast/ast.go (типы - выражения первого класса). 
-4. Создание структуры InterfaceLiteral в ast/expressions.go. 
-5. Создание структуры ImplLiteral в ast/expressions.go. 
-6. Создание структуры SwitchExpression в ast/expressions.go.
-7. Создание структуры MemberAccessExpression в ast/expressions.go для представления выражений вида res.error.
-7.1 Создание структуры TypeAccessExpression в ast/expressions.go для представления выражений вида res.(type).
+3. Слияние интерфейсов TypeNode и ExpressionNode в ast/ast.go (типы - выражения первого класса). +
+4. Создание структуры InterfaceLiteral в ast/expressions.go. +
+5. Создание структуры ImplLiteral в ast/expressions.go. +
+6. Создание структуры SwitchExpression в ast/expressions.go. +
+7. Создание структуры MemberAccessExpression в ast/expressions.go для представления выражений вида res.error. +
+7.1 Создание структуры TypeAccessExpression в ast/expressions.go для представления выражений вида res.(type). +
 7.2 Создание структуры ImplInstantaionExpression в ast/expressions.go для представления выражений вида Res.{field : foo}.
-8. Изменение структуры FunctionType в ast/types.go для поддержки именования параметров типа (реализация зависимых типов).
+8. Изменение структуры FunctionType в ast/types.go для поддержки именования параметров типа (реализация зависимых типов). +
 
 Парсер (parser) 
-9. Регистрация префиксных парс-функций для interface, impl и switch в конструкторе New в parser/parser.go.
-10. Регистрация инфиксных парс-функций для операторов |, & и . в parser/parser.go.
-11. Изменение метода parseFunctionParamsTypes в parser/types.go для парсинга именованных аргументов типов.
+9. Регистрация префиксных парс-функций для interface, impl и switch в конструкторе New в parser/parser.go. +
+10. Регистрация инфиксных парс-функций для операторов |, & и . в parser/parser.go. +
+11. Изменение метода parseFunctionParamsTypes в parser/types.go для парсинга именованных аргументов типов. +
 
 Объекты времени выполнения (object) 
-12. Добавление типа объекта TYPE_OBJ в перечисление ObjectType в object/object.go.
-13. Создание структуры TypeObject в object/object.go для представления типов как рантайм-значений.
-14. Реализация метода Inspect() для TypeObject в object/strings.go.
+12. Добавление типа объекта TYPE_OBJ в перечисление ObjectType в object/object.go. +
+13. Создание структуры TypeObject в object/object.go для представления типов как рантайм-значений. +
+14. Реализация метода Inspect() для TypeObject в object/strings.go. +
 
 Интерпретатор (evaluator)
 15. Реализация вычисления SwitchExpression в evaluator/evaluator.go с возвратом значения из блока case. 
@@ -34,16 +34,17 @@ evaluator/expressions.go.
 для обхода бесконечных блокировок на самореферентных интерфейсах. 
 20. Переработка Equals в types/types.go для перехода к структурному подтипированию \
 (проверка соответствия реализаций интерфейсам).
-21. Реализация логики типов UnionType (для |) и IntersectionType (для &) в types/types.go и type_checker/expressions.go. 
+21. Реализация логики типов UnionType (для |) и IntersectionType (для &) в types/types.go и type_checker/expressions.go. +
 22. Реализация механизма сужения типа внутри блоков case выражения SwitchExpression в \
-type_checker/expressions.go.
-23. Реализация проверки типов для MemberAccessExpression в type_checker/expressions.go. 
-24. Внедрение неявного сопоставления примитивных типов (IntType, BoolType, StringType) \
+type_checker/expressions.go. +
+23. Реализация проверки типов для MemberAccessExpression в type_checker/expressions.go. + 
+24. Реализация проверки типов для ImplInstantaionExpression в type_checker/expressions.go
+25. Внедрение неявного сопоставления примитивных типов (IntType, BoolType, StringType) \
 с их интерфейсными аналогами в type_checker/expressions.go.
-25. Реализация алгоритма обнаружения циклов в types/types.go \
+26. Реализация алгоритма обнаружения циклов в types/types.go \
 для предотвращения бесконечной рекурсии при проверке рекурсивных типов (таких как List(T)).
 
 Форматирование кода (formatter) 
-26. Реализация правил форматирования для InterfaceLiteral и ImplLiteral в formatter/expressions.go или formatter/statements.go.
-27. Реализация правил форматирования для SwitchExpression в formatter/expressions.go. 
-28. Реализация правил форматирования для операторов |, & и . в formatter/expressions.go.
+27. Реализация правил форматирования для InterfaceLiteral и ImplLiteral в formatter/expressions.go или formatter/statements.go.
+28. Реализация правил форматирования для SwitchExpression в formatter/expressions.go. 
+29. Реализация правил форматирования для операторов |, & и . в formatter/expressions.go.
