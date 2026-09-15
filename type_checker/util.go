@@ -93,5 +93,5 @@ func (chk *TypeChecker) resolveType(inType ast.ExpressionNode) types.Type {
 		return chk.resolveTypeExpression(inType)
 	}
 	chk.typeError(fmt.Sprintf("%s is not a valid type", inType.String()), inType)
-	return nil
+	return &types.IllegalType{}
 }

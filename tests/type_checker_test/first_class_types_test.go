@@ -1,6 +1,8 @@
 package type_checker_test
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestFirstClassTypes(t *testing.T) {
 	tests := []TestCase{
@@ -199,6 +201,52 @@ func TestAlgebraicTypes(t *testing.T) {
 			expectedErr: "type error",
 		},
 	}
+	runTypeCheckerTests(t, tests)
+}
+
+func TestImplInstantiationTypeChecking(t *testing.T) {
+	tests := []TestCase{
+		{
+			name: "Succesfull init (all fields)",
+			input: `
+			let Point: type = impl { let x: int = 0; let y: int = 1; };
+			let p: Point = Point.{x : 10, y : 20};
+			`,
+			expectedErr: "",
+		},
+		{
+			name: "Succesfull init (default values)",
+			input: `
+			let Point: type = impl { let x: int = 0; let y: int = 1; };
+			let p: Point = Point.{x : 10};
+			`,
+			expectedErr: "",
+		},
+		{
+			name: "Error (wrong field type)",
+			input: `
+			let Point: type = impl { let x: int = 0; let y: int = 1; };
+			let p: Point = Point.{x : "wrong", y : 20};
+			`,
+			expectedErr: "type mismatch in instatation expression of <impl Point>",
+		},
+		{
+			name: "Error (unknown field)",
+			input: `
+			let Point: type = impl { let x: int = 0; let y: int = 1; };
+			let p: Point = Point.{z : 10};
+			`,
+			expectedErr: "type <impl Point> has no field named *z*",
+		},
+		{
+			name: "Error (no impl type)",
+			input: `
+			let p: int = int.{x : 10};
+			`,
+			expectedErr: "type error: cannot use instantation .{} on a no-impl types",
+		},
+	}
+
 	runTypeCheckerTests(t, tests)
 }
 
