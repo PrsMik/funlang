@@ -447,7 +447,7 @@ func TestParsingImplLiteral(t *testing.T) {
 }
 
 func TestImplInstantiationParsing(t *testing.T) {
-	input := `let obj: Point = Point.{x : 1, y : 2 + 3};`
+	input := `let obj: Point = Point.{x : 1, y : 2 + 3, z : foo};`
 
 	lxr := lexer.New(input)
 	prs := parser.New(lxr)
@@ -476,8 +476,12 @@ func TestImplInstantiationParsing(t *testing.T) {
 		t.Errorf("expected identifier 'Point', got %q", ident.Value)
 	}
 
-	if len(instExp.Fields) != 2 {
-		t.Fatalf("expected 2 fields, got %d", len(instExp.Fields))
+	fields, ok := instExp.Fields.(*ast.HashMapLiteral)
+	if !ok {
+		t.Fatalf("expected instExp.Fields to be *ast.HashMapLiteral, got %T", instExp.Left)
+	}
+	if len(fields.Pairs) != 3 {
+		t.Fatalf("expected 3 fields, got %d", len(fields.Pairs))
 	}
 
 	// xExp, ok := instExp.Fields["x"]
@@ -490,27 +494,27 @@ func TestImplInstantiationParsing(t *testing.T) {
 	// 	t.Fatalf("expected field 'y' to exist")
 	// }
 
-	expected := map[string]int{
-		"x": 1,
-		"y": 2,
-	}
-	for key, value := range instExp.Fields {
+	for key, value := range fields.Pairs {
 		literal, ok := key.(*ast.Identifier)
 		if !ok {
 			t.Errorf("key is not ast.Identifier. got=%T", key)
 		}
-		expectedValue := expected[literal.String()]
 		if literal.String() == "x" {
-			if intLit, ok := key.(*ast.IntegerLiteral); !ok || intLit.Value != 1 {
+			if intLit, ok := value.(*ast.IntegerLiteral); !ok || intLit.Value != 1 {
 				t.Errorf("expected field 'x' to be IntegerLiteral 1, got %T", key)
 			}
+			testIntegerLiteral(t, value, 1)
 		}
 		if literal.String() == "y" {
-			if _, ok := key.(*ast.InfixExpression); !ok {
+			if _, ok := value.(*ast.InfixExpression); !ok {
 				t.Errorf("expected field 'y' to be InfixExpression, got %T", key)
 			}
 		}
-		testIntegerLiteral(t, value, expectedValue)
+		if literal.String() == "z" {
+			if _, ok := value.(*ast.Identifier); !ok {
+				t.Errorf("expected field 'z' to be Identifier, got %T", key)
+			}
+		}
 	}
 }
 

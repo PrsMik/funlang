@@ -242,15 +242,17 @@ func (instantiationExpr *ImplInstantiationExpression) String() string {
 	var out bytes.Buffer
 	out.WriteString(instantiationExpr.Left.String())
 	out.WriteString(".")
-	pairs := []string{}
+	out.WriteString(instantiationExpr.Fields.String())
 
-	for key, value := range instantiationExpr.Fields {
-		pairs = append(pairs, key.String()+":"+value.String())
-	}
+	// pairs := []string{}
 
-	out.WriteString("{")
-	out.WriteString(strings.Join(pairs, ", "))
-	out.WriteString("}")
+	// for key, value := range instantiationExpr.Fields.Pairs {
+	// 	pairs = append(pairs, key.String()+":"+value.String())
+	// }
+
+	// out.WriteString("{")
+	// out.WriteString(strings.Join(pairs, ", "))
+	// out.WriteString("}")
 
 	return out.String()
 }

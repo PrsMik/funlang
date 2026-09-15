@@ -340,6 +340,8 @@ func (prs *Parser) parseIndexExpression(left ast.ExpressionNode) ast.ExpressionN
 func (prs *Parser) parseDotOperatorExpression(left ast.ExpressionNode) ast.ExpressionNode {
 	if prs.peekTokenIs(token.LPAREN) {
 		return prs.parseTypeAccessExpression(left)
+	} else if prs.peekTokenIs(token.LBRACE) {
+		return prs.parseImplInstantiationExpression(left)
 	} else {
 		return prs.parseMemberAccessExpression(left)
 	}
@@ -368,6 +370,22 @@ func (prs *Parser) parseMemberAccessExpression(left ast.ExpressionNode) ast.Expr
 		return nil
 	}
 	expr.Property = &ast.Identifier{Token: prs.curToken, Value: prs.curToken.Literal}
+
+	return expr
+}
+
+func (prs *Parser) parseImplInstantiationExpression(left ast.ExpressionNode) ast.ExpressionNode {
+	expr := &ast.ImplInstantiationExpression{Token: prs.curToken, Left: left}
+
+	prs.nextToken()
+
+	fields := prs.parseHashMapLiteral()
+
+	if fields == nil {
+		return nil
+	}
+
+	expr.Fields = fields
 
 	return expr
 }

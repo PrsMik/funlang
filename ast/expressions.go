@@ -108,16 +108,15 @@ func (imp *ImplLiteral) End() token.Position   { return imp.Body.End() }
 
 // выражение создания экземпляра (например, foo.{bar : 42} )
 type ImplInstantiationExpression struct {
-	Token     token.Token
-	Left      ExpressionNode
-	Fields    map[ExpressionNode]ExpressionNode
-	SemiToken token.Token
+	Token  token.Token
+	Left   ExpressionNode
+	Fields ExpressionNode
 }
 
 func (impInst *ImplInstantiationExpression) expressionNode()       {}
 func (impInst *ImplInstantiationExpression) TokenLiteral() string  { return impInst.Token.Literal }
 func (impInst *ImplInstantiationExpression) Start() token.Position { return impInst.Token.Start }
-func (impInst *ImplInstantiationExpression) End() token.Position   { return impInst.SemiToken.End }
+func (impInst *ImplInstantiationExpression) End() token.Position   { return impInst.Fields.End() }
 
 // идентификатор - токен и литерал
 type Identifier struct {
