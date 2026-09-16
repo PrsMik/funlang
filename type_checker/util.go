@@ -40,6 +40,10 @@ func (chk *TypeChecker) recordExpectedType(node ast.Node, tp types.Type) {
 func (chk *TypeChecker) resolveTypeExpression(expr ast.ExpressionNode) types.Type {
 	evaluatedType := chk.checkExpression(expr)
 
+	if evaluatedType == types.MetaType {
+		return evaluatedType
+	}
+
 	if typeType, ok := evaluatedType.(*types.TypeType); ok {
 		return typeType.Underlying
 	}

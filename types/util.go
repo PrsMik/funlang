@@ -40,7 +40,7 @@ func Equals(rawLeftType, rawRightType Type) bool {
 
 	switch leftType := rawLeftType.(type) {
 	case *TypeType:
-		if leftType == TrueTypeType {
+		if leftType == MetaType {
 			_, ok := rawRightType.(*TypeType)
 			return ok
 		}
@@ -88,12 +88,12 @@ func Equals(rawLeftType, rawRightType Type) bool {
 		}
 
 		for i := range leftType.Params {
-			if !Equals(leftType.Params[i].Type, rightType.Params[i].Type) {
+			if !IsAssignable(leftType.Params[i].Type, rightType.Params[i].Type) {
 				return false
 			}
 		}
 
-		return Equals(leftType.ReturnType, rightType.ReturnType)
+		return IsAssignable(leftType.ReturnType, rightType.ReturnType)
 	case *InterfaceType:
 		rightType, ok := rawRightType.(*InterfaceType)
 		if !ok {

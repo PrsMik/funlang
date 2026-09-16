@@ -12,8 +12,28 @@ func TestFirstClassTypes(t *testing.T) {
 			expectedErr: "",
 		},
 		{
+			name:        "Assign type to type variable",
+			input:       "let T: int = int;",
+			expectedErr: "",
+		},
+		{
 			name:        "Chain assign of types",
 			input:       "let T: type = int; let U: type = T; let V: type = U; let x: V = 5;",
+			expectedErr: "",
+		},
+		{
+			name: "Simple impl and interface assignment",
+			input: `let T: type = interface { let x: type = int; };
+					let U: type = impl (T) { let x: int = 42; };
+					let X: T = U.{x: 43};`,
+			expectedErr: "",
+		},
+		{
+			name: "Infinite metatype",
+			input: `let T: type = interface { let x: type = type; }; 
+					let U: type = impl (T) { let x: type = type; };
+					let X: T = U.{x: type};
+					let Z: X.x = int;`,
 			expectedErr: "",
 		},
 		{
@@ -22,8 +42,16 @@ func TestFirstClassTypes(t *testing.T) {
 			expectedErr: "expected type <string>, got <int>",
 		},
 		{
-			name:        "Function returning a type (Generics foundation)",
-			input:       "let MakeType: fn() -> type = fn() { return int; }; let x: MakeType() = 5;",
+			name:        "Function returning a type (Generics foundation) 1",
+			input:       `let MakeType: fn() -> type = fn() { return int; }; let x: MakeType() = 5;`,
+			expectedErr: "",
+		},
+		{
+			name: "Function returning an interface (Generics foundation) 2",
+			input: `let inter: type = interface { let x: type = int; };
+					let im: type = impl (inter) { let x: int = 42; };
+					let MakeType: fn() -> inter = fn() { return im; };
+					let x: MakeType() = 5;`,
 			expectedErr: "",
 		},
 		{
@@ -270,11 +298,18 @@ func TestMemberAccess(t *testing.T) {
 			expectedErr: "",
 		},
 		{
+			name: "Valid member access",
+			input: `
+				let x: int = ((impl (interface { let val: type = int; }) { let val: int = 42; }).{}).val;
+			`,
+			expectedErr: "",
+		},
+		{
 			name: "Invalid member access",
 			input: `
 				let x: int = (impl (interface { let val: type = int; }) { let val: int = 42; }).val;
 			`,
-			expectedErr: "",
+			expectedErr: "type error",
 		},
 		{
 			name: "Invalid member access (unknown field)",

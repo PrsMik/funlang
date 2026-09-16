@@ -21,6 +21,9 @@ type TypeType struct {
 
 func (t *TypeType) isType() {}
 func (t *TypeType) Signature() string {
+	if t == MetaType {
+		return "<metatype>"
+	}
 	if t.Underlying != nil {
 		return fmt.Sprintf("<type(%s)>", t.Underlying.Signature())
 	} else {

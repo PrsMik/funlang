@@ -15,14 +15,14 @@ type TypeEviroment struct {
 }
 
 var (
-	TrueTypeType = &TypeType{Underlying: &TypeType{}}
+	MetaType = &TypeType{Underlying: &TypeType{}}
 )
 
 func NewTypeEviroment() *TypeEviroment {
 	// types: make(map[string]Type)
 	env := &TypeEviroment{}
 	env.types = getMapWithBuiltins()
-	env.Set("type", TrueTypeType, nil)
+	env.Set("type", MetaType, nil)
 	env.Set("int", &TypeType{Underlying: &IntType{}}, nil)
 	env.Set("string", &TypeType{Underlying: &StringType{}}, nil)
 	env.Set("bool", &TypeType{Underlying: &BoolType{}}, nil)

@@ -172,6 +172,7 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 	} else {
 		tempType, ok := chk.curExpectedType.(*types.FuncType)
 		if !ok {
+			chk.typeError("function literal has no specified types, but no func type is expected", expr)
 			return &types.IllegalType{}
 		}
 		expectedFuncType = *tempType
