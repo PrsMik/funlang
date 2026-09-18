@@ -1,6 +1,9 @@
 package types
 
-import "fmt"
+import (
+	"fmt"
+	"funlang/ast"
+)
 
 type Type interface {
 	isType()
@@ -139,9 +142,10 @@ func (t *InterfaceType) isType()           {}
 func (t *InterfaceType) Signature() string { return fmt.Sprintf("<inteface %s>", t.Name) }
 
 type ImplType struct {
-	Name            string
-	ImplementedType Type
-	Fields          map[string]Type
+	Name                string
+	ImplementedType     Type
+	Fields              map[string]Type
+	FieldsDefaultValues map[string]ast.ExpressionNode
 }
 
 func (t *ImplType) isType() {}

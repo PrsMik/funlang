@@ -84,6 +84,8 @@ func (chk *TypeChecker) checkImplLiteral(expr ast.ExpressionNode) types.Type {
 		}
 
 		implType.Fields[letStmt.Name.Value] = fieldType
+
+		implType.FieldsDefaultValues[letStmt.Name.Value] = letStmt.Value
 	}
 
 	chk.env = chk.env.Outer
