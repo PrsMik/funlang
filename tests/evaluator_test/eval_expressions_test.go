@@ -119,6 +119,70 @@ func TestEvalIfElseExpressions(t *testing.T) {
 	}
 }
 
+func TestEvalSwitchExpressionValues(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int
+	}{
+		{
+			input: `
+			let x: int = 2;
+			return switch x {
+				case 1 { return 10; }
+				case 2 { return 20; }
+				case 3 { return 30; }
+				default { return 0; }
+			};`,
+			expected: 20,
+		},
+		{
+			input: `
+			let x: int = 99;
+			return switch x {
+				case 1 { return 10; }
+				case 2 { return 20; }
+				default { return -1; }
+			};`,
+			expected: -1,
+		},
+		{
+			input: `
+			let a: int = 5;
+			let b: int = 5;
+			return switch a + b {
+				case 5 * 2 { return 100; }
+				default { return 0; }
+			};`,
+			expected: 100,
+		},
+		{
+			input: `
+			let cmd: string = "start";
+			return switch cmd {
+				case "stop" { return 0; }
+				case "start" { return 1; }
+				default { return -1; }
+			};`,
+			expected: 1,
+		},
+		{
+			input: `
+			let flag: bool = true;
+			return switch flag {
+				case false { return 0; }
+				case true { return 1; }
+				default { return -1; }
+			};`,
+			expected: 1,
+		},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(t, tt.input)
+		testIntegerObject(t, evaluated, tt.expected)
+	}
+}
+
 func TestEvalArrayExpressions(t *testing.T) {
 	input := "return[1, 2 * 2, 3 + 3];"
 	evaluated := testEval(t, input)
