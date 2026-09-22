@@ -61,7 +61,7 @@ func TestObjectTypesAndInspection(t *testing.T) {
 					Value: &object.String{Value: "funlang"},
 				},
 			}},
-			expectedType: object.HASH_OBJ,
+			expectedType: object.HASH_MAP_OBJ,
 			expectedIns:  "{name: funlang}",
 		},
 		{
@@ -129,7 +129,7 @@ func TestLookUpObjSignature(t *testing.T) {
 		object.STRING_OBJ,
 		object.NULL_OBJ,
 		object.ARRAY_OBJ,
-		object.HASH_OBJ,
+		object.HASH_MAP_OBJ,
 	}
 
 	for _, ot := range validTypes {

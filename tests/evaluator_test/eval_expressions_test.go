@@ -160,10 +160,10 @@ func TestEvalSwitchExpressionValues(t *testing.T) {
 			let cmd: string = "start";
 			return switch cmd {
 				case "stop" { return 0; }
-				case "start" { return 1; }
+				case "start" { return 123; }
 				default { return -1; }
 			};`,
-			expected: 1,
+			expected: 123,
 		},
 		{
 			input: `
@@ -174,6 +174,17 @@ func TestEvalSwitchExpressionValues(t *testing.T) {
 				default { return -1; }
 			};`,
 			expected: 1,
+		},
+		{
+			input: `
+			let tp: type = int;
+			let flag: type = interface { let x: type = int; };
+			return switch flag {
+				case interface { let x: type = int; } { return 0; }
+				case interface { let x: type = string; } { return 1; }
+				default { return -1; }
+			};`,
+			expected: 0,
 		},
 	}
 

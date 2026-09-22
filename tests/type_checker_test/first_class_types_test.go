@@ -14,7 +14,7 @@ func TestFirstClassTypes(t *testing.T) {
 		{
 			name:        "Assign type to type variable",
 			input:       "let T: int = int;",
-			expectedErr: "",
+			expectedErr: "type error",
 		},
 		{
 			name:        "Chain assign of types",
@@ -39,7 +39,7 @@ func TestFirstClassTypes(t *testing.T) {
 		{
 			name:        "Type mismatch using type variable",
 			input:       "let T: type = string; let x: T = 5;",
-			expectedErr: "expected type <string>, got <int>",
+			expectedErr: "in let expected variable of type <string>, got <int>",
 		},
 		{
 			name:        "Function returning a type (Generics foundation) 1",
@@ -57,7 +57,7 @@ func TestFirstClassTypes(t *testing.T) {
 		{
 			name:        "Type mismatch with function returning a type",
 			input:       "let MakeType: fn() -> type = fn() { return bool; }; let x: MakeType() = 5;",
-			expectedErr: "expected type <bool>, got <int>",
+			expectedErr: "in let expected variable of type <metatype>, got <int>",
 		},
 	}
 	runTypeCheckerTests(t, tests)
@@ -325,7 +325,7 @@ func TestMemberAccess(t *testing.T) {
 				let obj: interface { let val: type = string; } = impl (interface { let val: type = string; }) { let val: string = "hi"; };
 				let x: int = obj.val;
 			`,
-			expectedErr: "expected type <int>, got <string>",
+			expectedErr: "in let expected variable of type <int>, got <string>",
 		},
 	}
 	runTypeCheckerTests(t, tests)
@@ -347,7 +347,7 @@ func TestTypeAccessExpression(t *testing.T) {
 				let x: int = 5;
 				let y: int = x.(type); // ожидается int, а получает type
 			`,
-			expectedErr: "expected type <int>, got <type(<int>)>",
+			expectedErr: "in let expected variable of type <int>, got <type(<int>)>",
 		},
 		{
 			name: "Type access on complex expression",
