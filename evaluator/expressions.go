@@ -21,7 +21,7 @@ func evalIndexExpression(left, index object.Object) object.Object {
 	switch {
 	case left.Type() == object.ARRAY_OBJ && index.Type() == object.INTEGER_OBJ:
 		return evalArrayIndexExpression(left, index)
-	case left.Type() == object.HASH_OBJ:
+	case left.Type() == object.HASH_MAP_OBJ:
 		return evalHashIndexExpression(left, index)
 	}
 	return newError("runtime error. index operator not supported: %s", left.Inspect())
@@ -162,29 +162,36 @@ func evalInfixExpression(operator string, left, right object.Object) (res object
 		default:
 			return newError("runtime error. operator %s for %s", operator, right.Inspect())
 		}
-	case "==", "!=":
-		if left.Type() == object.BOOLEAN_OBJ {
-			leftVal := left.(*object.Boolean).Value
-			rightVal := right.(*object.Boolean).Value
-			switch operator {
-			case "==":
-				return nativeBoolToBooleanObject(leftVal == rightVal)
-			case "!=":
-				return nativeBoolToBooleanObject(leftVal != rightVal)
-			default:
-				return newError("runtime error. operator %s for %s", operator, right.Inspect())
-			}
-		} else if left.Type() == object.INTEGER_OBJ {
-			leftVal := left.(*object.Integer).Value
-			rightVal := right.(*object.Integer).Value
-			switch operator {
-			case "==":
-				return nativeBoolToBooleanObject(leftVal == rightVal)
-			case "!=":
-				return nativeBoolToBooleanObject(leftVal != rightVal)
-			default:
-				return newError("runtime error. operator %s for %s", operator, right.Inspect())
-			}
+	case "==":
+		if _, isComparable := left.(object.Comparable); left.Type() == right.Type() && isComparable {
+			return nativeBoolToBooleanObject(object.Equals(left, right))
+		}
+	// if left.Type() == object.BOOLEAN_OBJ {
+	// 	leftVal := left.(*object.Boolean).Value
+	// 	rightVal := right.(*object.Boolean).Value
+	// 	switch operator {
+	// 	case "==":
+	// 		return nativeBoolToBooleanObject(leftVal == rightVal)
+	// 	case "!=":
+	// 		return nativeBoolToBooleanObject(leftVal != rightVal)
+	// 	default:
+	// 		return newError("runtime error. operator %s for %s", operator, right.Inspect())
+	// 	}
+	// } else if left.Type() == object.INTEGER_OBJ {
+	// 	leftVal := left.(*object.Integer).Value
+	// 	rightVal := right.(*object.Integer).Value
+	// 	switch operator {
+	// 	case "==":
+	// 		return nativeBoolToBooleanObject(leftVal == rightVal)
+	// 	case "!=":
+	// 		return nativeBoolToBooleanObject(leftVal != rightVal)
+	// 	default:
+	// 		return newError("runtime error. operator %s for %s", operator, right.Inspect())
+	// 	}
+	// }
+	case "!=":
+		if _, isComparable := left.(object.Comparable); left.Type() == right.Type() && isComparable {
+			return nativeBoolToBooleanObject(!object.Equals(left, right))
 		}
 	case "&&", "||":
 		leftVal := left.(*object.Boolean).Value
@@ -209,5 +216,21 @@ func evalIfExpression(node *ast.IfExpression, env *object.Environment) object.Ob
 	} else {
 		res = Eval(node.Alternative, env)
 	}
+	return unwrapReturnValue(res)
+}
+
+func evalSwitchExpression(node *ast.SwitchExpression, env *object.Environment) object.Object {
+	condition := Eval(node.Value, env)
+	var res object.Object
+	for _, caseBlock := range node.Cases {
+		pattern := Eval(caseBlock.Pattern, env)
+		if object.Equals(condition, pattern) {
+			res = Eval(caseBlock.Body, env)
+			return unwrapReturnValue(res)
+		}
+	}
+
+	res = Eval(node.Default, env)
+
 	return unwrapReturnValue(res)
 }

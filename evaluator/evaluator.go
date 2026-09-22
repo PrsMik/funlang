@@ -77,8 +77,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return evalIdentifier(node, env)
 	case *ast.FunctionLiteral:
 		params := node.Parameters
+		retType := node.ReturnType
 		body := node.Body
-		return &object.Function{Parameters: params, Env: env, Body: body}
+		return &object.Function{Parameters: params, ReturnType: retType, Env: env, Body: body}
 	case *ast.CallExpression:
 		function := Eval(node.Function, env)
 		if isError(function) {
@@ -109,6 +110,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return evalInfixExpression(node.Operator, left, right)
 	case *ast.IfExpression:
 		return evalIfExpression(node, env)
+	case *ast.SwitchExpression:
+		return evalSwitchExpression(node, env)
 	}
 	return nil
 }

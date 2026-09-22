@@ -17,6 +17,10 @@ type Hashable interface {
 	HashKey() HashKey
 }
 
+type Comparable interface {
+	IsComparable()
+}
+
 const (
 	ILLEGAL ObjectType = iota
 	NULL_OBJ
@@ -24,11 +28,12 @@ const (
 	BOOLEAN_OBJ
 	STRING_OBJ
 	ARRAY_OBJ
-	HASH_OBJ
+	HASH_MAP_OBJ
 	RETURN_VALUE_OBJ
 	FUNCTION_OBJ
 	TAIL_CALL_OBJ
 	TYPE_OBJ
+	IMPL_INSTANCE_OBJ
 	BUILTIN_OBJ
 	ERROR_OBJ
 )
@@ -43,30 +48,35 @@ type TypeObject struct {
 }
 
 func (to *TypeObject) Type() ObjectType { return TYPE_OBJ }
+func (to *TypeObject) IsComparable()    {}
 
 type Integer struct {
 	Value int
 }
 
 func (i *Integer) Type() ObjectType { return INTEGER_OBJ }
+func (i *Integer) IsComparable()    {}
 
 type Boolean struct {
 	Value bool
 }
 
 func (b *Boolean) Type() ObjectType { return BOOLEAN_OBJ }
+func (b *Boolean) IsComparable()    {}
 
 type String struct {
 	Value string
 }
 
 func (s *String) Type() ObjectType { return STRING_OBJ }
+func (s *String) IsComparable()    {}
 
 type Array struct {
 	Elements []Object
 }
 
 func (a *Array) Type() ObjectType { return ARRAY_OBJ }
+func (a *Array) IsComparable()    {}
 
 type HashKey struct {
 	Type  ObjectType
@@ -105,7 +115,8 @@ type HashMap struct {
 	Pairs map[HashKey]HashPair
 }
 
-func (hm *HashMap) Type() ObjectType { return HASH_OBJ }
+func (hm *HashMap) Type() ObjectType { return HASH_MAP_OBJ }
+func (hm *HashMap) IsComparable()    {}
 
 type ReturnValue struct {
 	Value Object
@@ -115,6 +126,7 @@ func (r *ReturnValue) Type() ObjectType { return RETURN_VALUE_OBJ }
 
 type Function struct {
 	Parameters []*ast.Identifier
+	ReturnType ast.ExpressionNode
 	Body       *ast.BlockStatement
 	Env        *Environment
 }
