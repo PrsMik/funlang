@@ -18,6 +18,14 @@ type PrintableType interface {
 	isPrintable()
 }
 
+type ComparableType interface {
+	isComparable()
+}
+
+// ===========================================================
+// ОСОБЫЕ ТИПЫ
+// ===========================================================
+
 type TypeType struct {
 	Underlying Type
 }
@@ -33,6 +41,7 @@ func (t *TypeType) Signature() string {
 		return "<type>"
 	}
 }
+func (t *TypeType) isComparable() {}
 
 type IllegalType struct{}
 
@@ -46,12 +55,17 @@ func (n *NullType) isType()           {}
 func (n *NullType) Signature() string { return "<null>" }
 func (t *NullType) isPrintable()      {}
 
+// ===========================================================
+// ПРОСТЫЕ ТИПЫ
+// ===========================================================
+
 type IntType struct{}
 
 func (t *IntType) isType()           {}
 func (t *IntType) Signature() string { return "<int>" }
 func (t *IntType) isHashable()       {}
 func (t *IntType) isPrintable()      {}
+func (t *IntType) isComparable()     {}
 
 type BoolType struct{}
 
@@ -59,6 +73,7 @@ func (t *BoolType) isType()           {}
 func (t *BoolType) Signature() string { return "<bool>" }
 func (t *BoolType) isHashable()       {}
 func (t *BoolType) isPrintable()      {}
+func (t *BoolType) isComparable()     {}
 
 type StringType struct{}
 
@@ -66,6 +81,7 @@ func (t *StringType) isType()           {}
 func (t *StringType) Signature() string { return "<string>" }
 func (t *StringType) isHashable()       {}
 func (t *StringType) isPrintable()      {}
+func (t *StringType) isComparable()     {}
 
 type ArrayType struct {
 	ElementsType Type
@@ -78,7 +94,8 @@ func (t *ArrayType) Signature() string {
 	}
 	return "<[]>"
 }
-func (t *ArrayType) isPrintable() {}
+func (t *ArrayType) isPrintable()  {}
+func (t *ArrayType) isComparable() {}
 
 type HashMapType struct {
 	KeyType     Type
@@ -93,7 +110,12 @@ func (bt *HashMapType) Signature() string {
 
 	return "<{}>"
 }
-func (t *HashMapType) isPrintable() {}
+func (t *HashMapType) isPrintable()  {}
+func (t *HashMapType) isComparable() {}
+
+// ===========================================================
+// ФУНКЦИОНАЛЬНЫЕ ТИПЫ
+// ===========================================================
 
 type BuiltinFunc struct {
 	CheckFunc  func(args []Type) (Type, error)
@@ -133,13 +155,18 @@ func (t *FuncType) Signature() string {
 	return res
 }
 
+// ===========================================================
+// КОМПЛЕКСНЫЕ ПОЛЬЗОВАТЕЛЬСКИЕ ТИПЫ
+// ===========================================================
+
 type InterfaceType struct {
 	Name   string
 	Fields map[string]Type
 }
 
 func (t *InterfaceType) isType()           {}
-func (t *InterfaceType) Signature() string { return fmt.Sprintf("<inteface %s>", t.Name) }
+func (t *InterfaceType) Signature() string { return fmt.Sprintf("<interface %s>", t.Name) }
+func (t *InterfaceType) isComparable()     {}
 
 type ImplType struct {
 	Name                string
@@ -156,6 +183,7 @@ func (t *ImplType) Signature() string {
 	}
 	return res
 }
+func (t *ImplType) isComparable() {}
 
 type UnionType struct {
 	Left  Type
@@ -166,6 +194,7 @@ func (t *UnionType) isType() {}
 func (t *UnionType) Signature() string {
 	return fmt.Sprintf("<union %s | %s>", t.Left.Signature(), t.Right.Signature())
 }
+func (t *UnionType) isComparable() {}
 
 type IntersectionType struct {
 	Left  Type
@@ -176,3 +205,4 @@ func (t *IntersectionType) isType() {}
 func (t *IntersectionType) Signature() string {
 	return fmt.Sprintf("<intersection %s & %s>", t.Left.Signature(), t.Right.Signature())
 }
+func (t *IntersectionType) isComparable() {}

@@ -98,8 +98,7 @@ func (chk *TypeChecker) checkInfixExpression(expr ast.ExpressionNode) types.Type
 			return &types.BoolType{}
 		}
 	case "==", "!=":
-		if (types.Equals(leftType, &types.BoolType{}) && types.Equals(rightType, &types.BoolType{})) ||
-			(types.Equals(leftType, &types.IntType{}) && types.Equals(rightType, &types.IntType{})) {
+		if _, isComparable := leftType.(types.ComparableType); types.Equals(leftType, rightType) && isComparable {
 			return &types.BoolType{}
 		}
 	case ">", "<", ">=", "<=":

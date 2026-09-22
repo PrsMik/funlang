@@ -58,9 +58,10 @@ func (chk *TypeChecker) checkImplLiteral(expr ast.ExpressionNode) types.Type {
 	}
 
 	implType := &types.ImplType{
-		Name:            "",
-		ImplementedType: targetType,
-		Fields:          make(map[string]types.Type),
+		Name:                "",
+		ImplementedType:     targetType,
+		FieldsDefaultValues: make(map[string]ast.ExpressionNode),
+		Fields:              make(map[string]types.Type),
 	}
 
 	chk.env = types.NewEnclosedTypeEviroment(chk.env)

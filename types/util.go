@@ -88,12 +88,12 @@ func Equals(rawLeftType, rawRightType Type) bool {
 		}
 
 		for i := range leftType.Params {
-			if !IsAssignable(leftType.Params[i].Type, rightType.Params[i].Type) {
+			if !Equals(leftType.Params[i].Type, rightType.Params[i].Type) {
 				return false
 			}
 		}
 
-		return IsAssignable(leftType.ReturnType, rightType.ReturnType)
+		return Equals(leftType.ReturnType, rightType.ReturnType)
 	case *InterfaceType:
 		rightType, ok := rawRightType.(*InterfaceType)
 		if !ok {
@@ -113,7 +113,7 @@ func Equals(rawLeftType, rawRightType Type) bool {
 			if !exists {
 				return false
 			}
-			if !IsAssignable(leftFieldType, rightFieldType) {
+			if !Equals(leftFieldType, rightFieldType) {
 				return false
 			}
 		}
