@@ -129,6 +129,7 @@ func textDocumentDidOpen(context *glsp.Context, params *protocol.DidOpenTextDocu
 }
 
 func textDocumentDidChange(context *glsp.Context, params *protocol.DidChangeTextDocumentParams) error {
+	handlePanic(context)
 	if len(params.ContentChanges) > 0 {
 		var newText string
 

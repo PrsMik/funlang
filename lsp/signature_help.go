@@ -1,7 +1,6 @@
 package lsp
 
 import (
-	"fmt"
 	"funlang/ast"
 	"funlang/types"
 	"strings"
@@ -59,7 +58,6 @@ func textDocumentSignatureHelp(context *glsp.Context, params *protocol.Signature
 
 	switch ft := funcType.(type) {
 	case *types.FuncType:
-		fmt.Printf("Server Fn type: %v\n", ft)
 		var paramLabels []string
 		for _, param := range ft.Params {
 			label := param.Name + ": " + param.Type.Signature()
