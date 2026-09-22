@@ -215,7 +215,9 @@ func (swExp *SwitchExpression) String() string {
 		out.WriteString(caseBlock.String())
 	}
 	out.WriteString("default")
+	out.WriteString("{")
 	out.WriteString(swExp.Default.String())
+	out.WriteString("}")
 	out.WriteString("}")
 	return out.String()
 }

@@ -10,7 +10,7 @@ endif
 
 .PHONY: all build kill clean
 
-all: build
+all: kill clean build
 
 kill:
 	-@$(KILL_CMD)
