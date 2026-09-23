@@ -103,7 +103,9 @@ func (imp *ImplLiteral) String() string {
 	out.WriteString("(")
 	out.WriteString(imp.TargetType.String())
 	out.WriteString(")")
+	out.WriteString("{")
 	out.WriteString(imp.Body.String())
+	out.WriteString("}")
 	return out.String()
 }
 
@@ -185,7 +187,7 @@ func (infixExpr *InfixExpression) String() string {
 
 func (ifExpr *IfExpression) String() string {
 	var out bytes.Buffer
-	out.WriteString("if")
+	out.WriteString("if ")
 	out.WriteString(ifExpr.Condition.String())
 	out.WriteString(" ")
 	out.WriteString(ifExpr.Consequence.String())
@@ -198,7 +200,7 @@ func (ifExpr *IfExpression) String() string {
 
 func (caseBlock *CaseBlock) String() string {
 	var out bytes.Buffer
-	out.WriteString("case")
+	out.WriteString("case ")
 	out.WriteString(caseBlock.Pattern.String())
 	out.WriteString("{")
 	out.WriteString(caseBlock.Body.String())
@@ -208,13 +210,13 @@ func (caseBlock *CaseBlock) String() string {
 
 func (swExp *SwitchExpression) String() string {
 	var out bytes.Buffer
-	out.WriteString("switch")
+	out.WriteString("switch ")
 	out.WriteString(swExp.Value.String())
-	out.WriteString("{")
+	out.WriteString(" {")
 	for _, caseBlock := range swExp.Cases {
 		out.WriteString(caseBlock.String())
 	}
-	out.WriteString("default")
+	out.WriteString("default ")
 	out.WriteString("{")
 	out.WriteString(swExp.Default.String())
 	out.WriteString("}")
