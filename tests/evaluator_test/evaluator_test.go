@@ -22,7 +22,7 @@ func testEval(t *testing.T, input string) object.Object {
 	checkCheckerErrors(t, chk)
 
 	env := object.NewEnvironment()
-	return evaluator.Eval(program, env)
+	return evaluator.Eval(program, env, chk)
 }
 
 func testIntegerObject(t *testing.T, obj object.Object, expected int) bool {

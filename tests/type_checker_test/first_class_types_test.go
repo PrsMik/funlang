@@ -201,12 +201,12 @@ func TestAlgebraicTypes(t *testing.T) {
 			expectedErr: "",
 		},
 		{
-			name:        "Invalid Union assignment",
+			name:        "Invalid Union assignment 1",
 			input:       "let x: int | string = true;",
 			expectedErr: "type error",
 		},
 		{
-			name:        "Invalid Union assignment",
+			name:        "Invalid Union assignment 2",
 			input:       "let x: int | string = type;",
 			expectedErr: "type error",
 		},

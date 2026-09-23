@@ -5,6 +5,8 @@ import (
 	"funlang/lexer"
 	"funlang/object"
 	"funlang/parser"
+	"funlang/type_checker"
+	"funlang/types"
 	"testing"
 )
 
@@ -27,8 +29,11 @@ func TestRuntimeErrorHandling(t *testing.T) {
 		l := lexer.New(tt.input)
 		p := parser.New(l)
 		program := p.ParseProgram()
+		tEnv := types.NewTypeEviroment()
+		chk := type_checker.New(tEnv, nil)
+		chk.CheckProgram(program)
 		env := object.NewEnvironment()
-		evaluated := evaluator.Eval(program, env)
+		evaluated := evaluator.Eval(program, env, chk)
 
 		errObj, ok := evaluated.(*object.Error)
 		if !ok {
