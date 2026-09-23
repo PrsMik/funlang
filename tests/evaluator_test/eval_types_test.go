@@ -73,7 +73,7 @@ func TestEvalImplInstantiationAndFieldAccess(t *testing.T) {
 				let x: int = 0;
 				let y: int = 0;
 			};
-			let p: Point = Point.{.x = 10, .y = 20};
+			let p: Point = Point.{x : 10, y : 20};
 			return p.x + p.y;`,
 			expected: 30,
 		},
@@ -83,7 +83,7 @@ func TestEvalImplInstantiationAndFieldAccess(t *testing.T) {
 				let x: int = 5;
 				let y: int = 15;
 			};
-			let p: Point = Point.{.x = 100};
+			let p: Point = Point.{x : 100};
 			return p.x + p.y;`,
 			expected: 115,
 		},
@@ -101,7 +101,7 @@ func TestEvalImplInstantiationAndFieldAccess(t *testing.T) {
 			let Box: type = impl {
 				let size: int = 0;
 			};
-			let b: Box = Box.{.size = 10 * 2 + 5};
+			let b: Box = Box.{size : 10 * 2 + 5};
 			return b.size;`,
 			expected: 25,
 		},
@@ -136,8 +136,8 @@ func TestEvalImplMethods(t *testing.T) {
 				let y: int = 0;
 			};
 
-			let newVector: fn(int, int) -> Vector = fn(x: int, y: int) -> Vector {
-				return Vector.{.x = x, .y = y};
+			let newVector: fn(int, int) -> Vector = fn(xT: int, yT: int) -> Vector {
+				return Vector.{x : xT, y : yT};
 			};
 
 			let v: Vector = newVector(7, 3);
@@ -192,9 +192,9 @@ func TestEvalResultErrorHandlingAndTypeSwitch(t *testing.T) {
 
 	let divide: fn(int, int) -> Result(int, string) = fn(a: int, b: int) -> Result(int, string) {
 		if (b == 0) {
-			return ErrImpl.{.error = "Division by zero"};
+			return ErrImpl.{error : "Division by zero"};
 		} else {
-			return OkImpl.{.value = a / b};
+			return OkImpl.{value : a / b};
 		};
 	};
 
@@ -242,9 +242,9 @@ func TestEvalResultErrorHandlingAndTypeSwitch(t *testing.T) {
 
 	let divide: fn(int, int) -> Result(int, string) = fn(a: int, b: int) -> Result(int, string) {
 		if (b == 0) {
-			return ErrImpl.{.error = "Division by zero"};
+			return ErrImpl.{error : "Division by zero"};
 		} else {
-			return OkImpl.{.value = a / b};
+			return OkImpl.{value : a / b};
 		};
 	};
 

@@ -4,6 +4,7 @@ import (
 	"funlang/ast"
 	"funlang/object"
 	"funlang/type_checker"
+	"funlang/types"
 )
 
 func evalExpressions(exps []ast.ExpressionNode, env *object.Environment,
@@ -133,29 +134,6 @@ func evalInfixExpression(operator string, left, right object.Object) (res object
 		if _, isComparable := left.(object.Comparable); left.Type() == right.Type() && isComparable {
 			return nativeBoolToBooleanObject(object.Equals(left, right))
 		}
-	// if left.Type() == object.BOOLEAN_OBJ {
-	// 	leftVal := left.(*object.Boolean).Value
-	// 	rightVal := right.(*object.Boolean).Value
-	// 	switch operator {
-	// 	case "==":
-	// 		return nativeBoolToBooleanObject(leftVal == rightVal)
-	// 	case "!=":
-	// 		return nativeBoolToBooleanObject(leftVal != rightVal)
-	// 	default:
-	// 		return newError("runtime error. operator %s for %s", operator, right.Inspect())
-	// 	}
-	// } else if left.Type() == object.INTEGER_OBJ {
-	// 	leftVal := left.(*object.Integer).Value
-	// 	rightVal := right.(*object.Integer).Value
-	// 	switch operator {
-	// 	case "==":
-	// 		return nativeBoolToBooleanObject(leftVal == rightVal)
-	// 	case "!=":
-	// 		return nativeBoolToBooleanObject(leftVal != rightVal)
-	// 	default:
-	// 		return newError("runtime error. operator %s for %s", operator, right.Inspect())
-	// 	}
-	// }
 	case "!=":
 		if _, isComparable := left.(object.Comparable); left.Type() == right.Type() && isComparable {
 			return nativeBoolToBooleanObject(!object.Equals(left, right))
@@ -168,6 +146,17 @@ func evalInfixExpression(operator string, left, right object.Object) (res object
 			return nativeBoolToBooleanObject(leftVal && rightVal)
 		case "||":
 			return nativeBoolToBooleanObject(leftVal || rightVal)
+		default:
+			return newError("runtime error. operator %s for %s", operator, right.Inspect())
+		}
+	case "&", "|":
+		leftVal := left.(*object.TypeObject).TypeValue
+		rightVal := right.(*object.TypeObject).TypeValue
+		switch operator {
+		case "&":
+			return &object.TypeObject{TypeValue: &types.IntersectionType{Left: leftVal, Right: rightVal}}
+		case "|":
+			return &object.TypeObject{TypeValue: &types.UnionType{Left: leftVal, Right: rightVal}}
 		default:
 			return newError("runtime error. operator %s for %s", operator, right.Inspect())
 		}
