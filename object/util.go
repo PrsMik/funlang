@@ -14,11 +14,12 @@ func IsAssignable(rawLeftObject, rawRightObject Object) bool {
 	}
 }
 
+// !!!ПОРЯДОК ВАЖЕН!!! ЛЕВОЕ - ТО ЧЕМУ ПРИСВАИВАЕТСЯ ПРАВОЕ
 func Equals(rawLeftObject, rawRightObject Object) bool {
 	switch leftObject := rawLeftObject.(type) {
 	case *TypeObject:
 		if rightObject, ok := rawRightObject.(*TypeObject); ok {
-			return types.Equals(leftObject.TypeValue, rightObject.TypeValue)
+			return types.IsAssignable(leftObject.TypeValue, rightObject.TypeValue)
 		}
 		return false
 	case *Integer, *Boolean, *String:

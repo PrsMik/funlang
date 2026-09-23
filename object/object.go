@@ -43,7 +43,6 @@ type Null struct{}
 func (n *Null) Type() ObjectType { return NULL_OBJ }
 
 type TypeObject struct {
-	Name      string
 	TypeValue types.Type
 }
 

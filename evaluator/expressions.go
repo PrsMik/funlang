@@ -3,12 +3,15 @@ package evaluator
 import (
 	"funlang/ast"
 	"funlang/object"
+	"funlang/type_checker"
 )
 
-func evalExpressions(exps []ast.ExpressionNode, env *object.Environment) []object.Object {
+func evalExpressions(exps []ast.ExpressionNode, env *object.Environment,
+	chk *type_checker.TypeChecker) []object.Object {
+
 	var result []object.Object
 	for _, e := range exps {
-		evaluated := Eval(e, env)
+		evaluated := Eval(e, env, chk)
 		if isError(evaluated) {
 			return []object.Object{evaluated}
 		}
@@ -39,32 +42,6 @@ func evalArrayIndexExpression(array, index object.Object) object.Object {
 	return arrayObject.Elements[idx]
 }
 
-func evalHashMapLiteral(node *ast.HashMapLiteral, env *object.Environment) object.Object {
-	pairs := make(map[object.HashKey]object.HashPair)
-
-	for keyNode, valNode := range node.Pairs {
-		key := Eval(keyNode, env)
-		if isError(key) {
-			return key
-		}
-
-		hashKey, ok := key.(object.Hashable)
-		if !ok {
-			return newError("unusable as hash key: %s", key.Inspect())
-		}
-
-		value := Eval(valNode, env)
-		if isError(value) {
-			return value
-		}
-
-		hashed := hashKey.HashKey()
-		pairs[hashed] = object.HashPair{Key: key, Value: value}
-	}
-
-	return &object.HashMap{Pairs: pairs}
-}
-
 func evalHashIndexExpression(hash, index object.Object) object.Object {
 	hashObject := hash.(*object.HashMap)
 
@@ -76,16 +53,6 @@ func evalHashIndexExpression(hash, index object.Object) object.Object {
 	}
 
 	return pair.Value
-}
-
-func evalIdentifier(node *ast.Identifier, env *object.Environment) object.Object {
-	val, ok := env.Get(node.Value)
-	if ok {
-		return val
-	} else if builtin, ok := builtins[node.Value]; ok {
-		return builtin
-	}
-	return newError("identifier not found: %s", node.Value)
 }
 
 func evalPrefixExpression(operator string, right object.Object) object.Object {
@@ -206,31 +173,4 @@ func evalInfixExpression(operator string, left, right object.Object) (res object
 		}
 	}
 	return newError("runtime error. operator %s for %s", operator, right.Inspect())
-}
-
-func evalIfExpression(node *ast.IfExpression, env *object.Environment) object.Object {
-	condition := Eval(node.Condition, env)
-	var res object.Object
-	if condition == TRUE {
-		res = Eval(node.Consequence, env)
-	} else {
-		res = Eval(node.Alternative, env)
-	}
-	return unwrapReturnValue(res)
-}
-
-func evalSwitchExpression(node *ast.SwitchExpression, env *object.Environment) object.Object {
-	condition := Eval(node.Value, env)
-	var res object.Object
-	for _, caseBlock := range node.Cases {
-		pattern := Eval(caseBlock.Pattern, env)
-		if object.Equals(condition, pattern) {
-			res = Eval(caseBlock.Body, env)
-			return unwrapReturnValue(res)
-		}
-	}
-
-	res = Eval(node.Default, env)
-
-	return unwrapReturnValue(res)
 }

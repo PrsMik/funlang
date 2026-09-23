@@ -10,9 +10,6 @@ import (
 func (n *Null) Inspect() string { return "null" }
 
 func (to *TypeObject) Inspect() string {
-	if to.Name != "" {
-		return to.Name
-	}
 	if to.TypeValue != nil {
 		return to.TypeValue.Signature()
 	}

@@ -1,13 +1,16 @@
 package evaluator
 
-import "funlang/object"
+import (
+	"funlang/object"
+	"funlang/type_checker"
+)
 
-func applyFunction(fn object.Object, args []object.Object) object.Object {
+func applyFunction(fn object.Object, args []object.Object, chk *type_checker.TypeChecker) object.Object {
 	for {
 		switch f := fn.(type) {
 		case *object.Function:
 			extendedEnv := extendFunctionEnv(f, args)
-			evaluated := Eval(f.Body, extendedEnv)
+			evaluated := Eval(f.Body, extendedEnv, chk)
 
 			res := unwrapReturnValue(evaluated)
 
