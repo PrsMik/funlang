@@ -6,7 +6,7 @@ import (
 	"funlang/types"
 )
 
-func (chk *TypeChecker) checkInterfaceLiteral(expr ast.ExpressionNode) types.Type {
+func (chk *TypeChecker) CheckInterfaceLiteral(expr ast.ExpressionNode) types.Type {
 	interfaceLiteral := expr.(*ast.InterfaceLiteral)
 
 	interfaceType := &types.InterfaceType{
@@ -46,7 +46,7 @@ func (chk *TypeChecker) checkInterfaceLiteral(expr ast.ExpressionNode) types.Typ
 	return &types.TypeType{Underlying: interfaceType}
 }
 
-func (chk *TypeChecker) checkImplLiteral(expr ast.ExpressionNode) types.Type {
+func (chk *TypeChecker) CheckImplLiteral(expr ast.ExpressionNode) types.Type {
 	implLit := expr.(*ast.ImplLiteral)
 
 	var targetType types.Type
@@ -92,30 +92,44 @@ func (chk *TypeChecker) checkImplLiteral(expr ast.ExpressionNode) types.Type {
 	chk.env = chk.env.Outer
 
 	if targetType != nil {
-		chk.verifyImplementation(targetType, implType, expr)
+		if !chk.isImplementingType(targetType, implType, expr) {
+			chk.typeError("impl does not implement requiered types", expr)
+		}
 	}
 
 	return &types.TypeType{Underlying: implType}
 }
 
-func (chk *TypeChecker) verifyImplementation(targetType types.Type, implType *types.ImplType, node ast.Node) {
+func (chk *TypeChecker) isImplementingType(targetType types.Type, implType *types.ImplType, node ast.Node) bool {
 	switch rawType := targetType.(type) {
 	case *types.InterfaceType:
 		for interfaceFieldName, interfaceFieldType := range rawType.Fields {
 			implFieldType, exists := implType.Fields[interfaceFieldName]
 			if !exists {
-				chk.typeError(fmt.Sprintf("impl missing required field '%s'", interfaceFieldName), node)
-				continue
+				// chk.typeError(fmt.Sprintf("impl missing required field '%s'", interfaceFieldName), node)
+				// continue
+				return false
 			}
 			if !types.IsAssignable(interfaceFieldType, implFieldType) {
-				chk.typeError(fmt.Sprintf("field '%s' type mismatch: expected %s, got %s",
-					interfaceFieldName, interfaceFieldType.Signature(), implFieldType.Signature()), node)
+				return false
+				// chk.typeError(fmt.Sprintf("field '%s' type mismatch: expected %s, got %s",
+				// 	interfaceFieldName, interfaceFieldType.Signature(), implFieldType.Signature()), node)
 			}
 		}
+		return true
+
 	case *types.IntersectionType:
-		chk.verifyImplementation(rawType.Left, implType, node)
-		chk.verifyImplementation(rawType.Right, implType, node)
+		return chk.isImplementingType(rawType.Left, implType, node) &&
+			chk.isImplementingType(rawType.Right, implType, node)
+
+	case *types.UnionType:
+		return chk.isImplementingType(rawType.Left, implType, node) ||
+			chk.isImplementingType(rawType.Right, implType, node)
+
 	case *types.TypeType:
-		chk.verifyImplementation(rawType.Underlying, implType, node)
+		return chk.isImplementingType(rawType.Underlying, implType, node)
+
+	default:
+		return false
 	}
 }

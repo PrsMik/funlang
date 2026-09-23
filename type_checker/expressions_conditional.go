@@ -63,6 +63,7 @@ func (chk *TypeChecker) checkSwitchExpression(expr ast.ExpressionNode) types.Typ
 	if _, isIllegal := valType.(*types.IllegalType); isIllegal {
 		return valType
 	}
+
 	if _, isComparable := valType.(types.ComparableType); !isComparable {
 		chk.typeError(fmt.Sprintf("cannot use type %s in switch value, it is not comparable",
 			valType.Signature()), expr)

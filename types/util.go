@@ -8,6 +8,10 @@ func IsAssignable(expected, actual Type) bool {
 	}
 
 	if expectedUnion, ok := expected.(*UnionType); ok {
+		if actualUnion, ok := actual.(*UnionType); ok {
+			return IsAssignable(expectedUnion.Left, actualUnion.Left) &&
+				IsAssignable(expectedUnion.Right, actualUnion.Right)
+		}
 		return IsAssignable(expectedUnion.Left, actual) || IsAssignable(expectedUnion.Right, actual)
 	}
 
@@ -119,6 +123,44 @@ func Equals(rawLeftType, rawRightType Type) bool {
 		}
 
 		return true
+	case *ImplType:
+		rightType, ok := rawRightType.(*ImplType)
+		if !ok {
+			return false
+		}
+
+		if leftType.ImplementedType != nil && rightType.ImplementedType != nil {
+			return Equals(leftType.ImplementedType, rightType.ImplementedType)
+		}
+
+		for leftFieldName, leftFieldType := range leftType.Fields {
+			rightFieldType, exists := rightType.Fields[leftFieldName]
+			if !exists {
+				return false
+			}
+			if !Equals(leftFieldType, rightFieldType) {
+				return false
+			}
+		}
+
+		return true
+
+	case *UnionType:
+		rightType, ok := rawRightType.(*UnionType)
+		if !ok {
+			return false
+		}
+
+		return Equals(leftType.Left, rightType.Left) && Equals(leftType.Right, rightType.Right)
+
+	case *IntersectionType:
+		rightType, ok := rawRightType.(*IntersectionType)
+		if !ok {
+			return false
+		}
+
+		return Equals(leftType.Left, rightType.Left) && Equals(leftType.Right, rightType.Right)
+
 	default:
 		return false
 	}

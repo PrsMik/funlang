@@ -15,7 +15,7 @@ func (chk *TypeChecker) checkMemberAccessExpression(expr ast.ExpressionNode) typ
 	}
 
 	fieldName := memberExpr.Property.Value
-	fieldType, ok := chk.getFieldType(leftType, fieldName)
+	fieldType, ok := chk.getFieldType(leftType, fieldName, expr)
 	if !ok {
 		chk.typeError(fmt.Sprintf("type %s has no field named *%s*", leftType.Signature(), fieldName), expr)
 		return &types.IllegalType{}
@@ -24,8 +24,13 @@ func (chk *TypeChecker) checkMemberAccessExpression(expr ast.ExpressionNode) typ
 	return fieldType
 }
 
-func (chk *TypeChecker) getFieldType(objectType types.Type, fieldName string) (types.Type, bool) {
+func (chk *TypeChecker) getFieldType(objectType types.Type, fieldName string,
+	expr ast.ExpressionNode) (types.Type, bool) {
+
 	switch rawType := objectType.(type) {
+	case *types.UnionType:
+		chk.typeError("union types fields cannot be accessed without narrowing", expr)
+		return &types.IllegalType{}, false
 	case *types.InterfaceType:
 		fieldType, ok := rawType.Fields[fieldName]
 		if fieldType == nil {
@@ -41,10 +46,10 @@ func (chk *TypeChecker) getFieldType(objectType types.Type, fieldName string) (t
 		return fieldType, ok
 
 	case *types.IntersectionType:
-		if fieldType, ok := chk.getFieldType(rawType.Left, fieldName); ok {
+		if fieldType, ok := chk.getFieldType(rawType.Left, fieldName, expr); ok {
 			return fieldType, true
 		}
-		if fieldType, ok := chk.getFieldType(rawType.Right, fieldName); ok {
+		if fieldType, ok := chk.getFieldType(rawType.Right, fieldName, expr); ok {
 			return fieldType, true
 		}
 		return &types.IllegalType{}, false
@@ -98,7 +103,9 @@ func (chk *TypeChecker) checkImplInstantiationExpression(expr ast.ExpressionNode
 	return impl
 }
 
-func (chk *TypeChecker) checkFieldsInstantation(implType *types.ImplType, fields *ast.HashMapLiteral, node ast.Node) {
+func (chk *TypeChecker) checkFieldsInstantation(implType *types.ImplType,
+	fields *ast.HashMapLiteral, node ast.ExpressionNode) {
+
 	for key, elem := range fields.Pairs {
 		instElementType := chk.checkExpression(elem)
 
@@ -108,7 +115,7 @@ func (chk *TypeChecker) checkFieldsInstantation(implType *types.ImplType, fields
 			return
 		}
 
-		fieldType, ok := chk.getFieldType(implType, keyIndent.Value)
+		fieldType, ok := chk.getFieldType(implType, keyIndent.Value, node)
 		if !ok {
 			chk.typeError(fmt.Sprintf("type %s has no field named *%s*", implType.Signature(), keyIndent.Value), node)
 		}

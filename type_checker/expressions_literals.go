@@ -45,6 +45,13 @@ func (chk *TypeChecker) checkTypeIdentifier(expr ast.ExpressionNode) types.Type 
 
 	return symbolInfo.SymbolType
 }
+func (chk *TypeChecker) checkArrayType(expr ast.ExpressionNode) types.Type {
+	return &types.TypeType{Underlying: chk.resolveType(expr)}
+}
+
+func (chk *TypeChecker) checkHashMapType(expr ast.ExpressionNode) types.Type {
+	return &types.TypeType{Underlying: chk.resolveType(expr)}
+}
 
 func (chk *TypeChecker) checkFuncType(expr ast.ExpressionNode) types.Type {
 	return &types.TypeType{Underlying: chk.resolveType(expr)}
