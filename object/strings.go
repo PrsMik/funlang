@@ -73,21 +73,26 @@ func (f *Function) Inspect() string {
 
 func (tc *TailCall) Inspect() string { return "tail call" }
 
+func (impInst *ImplInstance) Inspect() string { return impInst.TypeObj.TypeValue.Signature() }
+
 func (b *Builtin) Inspect() string { return "builtin function" }
 
 func (e *Error) Inspect() string { return "RUNTIME ERROR: " + e.Message }
 
 var objectTypes map[ObjectType]string = map[ObjectType]string{
-	NULL_OBJ:         (&types.NullType{}).Signature(),
-	INTEGER_OBJ:      (&types.IntType{}).Signature(),
-	BOOLEAN_OBJ:      (&types.BoolType{}).Signature(),
-	STRING_OBJ:       (&types.StringType{}).Signature(),
-	ARRAY_OBJ:        (&types.ArrayType{}).Signature(),
-	HASH_MAP_OBJ:     (&types.HashMapType{}).Signature(),
-	RETURN_VALUE_OBJ: "<return val>",
-	FUNCTION_OBJ:     "<fn>",
-	BUILTIN_OBJ:      "<builtin>",
-	ERROR_OBJ:        "<error>",
+	NULL_OBJ:          (&types.NullType{}).Signature(),
+	INTEGER_OBJ:       (&types.IntType{}).Signature(),
+	BOOLEAN_OBJ:       (&types.BoolType{}).Signature(),
+	STRING_OBJ:        (&types.StringType{}).Signature(),
+	ARRAY_OBJ:         (&types.ArrayType{}).Signature(),
+	HASH_MAP_OBJ:      (&types.HashMapType{}).Signature(),
+	RETURN_VALUE_OBJ:  "<return val>",
+	FUNCTION_OBJ:      "<fn>",
+	TAIL_CALL_OBJ:     "<tail call>",
+	TYPE_OBJ:          "<type obj>",
+	IMPL_INSTANCE_OBJ: "<instance obj>",
+	BUILTIN_OBJ:       "<builtin>",
+	ERROR_OBJ:         "<error>",
 }
 
 func LookUpObjSignature(objectType ObjectType) string {

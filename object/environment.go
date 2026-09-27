@@ -1,12 +1,23 @@
 package object
 
+import "funlang/types"
+
 type Environment struct {
 	store map[string]Object
 	outer *Environment
 }
 
+var (
+	MetaType = &TypeObject{TypeValue: types.MetaType}
+)
+
 func NewEnvironment() *Environment {
-	return &Environment{store: make(map[string]Object), outer: nil}
+	env := &Environment{store: make(map[string]Object), outer: nil}
+	env.Set("type", MetaType)
+	env.Set("int", &TypeObject{TypeValue: &types.IntType{}})
+	env.Set("string", &TypeObject{TypeValue: &types.StringType{}})
+	env.Set("bool", &TypeObject{TypeValue: &types.BoolType{}})
+	return env
 }
 
 func NewEnclosedEnvironment(outer *Environment) *Environment {

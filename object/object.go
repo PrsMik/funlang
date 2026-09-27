@@ -139,6 +139,14 @@ type TailCall struct {
 
 func (f *TailCall) Type() ObjectType { return TAIL_CALL_OBJ }
 
+type ImplInstance struct {
+	TypeObj *TypeObject
+	Fields  map[string]Object
+}
+
+func (impInst *ImplInstance) Type() ObjectType { return IMPL_INSTANCE_OBJ }
+func (impInst *ImplInstance) IsComparable()    {}
+
 type BuiltinFunction func(...Object) Object
 
 type Builtin struct {

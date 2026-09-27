@@ -34,6 +34,11 @@ func Equals(rawLeftObject, rawRightObject Object) bool {
 			return compareHashMaps(leftObject, rightObject)
 		}
 		return false
+	case *ImplInstance:
+		if rightObject, ok := rawRightObject.(*ImplInstance); ok {
+			return comapreInstances(leftObject, rightObject)
+		}
+		return false
 	default:
 		return false
 	}
@@ -80,6 +85,20 @@ func compareHashMaps(leftMap, rightMap *HashMap) bool {
 
 	for k, v1 := range leftMap.Pairs {
 		if v2, ok := rightMap.Pairs[k]; !ok || !Equals(v1.Value, v2.Value) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func comapreInstances(leftInstance, rightInstance *ImplInstance) bool {
+	if len(leftInstance.Fields) != len(rightInstance.Fields) {
+		return false
+	}
+
+	for k, v1 := range leftInstance.Fields {
+		if v2, ok := rightInstance.Fields[k]; !ok || !Equals(v1, v2) {
 			return false
 		}
 	}
