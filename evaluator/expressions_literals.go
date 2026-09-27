@@ -16,6 +16,16 @@ func evalIdentifier(node *ast.Identifier, env *object.Environment) object.Object
 	return newError("identifier not found: %s", node.Value)
 }
 
+func evalTypeIdentifier(node *ast.SimpleType, env *object.Environment) object.Object {
+	val, ok := env.Get(node.Value)
+	if ok {
+		return val
+	} else if builtin, ok := builtins[node.Value]; ok {
+		return builtin
+	}
+	return newError("type identifier not found: %s", node.Value)
+}
+
 func evalHashMapLiteral(node *ast.HashMapLiteral, env *object.Environment, chk *type_checker.TypeChecker) object.Object {
 	pairs := make(map[object.HashKey]object.HashPair)
 

@@ -15,7 +15,7 @@ func (chk *TypeChecker) checkMemberAccessExpression(expr ast.ExpressionNode) typ
 	}
 
 	fieldName := memberExpr.Property.Value
-	fieldType, ok := chk.getFieldType(leftType, fieldName, expr)
+	fieldType, ok := chk.GetFieldType(leftType, fieldName, expr)
 	if !ok {
 		chk.typeError(fmt.Sprintf("type %s has no field named *%s*", leftType.Signature(), fieldName), expr)
 		return &types.IllegalType{}
@@ -24,7 +24,7 @@ func (chk *TypeChecker) checkMemberAccessExpression(expr ast.ExpressionNode) typ
 	return fieldType
 }
 
-func (chk *TypeChecker) getFieldType(objectType types.Type, fieldName string,
+func (chk *TypeChecker) GetFieldType(objectType types.Type, fieldName string,
 	expr ast.ExpressionNode) (types.Type, bool) {
 
 	switch rawType := objectType.(type) {
@@ -46,10 +46,10 @@ func (chk *TypeChecker) getFieldType(objectType types.Type, fieldName string,
 		return fieldType, ok
 
 	case *types.IntersectionType:
-		if fieldType, ok := chk.getFieldType(rawType.Left, fieldName, expr); ok {
+		if fieldType, ok := chk.GetFieldType(rawType.Left, fieldName, expr); ok {
 			return fieldType, true
 		}
-		if fieldType, ok := chk.getFieldType(rawType.Right, fieldName, expr); ok {
+		if fieldType, ok := chk.GetFieldType(rawType.Right, fieldName, expr); ok {
 			return fieldType, true
 		}
 		return &types.IllegalType{}, false
@@ -115,7 +115,7 @@ func (chk *TypeChecker) checkFieldsInstantation(implType *types.ImplType,
 			return
 		}
 
-		fieldType, ok := chk.getFieldType(implType, keyIndent.Value, node)
+		fieldType, ok := chk.GetFieldType(implType, keyIndent.Value, node)
 		if !ok {
 			chk.typeError(fmt.Sprintf("type %s has no field named *%s*", implType.Signature(), keyIndent.Value), node)
 		}

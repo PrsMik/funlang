@@ -73,6 +73,8 @@ func Eval(node ast.Node, env *object.Environment, chk *type_checker.TypeChecker)
 	// выражения
 	case *ast.Identifier:
 		return evalIdentifier(node, env)
+	case *ast.SimpleType:
+		return evalTypeIdentifier(node, env)
 	case *ast.IndexExpression:
 		left := Eval(node.Left, env, chk)
 		if isError(left) {
@@ -120,6 +122,10 @@ func Eval(node ast.Node, env *object.Environment, chk *type_checker.TypeChecker)
 		return evalIfExpression(node, env, chk)
 	case *ast.SwitchExpression:
 		return evalSwitchExpression(node, env, chk)
+	case *ast.MemberAccessExpression:
+		return evalMemberAccessExpression(node, env, chk)
+	case *ast.ImplInstantiationExpression:
+		return evalImplInstantiationExpression(node, env, chk)
 	}
 	return nil
 }

@@ -25,7 +25,7 @@ func TestEvalFirstClassTypes(t *testing.T) {
 	}{
 		{
 			input:       `let T: type = int; return T;`,
-			expectedSig: "int",
+			expectedSig: "<int>",
 		},
 		{
 			input:       `let NumericOrString: type = int | string; return NumericOrString;`,
@@ -41,18 +41,18 @@ func TestEvalFirstClassTypes(t *testing.T) {
 				let greet: type = fn() -> string;
 			};
 			return Greeter;`,
-			expectedSig: "Greeter",
+			expectedSig: "<interface >",
 		},
 		{
 			input: `
-			let Box: fn(T: type) -> type = fn(T: type) -> type {
+			let Box: fn(T: type) -> type = fn(T) {
 				return interface {
 					let value: type = T;
 				};
 			};
 			let IntBox: type = Box(int);
 			return IntBox;`,
-			expectedSig: "<inteface >",
+			expectedSig: "<interface >",
 		},
 	}
 
@@ -67,6 +67,17 @@ func TestEvalImplInstantiationAndFieldAccess(t *testing.T) {
 		input    string
 		expected int
 	}{
+		{
+			input: `
+			let Geometric: type = interface { let x: type = int; let y: type = int; };
+			let Point: type = impl (Geometric) {
+				let x: int = 42;
+				let y: int = 42;
+			};
+			let p: Geometric = Point;
+			return p.x + p.y;`,
+			expected: 84,
+		},
 		{
 			input: `
 			let Point: type = impl {
@@ -191,7 +202,7 @@ func TestEvalResultErrorHandlingAndTypeSwitch(t *testing.T) {
 	};
 
 	let divide: fn(int, int) -> Result(int, string) = fn(a: int, b: int) -> Result(int, string) {
-		if (b == 0) {
+		return if (b == 0) {
 			return ErrImpl.{error : "Division by zero"};
 		} else {
 			return OkImpl.{value : a / b};
@@ -241,7 +252,7 @@ func TestEvalResultErrorHandlingAndTypeSwitch(t *testing.T) {
 	};
 
 	let divide: fn(int, int) -> Result(int, string) = fn(a: int, b: int) -> Result(int, string) {
-		if (b == 0) {
+		return if (b == 0) {
 			return ErrImpl.{error : "Division by zero"};
 		} else {
 			return OkImpl.{value : a / b};
