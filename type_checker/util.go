@@ -83,6 +83,8 @@ func (chk *TypeChecker) resolveType(inType ast.ExpressionNode) types.Type {
 		}
 		return &types.HashMapType{KeyType: keyType, ElementType: chk.resolveType(tp.ElementType)}
 	case *ast.FunctionType:
+		// TODO: добавить немедленное добавление параметров с метатипом в окружение для
+		// fn(T: type, val: T) -> T
 		funcParams := []types.FuncParam{}
 
 		for _, prm := range tp.ParamsTypes {

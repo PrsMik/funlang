@@ -12,6 +12,7 @@ func (typeType *TypeType) TokenLiteral() string  { return typeType.Token.Literal
 func (typeType *TypeType) Start() token.Position { return typeType.Token.Start }
 func (typeType *TypeType) End() token.Position   { return typeType.Token.End }
 
+// TODO: убрать, заменить на Identifier
 type SimpleType struct {
 	Token token.Token
 	Value string

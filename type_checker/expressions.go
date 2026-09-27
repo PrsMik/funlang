@@ -154,7 +154,7 @@ func (chk *TypeChecker) checkCallExpression(expr ast.ExpressionNode) types.Type 
 		for i, arg := range callExpr.Arguments {
 			argType := chk.checkExpression(arg)
 
-			if !types.Equals(argType, callFuncType.Params[i].Type) {
+			if !types.IsAssignable(callFuncType.Params[i].Type, argType) {
 				chk.typeError(fmt.Sprintf("wrong type for argument %d: %s in func call \" %s \"; expected %s",
 					i+1, argType.Signature(), callExpr.Function.String(), callFuncType.Params[i].Type.Signature()), expr)
 				return &types.IllegalType{}
