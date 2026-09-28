@@ -62,7 +62,7 @@ func InterpretProgram(program string, out io.Writer) {
 		return
 	}
 
-	evaluated := evaluator.Eval(prg, env, chk)
+	evaluated := evaluator.Eval(prg, env, chk.Info)
 	if evaluated != nil {
 		// io.WriteString(out, "Result of file eval is: ")
 		// io.WriteString(out, evaluated.Inspect())
