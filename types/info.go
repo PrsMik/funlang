@@ -11,8 +11,9 @@ type Info struct {
 	ExpectedTypes map[ast.Node]Type
 }
 
-func NewInfo() *Info {
+func NewInfo(env *TypeEviroment) *Info {
 	return &Info{
+		GlobalScope:   env,
 		TypesInfo:     make(map[ast.Node]Type),
 		TypeNodes:     make(map[ast.Node]bool),
 		Definitions:   make(map[ast.Node]ast.Node),

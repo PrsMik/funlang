@@ -6,7 +6,7 @@ import (
 )
 
 func TestNewInfo(t *testing.T) {
-	info := types.NewInfo()
+	info := types.NewInfo(types.NewTypeEviroment())
 
 	if info == nil {
 		t.Fatal("NewInfo returned nil")

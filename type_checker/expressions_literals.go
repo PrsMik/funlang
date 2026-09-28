@@ -156,19 +156,21 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 
 	var expectedFuncType types.FuncType
 
-	// hasSelfParams := false
 	// типы параметров описаны в самом литерале
 	if len(funLiteral.ParamTypes) != 0 && funLiteral.ParamTypes[0] != nil || funLiteral.ReturnType != nil {
 
 		if len(funLiteral.ParamTypes) != 0 && funLiteral.ParamTypes[0] != nil {
+			// у литерала определены типы параметров
 			for ind, param := range funLiteral.ParamTypes {
 				paramType := chk.resolveType(param)
 				funcParam := &types.FuncParam{Name: funLiteral.Parameters[ind].Value, Type: paramType}
 				expectedFuncType.Params = append(expectedFuncType.Params, *funcParam)
 			}
+
 		} else if expType, ok := chk.curExpectedType.(*types.FuncType); ok && len(expType.Params) != 0 {
 			// у ожидаемого типа определены типы параметров
 			expectedFuncType.Params = expType.Params
+
 		} else if len(funLiteral.Parameters) != 0 {
 			chk.typeError("function literal has parameters, but no type specified for them", expr)
 			return &types.IllegalType{}
@@ -180,6 +182,7 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 			chk.typeError("function literal has typed parameters, but no return type specified", expr)
 			return &types.IllegalType{}
 		}
+
 	} else {
 		tempType, ok := chk.curExpectedType.(*types.FuncType)
 		if !ok {

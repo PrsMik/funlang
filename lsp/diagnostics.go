@@ -49,8 +49,7 @@ func validateDocument(context *glsp.Context, uri string, text string) {
 
 	if program != nil {
 		env := types.NewTypeEviroment()
-		info := types.NewInfo()
-		info.GlobalScope = env
+		info := types.NewInfo(env)
 		chk := type_checker.New(env, info)
 		chk.CheckProgram(program)
 

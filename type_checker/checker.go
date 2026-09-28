@@ -56,8 +56,8 @@ func New(curEnv *types.TypeEviroment, info *types.Info) *TypeChecker {
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.CallExpression](), chk.checkCallExpression)
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.IndexExpression](), chk.checkIndexExpression)
 
-	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.InterfaceLiteral](), chk.CheckInterfaceLiteral)
-	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.ImplLiteral](), chk.CheckImplLiteral)
+	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.InterfaceLiteral](), chk.checkInterfaceLiteral)
+	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.ImplLiteral](), chk.checkImplLiteral)
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.ImplInstantiationExpression](),
 		chk.checkImplInstantiationExpression)
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.MemberAccessExpression](), chk.checkMemberAccessExpression)

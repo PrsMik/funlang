@@ -6,7 +6,7 @@ import (
 	"funlang/types"
 )
 
-func (chk *TypeChecker) CheckInterfaceLiteral(expr ast.ExpressionNode) types.Type {
+func (chk *TypeChecker) checkInterfaceLiteral(expr ast.ExpressionNode) types.Type {
 	interfaceLiteral := expr.(*ast.InterfaceLiteral)
 
 	interfaceType := &types.InterfaceType{
@@ -46,7 +46,7 @@ func (chk *TypeChecker) CheckInterfaceLiteral(expr ast.ExpressionNode) types.Typ
 	return &types.TypeType{Underlying: interfaceType}
 }
 
-func (chk *TypeChecker) CheckImplLiteral(expr ast.ExpressionNode) types.Type {
+func (chk *TypeChecker) checkImplLiteral(expr ast.ExpressionNode) types.Type {
 	implLit := expr.(*ast.ImplLiteral)
 
 	var targetType types.Type

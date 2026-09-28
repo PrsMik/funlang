@@ -23,6 +23,9 @@ func Start(in io.Reader, out io.Writer) {
 	for {
 		fmt.Printf(PROMT)
 		scanned := scanner.Scan()
+		if scanner.Err() != nil {
+			io.WriteString(out, scanner.Err().Error())
+		}
 
 		if !scanned {
 			return
@@ -45,7 +48,7 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		evaluated := evaluator.Eval(prg, env, chk)
+		evaluated := evaluator.Eval(prg, env, chk.Info)
 		if evaluated != nil {
 			// io.WriteString(out, evaluated.Inspect())
 			// io.WriteString(out, "\n")
@@ -53,6 +56,7 @@ func Start(in io.Reader, out io.Writer) {
 			io.WriteString(out, "eval error\n")
 		}
 	}
+
 }
 
 func PrintParserErrors(out io.Writer, errors []parser.ParseError) {
