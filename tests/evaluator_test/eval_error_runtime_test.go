@@ -30,10 +30,11 @@ func TestRuntimeErrorHandling(t *testing.T) {
 		p := parser.New(l)
 		program := p.ParseProgram()
 		tEnv := types.NewTypeEviroment()
-		chk := type_checker.New(tEnv, nil)
+		info := types.NewInfo(tEnv)
+		chk := type_checker.New(tEnv, info)
 		chk.CheckProgram(program)
 		env := object.NewEnvironment()
-		evaluated := evaluator.Eval(program, env, chk)
+		evaluated := evaluator.Eval(program, env, chk.Info)
 
 		errObj, ok := evaluated.(*object.Error)
 		if !ok {

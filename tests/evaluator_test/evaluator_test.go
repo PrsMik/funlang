@@ -17,12 +17,13 @@ func testEval(t *testing.T, input string) object.Object {
 	checkParserErrors(t, p)
 
 	type_env := types.NewTypeEviroment()
-	chk := type_checker.New(type_env, nil)
+	info := types.NewInfo(type_env)
+	chk := type_checker.New(type_env, info)
 	chk.CheckProgram(program)
 	checkCheckerErrors(t, chk)
 
 	env := object.NewEnvironment()
-	return evaluator.Eval(program, env, chk)
+	return evaluator.Eval(program, env, chk.Info)
 }
 
 func testIntegerObject(t *testing.T, obj object.Object, expected int) bool {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"funlang/ast"
 	"funlang/object"
-	"funlang/type_checker"
+	"funlang/types"
 )
 
 var (
@@ -13,13 +13,13 @@ var (
 	FALSE = &object.Boolean{Value: false}
 )
 
-func Eval(node ast.Node, env *object.Environment, chk *type_checker.TypeChecker) object.Object {
+func Eval(node ast.Node, env *object.Environment, info *types.Info) object.Object {
 	switch node := node.(type) {
 	// инструкции
 	case *ast.Program:
-		return evalProgram(node, env, chk)
+		return evalProgram(node, env, info)
 	case *ast.LetStatement:
-		val := Eval(node.Value, env, chk)
+		val := Eval(node.Value, env, info)
 		if isError(val) {
 			return val
 		}
@@ -27,12 +27,12 @@ func Eval(node ast.Node, env *object.Environment, chk *type_checker.TypeChecker)
 		return val
 	case *ast.ReturnStatement:
 		if callNode, ok := node.Value.(*ast.CallExpression); ok {
-			function := Eval(callNode.Function, env, chk)
+			function := Eval(callNode.Function, env, info)
 			if isError(function) {
 				return function
 			}
 
-			args := evalExpressions(callNode.Arguments, env, chk)
+			args := evalExpressions(callNode.Arguments, env, info)
 			if len(args) == 1 && isError(args[0]) {
 				return args[0]
 			}
@@ -40,14 +40,14 @@ func Eval(node ast.Node, env *object.Environment, chk *type_checker.TypeChecker)
 			return &object.ReturnValue{Value: &object.TailCall{Function: function, Arguments: args}}
 		}
 
-		val := Eval(node.Value, env, chk)
+		val := Eval(node.Value, env, info)
 		if isError(val) {
 			return val
 		}
 
 		return &object.ReturnValue{Value: val}
 	case *ast.BlockStatement:
-		return evalBlockStatement(node, env, chk)
+		return evalBlockStatement(node, env, info)
 
 	// ВЫРАЖЕНИЯ
 	// литералы
@@ -58,86 +58,98 @@ func Eval(node ast.Node, env *object.Environment, chk *type_checker.TypeChecker)
 	case *ast.StringLiteral:
 		return &object.String{Value: node.Value}
 	case *ast.ArrayLiteral:
-		elements := evalExpressions(node.Elements, env, chk)
+		elements := evalExpressions(node.Elements, env, info)
 		if len(elements) == 1 && isError(elements[0]) {
 			return elements[0]
 		}
-		return &object.Array{Elements: elements}
+		return &object.Array{
+			Elements: elements,
+			TypeObj:  &object.TypeObject{TypeValue: info.TypesInfo[node]}}
+
 	case *ast.HashMapLiteral:
-		return evalHashMapLiteral(node, env, chk)
+		return evalHashMapLiteral(node, env, info)
 	// лиетралы типов
 	case *ast.InterfaceLiteral:
-		return evalInterfaceLiteral(node, env, chk)
+		return evalInterfaceLiteral(node, env, info)
 	case *ast.ImplLiteral:
-		return evalImplLiteral(node, env, chk)
+		return evalImplLiteral(node, env, info)
 	// выражения
 	case *ast.Identifier:
 		return evalIdentifier(node, env)
+	case *ast.TypeType:
+		return evalTypeTypeIdentifier(node, env)
 	case *ast.SimpleType:
 		return evalTypeIdentifier(node, env)
 	case *ast.IndexExpression:
-		left := Eval(node.Left, env, chk)
+		left := Eval(node.Left, env, info)
 		if isError(left) {
 			return left
 		}
-		index := Eval(node.Index, env, chk)
+		index := Eval(node.Index, env, info)
 		if isError(index) {
 			return index
 		}
 		return evalIndexExpression(left, index)
 	case *ast.FunctionLiteral:
-		params := node.Parameters
-		retType := node.ReturnType
-		body := node.Body
-		return &object.Function{Parameters: params, ReturnType: retType, Env: env, Body: body}
+		resolvedType := info.TypesInfo[node]
+
+		return &object.Function{
+			Parameters: node.Parameters,
+			Body:       node.Body,
+			Env:        env,
+			TypeObj:    &object.TypeObject{TypeValue: resolvedType},
+		}
+
 	case *ast.CallExpression:
-		function := Eval(node.Function, env, chk)
+		function := Eval(node.Function, env, info)
 		if isError(function) {
 			return function
 		}
-		args := evalExpressions(node.Arguments, env, chk)
+		args := evalExpressions(node.Arguments, env, info)
 		if len(args) == 1 && isError(args[0]) {
 			return args[0]
 		}
-		return applyFunction(function, args, chk)
+		return applyFunction(function, args, info)
 	case *ast.PrefixExpression:
-		right := Eval(node.Right, env, chk)
+		right := Eval(node.Right, env, info)
 		if isError(right) {
 			return right
 		}
 		return evalPrefixExpression(node.Operator, right)
 	case *ast.InfixExpression:
-		left := Eval(node.Left, env, chk)
+		left := Eval(node.Left, env, info)
 		if isError(left) {
 			return left
 		}
 
-		right := Eval(node.Right, env, chk)
+		right := Eval(node.Right, env, info)
 		if isError(right) {
 			return right
 		}
 
 		return evalInfixExpression(node.Operator, left, right)
 	case *ast.IfExpression:
-		return evalIfExpression(node, env, chk)
+		return evalIfExpression(node, env, info)
 	case *ast.SwitchExpression:
-		return evalSwitchExpression(node, env, chk)
+		return evalSwitchExpression(node, env, info)
 	case *ast.MemberAccessExpression:
-		return evalMemberAccessExpression(node, env, chk)
+		return evalMemberAccessExpression(node, env, info)
+	case *ast.TypeAccessExpression:
+		return evalTypeAccessExpression(node, env, info)
 	case *ast.ImplInstantiationExpression:
-		return evalImplInstantiationExpression(node, env, chk)
+		return evalImplInstantiationExpression(node, env, info)
 	}
 	return nil
 }
 
-func evalProgram(program *ast.Program, env *object.Environment, chk *type_checker.TypeChecker) object.Object {
+func evalProgram(program *ast.Program, env *object.Environment, info *types.Info) object.Object {
 	var result object.Object
 	for _, statement := range program.Statements {
-		result = Eval(statement, env, chk)
+		result = Eval(statement, env, info)
 		switch result := result.(type) {
 		case *object.ReturnValue:
 			if tc, ok := result.Value.(*object.TailCall); ok {
-				return applyFunction(tc.Function, tc.Arguments, chk)
+				return applyFunction(tc.Function, tc.Arguments, info)
 			}
 			return result.Value
 		case *object.Error:
@@ -148,11 +160,11 @@ func evalProgram(program *ast.Program, env *object.Environment, chk *type_checke
 }
 
 func evalBlockStatement(block *ast.BlockStatement, env *object.Environment,
-	chk *type_checker.TypeChecker) object.Object {
+	info *types.Info) object.Object {
 
 	var result object.Object
 	for _, statement := range block.Statements {
-		result = Eval(statement, env, chk)
+		result = Eval(statement, env, info)
 		if result != nil {
 			resType := result.Type()
 			if resType == object.RETURN_VALUE_OBJ || resType == object.ERROR_OBJ {

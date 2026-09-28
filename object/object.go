@@ -72,6 +72,7 @@ func (s *String) IsComparable()    {}
 
 type Array struct {
 	Elements []Object
+	TypeObj  *TypeObject
 }
 
 func (a *Array) Type() ObjectType { return ARRAY_OBJ }
@@ -111,7 +112,8 @@ type HashPair struct {
 }
 
 type HashMap struct {
-	Pairs map[HashKey]HashPair
+	Pairs   map[HashKey]HashPair
+	TypeObj *TypeObject
 }
 
 func (hm *HashMap) Type() ObjectType { return HASH_MAP_OBJ }
@@ -125,9 +127,9 @@ func (r *ReturnValue) Type() ObjectType { return RETURN_VALUE_OBJ }
 
 type Function struct {
 	Parameters []*ast.Identifier
-	ReturnType ast.ExpressionNode
 	Body       *ast.BlockStatement
 	Env        *Environment
+	TypeObj    *TypeObject
 }
 
 func (f *Function) Type() ObjectType { return FUNCTION_OBJ }

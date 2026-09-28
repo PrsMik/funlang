@@ -4,6 +4,7 @@ import "funlang/types"
 
 type Environment struct {
 	store map[string]Object
+	types map[string]types.Type
 	outer *Environment
 }
 
@@ -12,7 +13,7 @@ var (
 )
 
 func NewEnvironment() *Environment {
-	env := &Environment{store: make(map[string]Object), outer: nil}
+	env := &Environment{store: make(map[string]Object), types: make(map[string]types.Type), outer: nil}
 	env.Set("type", MetaType)
 	env.Set("int", &TypeObject{TypeValue: &types.IntType{}})
 	env.Set("string", &TypeObject{TypeValue: &types.StringType{}})

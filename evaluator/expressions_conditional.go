@@ -3,32 +3,32 @@ package evaluator
 import (
 	"funlang/ast"
 	"funlang/object"
-	"funlang/type_checker"
+	"funlang/types"
 )
 
-func evalIfExpression(node *ast.IfExpression, env *object.Environment, chk *type_checker.TypeChecker) object.Object {
-	condition := Eval(node.Condition, env, chk)
+func evalIfExpression(node *ast.IfExpression, env *object.Environment, info *types.Info) object.Object {
+	condition := Eval(node.Condition, env, info)
 	var res object.Object
 	if condition == TRUE {
-		res = Eval(node.Consequence, env, chk)
+		res = Eval(node.Consequence, env, info)
 	} else {
-		res = Eval(node.Alternative, env, chk)
+		res = Eval(node.Alternative, env, info)
 	}
 	return unwrapReturnValue(res)
 }
 
-func evalSwitchExpression(node *ast.SwitchExpression, env *object.Environment, chk *type_checker.TypeChecker) object.Object {
-	condition := Eval(node.Value, env, chk)
+func evalSwitchExpression(node *ast.SwitchExpression, env *object.Environment, info *types.Info) object.Object {
+	condition := Eval(node.Value, env, info)
 	var res object.Object
 	for _, caseBlock := range node.Cases {
-		pattern := Eval(caseBlock.Pattern, env, chk)
+		pattern := Eval(caseBlock.Pattern, env, info)
 		if object.Equals(pattern, condition) {
-			res = Eval(caseBlock.Body, env, chk)
+			res = Eval(caseBlock.Body, env, info)
 			return unwrapReturnValue(res)
 		}
 	}
 
-	res = Eval(node.Default, env, chk)
+	res = Eval(node.Default, env, info)
 
 	return unwrapReturnValue(res)
 }

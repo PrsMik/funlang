@@ -41,7 +41,7 @@ func TestEvalFirstClassTypes(t *testing.T) {
 				let greet: type = fn() -> string;
 			};
 			return Greeter;`,
-			expectedSig: "<interface >",
+			expectedSig: "<interface Greeter>",
 		},
 		{
 			input: `
@@ -106,6 +106,15 @@ func TestEvalImplInstantiationAndFieldAccess(t *testing.T) {
 			let c: Config = Config.{};
 			return c.timeout;`,
 			expected: 30,
+		},
+		{
+			input: `
+			let Config: type = impl {
+				let timeout: int = 40 + 2;
+			};
+			let c: Config = Config.{};
+			return c.timeout;`,
+			expected: 42,
 		},
 		{
 			input: `

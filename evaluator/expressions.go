@@ -3,16 +3,15 @@ package evaluator
 import (
 	"funlang/ast"
 	"funlang/object"
-	"funlang/type_checker"
 	"funlang/types"
 )
 
 func evalExpressions(exps []ast.ExpressionNode, env *object.Environment,
-	chk *type_checker.TypeChecker) []object.Object {
+	info *types.Info) []object.Object {
 
 	var result []object.Object
 	for _, e := range exps {
-		evaluated := Eval(e, env, chk)
+		evaluated := Eval(e, env, info)
 		if isError(evaluated) {
 			return []object.Object{evaluated}
 		}

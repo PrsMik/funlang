@@ -219,6 +219,35 @@ func TestEvalSwitchExpressionValues(t *testing.T) {
 			};`,
 			expected: -1,
 		},
+		{
+			input: `
+			let tp: int | string = 42;
+			return switch tp.(type) {
+				case int { return 1; }
+				case string { return 2; }
+				default { return 0; }
+			};`,
+			expected: 1,
+		},
+		{
+			input: `
+			return switch (1 + 1).(type) {
+				case int { return 1; }
+				case string { return 2; }
+				default { return 0; }
+			};`,
+			expected: 1,
+		},
+		{
+			input: `
+			return switch ((impl { let x: type = string; }).{}).(type) {
+				case impl { let x: type = string; } { return 1; }
+				case impl { let x: type = int; } { return 2; }
+				case impl { let x: type = [string]; } { return 3; }
+				default { return -1; }
+			};`,
+			expected: 1,
+		},
 	}
 
 	for _, tt := range tests {

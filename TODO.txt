@@ -23,10 +23,10 @@
 14. Реализация метода Inspect() для TypeObject в object/strings.go. +
 
 Интерпретатор (evaluator)
-15. Реализация вычисления SwitchExpression в evaluator/evaluator.go с возвратом значения из блока case. 
-16. Реализация вычисления типов-выражений (вычисление функций, генерирующих типы в рантайме) в evaluator/evaluator.go. 
+15. Реализация вычисления SwitchExpression в evaluator/evaluator.go с возвратом значения из блока case. +
+16. Реализация вычисления типов-выражений (вычисление функций, генерирующих типы в рантайме) в evaluator/evaluator.go. +
 17. Реализация вычисления MemberAccessExpression (динамическое извлечение полей и методов из структур impl) в \
-evaluator/expressions.go.
+evaluator/expressions.go. +
 
 Проверка типов и подтипирование (type_checker, types) 
 18. Интеграция с evaluator в type_checker/checker.go для статического вычисления типов-выражений на этапе проверки. 
