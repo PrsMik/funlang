@@ -90,7 +90,9 @@ func (funcLit *FunctionLiteral) String() string {
 	out.WriteString("(")
 	out.WriteString(strings.Join(params, ", "))
 	out.WriteString(") ")
+	out.WriteString("{")
 	out.WriteString(funcLit.Body.String())
+	out.WriteString("}")
 	return out.String()
 }
 

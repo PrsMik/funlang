@@ -50,6 +50,14 @@ func Eval(node ast.Node, env *object.Environment, info *types.Info) object.Objec
 		return evalBlockStatement(node, env, info)
 
 	// ВЫРАЖЕНИЯ
+	case *ast.ComptimeExpression:
+		if env.ComptimeValues != nil {
+			if cachedVal, ok := env.ComptimeValues[node]; ok {
+				return cachedVal
+			}
+		}
+		return Eval(node.Value, env, info)
+
 	// литералы
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}

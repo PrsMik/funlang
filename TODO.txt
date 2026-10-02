@@ -29,22 +29,20 @@
 evaluator/expressions.go. +
 
 Проверка типов и подтипирование (type_checker, types) 
-18. Интеграция с evaluator в type_checker/checker.go для статического вычисления типов-выражений на этапе проверки. 
+18. Интеграция с evaluator в type_checker/checker.go для статического вычисления типов-выражений на этапе проверки. +
 19. Добавление поддержки отложенного разрешения типов в type_checker/statements.go \
-для обхода бесконечных блокировок на самореферентных интерфейсах. 
+для обхода бесконечных блокировок на самореферентных интерфейсах. +
 20. Переработка Equals в types/types.go для перехода к структурному подтипированию \
 (проверка соответствия реализаций интерфейсам).
 21. Реализация логики типов UnionType (для |) и IntersectionType (для &) в types/types.go и type_checker/expressions.go. +
 22. Реализация механизма сужения типа внутри блоков case выражения SwitchExpression в \
 type_checker/expressions.go. +
 23. Реализация проверки типов для MemberAccessExpression в type_checker/expressions.go. + 
-24. Реализация проверки типов для ImplInstantaionExpression в type_checker/expressions.go
-25. Внедрение неявного сопоставления примитивных типов (IntType, BoolType, StringType) \
-с их интерфейсными аналогами в type_checker/expressions.go.
-26. Реализация алгоритма обнаружения циклов в types/types.go \
+24. Реализация проверки типов для ImplInstantaionExpression в type_checker/expressions.go +
+25. Реализация алгоритма обнаружения циклов в types/types.go \
 для предотвращения бесконечной рекурсии при проверке рекурсивных типов (таких как List(T)).
 
 Форматирование кода (formatter) 
-27. Реализация правил форматирования для InterfaceLiteral и ImplLiteral в formatter/expressions.go или formatter/statements.go.
-28. Реализация правил форматирования для SwitchExpression в formatter/expressions.go. 
-29. Реализация правил форматирования для операторов |, & и . в formatter/expressions.go.
+26. Реализация правил форматирования для InterfaceLiteral и ImplLiteral в formatter/expressions.go или formatter/statements.go.
+27. Реализация правил форматирования для SwitchExpression в formatter/expressions.go. 
+28. Реализация правил форматирования для операторов |, & и . в formatter/expressions.go.

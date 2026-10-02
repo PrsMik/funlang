@@ -3,7 +3,7 @@ package types
 // !!!ПОРЯДОК ВАЖЕН!!!
 // проверяет можно ли expected (левому) присвоить значение с типом actual (правое)
 func IsAssignable(expected, actual Type) bool {
-	if Equals(expected, actual) {
+	if EqualsSoft(expected, actual) {
 		return true
 	}
 
@@ -98,6 +98,136 @@ func Equals(rawLeftType, rawRightType Type) bool {
 		}
 
 		return Equals(leftType.ReturnType, rightType.ReturnType)
+	case *InterfaceType:
+		rightType, ok := rawRightType.(*InterfaceType)
+		if !ok {
+			return false
+		}
+
+		if leftType.Name != "" && rightType.Name != "" {
+			return leftType.Name == rightType.Name
+		}
+
+		// if len(leftType.Fields) != len(rightType.Fields) {
+		// 	return false
+		// }
+
+		for leftFieldName, leftFieldType := range leftType.Fields {
+			rightFieldType, exists := rightType.Fields[leftFieldName]
+			if !exists {
+				return false
+			}
+			if !Equals(leftFieldType, rightFieldType) {
+				return false
+			}
+		}
+
+		return true
+	case *ImplType:
+		rightType, ok := rawRightType.(*ImplType)
+		if !ok {
+			return false
+		}
+
+		if leftType.ImplementedType != nil && rightType.ImplementedType != nil {
+			return Equals(leftType.ImplementedType, rightType.ImplementedType)
+		}
+
+		for leftFieldName, leftFieldType := range leftType.Fields {
+			rightFieldType, exists := rightType.Fields[leftFieldName]
+			if !exists {
+				return false
+			}
+			if !Equals(leftFieldType, rightFieldType) {
+				return false
+			}
+		}
+
+		return true
+
+	case *UnionType:
+		rightType, ok := rawRightType.(*UnionType)
+		if !ok {
+			return false
+		}
+
+		return Equals(leftType.Left, rightType.Left) && Equals(leftType.Right, rightType.Right)
+
+	case *IntersectionType:
+		rightType, ok := rawRightType.(*IntersectionType)
+		if !ok {
+			return false
+		}
+
+		return Equals(leftType.Left, rightType.Left) && Equals(leftType.Right, rightType.Right)
+
+	default:
+		return false
+	}
+}
+
+// !!!ПОРЯДОК ВАЖЕН!!! ЛЕВОЕ - ТО ЧЕМУ ПРИСВАИВАЕТСЯ ПРАВОЕ
+func EqualsSoft(rawLeftType, rawRightType Type) bool {
+	if rawLeftType == rawRightType {
+		return true
+	}
+
+	switch leftType := rawLeftType.(type) {
+	case *TypeType:
+		if leftType == MetaType {
+			_, ok := rawRightType.(*TypeType)
+			return ok
+		}
+		return false
+	case *IntType:
+		_, ok := rawRightType.(*IntType)
+		return ok
+	case *BoolType:
+		_, ok := rawRightType.(*BoolType)
+		return ok
+	case *StringType:
+		_, ok := rawRightType.(*StringType)
+		return ok
+	case *ArrayType:
+		rightType, ok := rawRightType.(*ArrayType)
+		if !ok {
+			return false
+		}
+
+		if rightType.ElementsType == nil || leftType.ElementsType == nil {
+			return true
+		}
+
+		return IsAssignable(leftType.ElementsType, rightType.ElementsType)
+	case *HashMapType:
+		rightType, ok := rawRightType.(*HashMapType)
+		if !ok {
+			return false
+		}
+
+		if (rightType.KeyType == nil && rightType.ElementType == nil) ||
+			(leftType.KeyType == nil && leftType.ElementType == nil) {
+			return true
+		}
+
+		return Equals(leftType.KeyType, rightType.KeyType) && IsAssignable(leftType.ElementType, rightType.ElementType)
+	case *FuncType:
+		rightType, ok := rawRightType.(*FuncType)
+		if !ok {
+			return false
+		}
+
+		if len(leftType.Params) != len(rawRightType.(*FuncType).Params) {
+			return false
+		}
+
+		for i := range leftType.Params {
+			if !IsAssignable(leftType.Params[i].Type, rightType.Params[i].Type) {
+				return false
+			}
+		}
+
+		return IsAssignable(leftType.ReturnType, rightType.ReturnType)
 	case *InterfaceType:
 		rightType, ok := rawRightType.(*InterfaceType)
 		if !ok {

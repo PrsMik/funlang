@@ -3,6 +3,8 @@ package type_checker
 import (
 	"fmt"
 	"funlang/ast"
+	"funlang/evaluator"
+	"funlang/object"
 	"funlang/types"
 	"reflect"
 )
@@ -130,56 +132,29 @@ func (chk *TypeChecker) checkInfixExpression(expr ast.ExpressionNode) types.Type
 	return &types.IllegalType{}
 }
 
-func (chk *TypeChecker) checkCallExpression(expr ast.ExpressionNode) types.Type {
-	callExpr := expr.(*ast.CallExpression)
-	rawCallType := chk.checkExpression(callExpr.Function)
+func (chk *TypeChecker) checkComptimeExpression(expr ast.ExpressionNode) types.Type {
+	comptimeExpr := expr.(*ast.ComptimeExpression)
 
-	if _, err := rawCallType.(*types.IllegalType); err {
+	valType := chk.checkExpression(comptimeExpr.Value)
+	if _, isIllegal := valType.(*types.IllegalType); isIllegal {
+		return valType
+	}
+
+	val := evaluator.Eval(comptimeExpr.Value, chk.comptimeEnv, chk.Info)
+	if val == nil || val.Type() == object.ERROR_OBJ {
+		errMsg := "unknown comptime error"
+		if errObj, ok := val.(*object.Error); ok {
+			errMsg = errObj.Message
+		}
+		chk.typeError(fmt.Sprintf("comptime evaluation error: %s", errMsg), expr)
 		return &types.IllegalType{}
 	}
 
-	switch callFuncType := rawCallType.(type) {
-	case *types.FuncType:
-		if len(callExpr.Arguments) != len(callFuncType.Params) {
-			if len(callFuncType.Params) != 0 {
-				chk.typeError(fmt.Sprintf(`wrong number of arguments for "%s"`, callExpr.Function.String()), expr)
-				return &types.IllegalType{}
-			} else {
-				if _, ok := callExpr.Arguments[0].(*ast.BadExpression); ok {
-					callExpr.Arguments = callExpr.Arguments[1:]
-				}
-			}
-		}
+	chk.ComptimeValues[expr] = val
 
-		for i, arg := range callExpr.Arguments {
-			argType := chk.checkExpression(arg)
-
-			if !types.IsAssignable(callFuncType.Params[i].Type, argType) {
-				chk.typeError(fmt.Sprintf("wrong type for argument %d: %s in func call \" %s \"; expected %s",
-					i+1, argType.Signature(), callExpr.Function.String(), callFuncType.Params[i].Type.Signature()), expr)
-				return &types.IllegalType{}
-			}
-		}
-
-		return callFuncType.ReturnType
-	case *types.BuiltinFunc:
-		argTypes := make([]types.Type, len(callExpr.Arguments))
-		for i, argExpr := range callExpr.Arguments {
-			argTypes[i] = chk.checkExpression(argExpr)
-		}
-
-		returnType, err := callFuncType.CheckFunc(argTypes)
-
-		if err != nil {
-			// chk.errors = append(chk.errors, err)
-			chk.typeError(err.Error(), expr)
-			return &types.IllegalType{}
-		}
-
-		return returnType
-	default:
-		chk.typeError(fmt.Sprintf(`identifier "%s" is no a funciton`, callExpr.Function.String()), expr)
-		return &types.IllegalType{}
+	if typeObj, ok := val.(*object.TypeObject); ok {
+		return &types.TypeType{Underlying: typeObj.TypeValue}
 	}
 
+	return valType
 }

@@ -38,11 +38,32 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 
 	_, isDeclaringType := expectedType.(*types.TypeType)
 
-	// для самоссылающихся интерфейсов
+	// для самоссылающихся типов
 	if isDeclaringType {
-		forwardIfaceDecl := &types.InterfaceType{Name: stmt.Name.Value}
-		chk.env.Set(stmt.Name.Value, &types.TypeType{Underlying: forwardIfaceDecl}, stmt.Name)
-	} else if _, isIllegal := expectedType.(*types.IllegalType); !isIllegal {
+		var forwardDecl types.Type
+
+		switch val := stmt.Value.(type) {
+		case *ast.InterfaceLiteral:
+			forwardDecl = &types.InterfaceType{
+				Name:   stmt.Name.Value,
+				Fields: make(map[string]types.Type)}
+		case *ast.ImplLiteral:
+			var targetType types.Type
+			if val.TargetType != nil {
+				targetType = chk.resolveType(val.TargetType)
+			}
+
+			forwardDecl = &types.ImplType{
+				Name:                stmt.Name.Value,
+				ImplementedType:     targetType,
+				Fields:              make(map[string]types.Type),
+				FieldsDefaultValues: make(map[string]ast.ExpressionNode)}
+		}
+
+		if forwardDecl != nil {
+			chk.env.Set(stmt.Name.Value, &types.TypeType{Underlying: forwardDecl}, stmt.Name)
+		}
+	} else if _, isFunc := expectedType.(*types.FuncType); isFunc {
 		chk.env.Set(stmt.Name.Value, expectedType, stmt.Name)
 	}
 
@@ -61,6 +82,10 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 
 	actualType := chk.checkExpression(stmt.Value)
 
+	if cachedVal, ok := chk.ComptimeValues[stmt.Value]; ok {
+		chk.comptimeEnv.Set(stmt.Name.Value, cachedVal)
+	}
+
 	if !types.IsAssignable(expectedType, actualType) {
 		if expectedType != nil && actualType != nil {
 			// if len(chk.errors) == 0 {
@@ -70,12 +95,36 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 	}
 
 	if isDeclaringType {
-		// перезапись имени анонимного интерфейса
 		if actTypeType, ok := actualType.(*types.TypeType); ok {
-			if interfaceType, ok := actTypeType.Underlying.(*types.InterfaceType); ok {
+			actualUnderlying := actTypeType.Underlying
+
+			if symbol, isDeclared := chk.env.Get(stmt.Name.Value); isDeclared {
+				if forwardTypeType, ok := symbol.SymbolType.(*types.TypeType); ok && forwardTypeType.Underlying != nil {
+					switch fwd := forwardTypeType.Underlying.(type) {
+					case *types.InterfaceType:
+						if act, ok := actualUnderlying.(*types.InterfaceType); ok {
+							fwd.Fields = act.Fields
+							act.Name = stmt.Name.Value
+							actualType = symbol.SymbolType
+						}
+					case *types.ImplType:
+						if act, ok := actualUnderlying.(*types.ImplType); ok {
+							fwd.ImplementedType = act.ImplementedType
+							fwd.Fields = act.Fields
+							fwd.FieldsDefaultValues = act.FieldsDefaultValues
+							act.Name = stmt.Name.Value
+							actualType = symbol.SymbolType
+						}
+					}
+				}
+			}
+
+			// если не объявлен предварительно
+			if interfaceType, ok := actualUnderlying.(*types.InterfaceType); ok && interfaceType.Name == "" {
 				interfaceType.Name = stmt.Name.Value
 			}
-			if implType, ok := actTypeType.Underlying.(*types.ImplType); ok {
+
+			if implType, ok := actualUnderlying.(*types.ImplType); ok && implType.Name == "" {
 				implType.Name = stmt.Name.Value
 			}
 		}

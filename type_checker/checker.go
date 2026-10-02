@@ -2,6 +2,7 @@ package type_checker
 
 import (
 	"funlang/ast"
+	"funlang/object"
 	"funlang/types"
 	"reflect"
 )
@@ -23,15 +24,25 @@ type TypeChecker struct {
 	curExpectedType    types.Type
 	errors             []TypeError
 
+	comptimeEnv    *object.Environment
+	ComptimeValues map[ast.Node]object.Object
+
 	Info *types.Info
 }
 
 func New(curEnv *types.TypeEviroment, info *types.Info) *TypeChecker {
-	chk := &TypeChecker{env: curEnv, Info: info}
-
-	chk.expressionCheckFns = make(map[reflect.Type]expressionCheckFn)
+	chk := &TypeChecker{
+		env:                curEnv,
+		expressionCheckFns: make(map[reflect.Type]expressionCheckFn),
+		curExpectedType:    nil,
+		errors:             []TypeError{},
+		comptimeEnv:        object.NewEnvironment(),
+		ComptimeValues:     make(map[ast.Node]object.Object),
+		Info:               info,
+	}
 
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.BadExpression](), chk.checkBadExpression)
+	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.ComptimeExpression](), chk.checkComptimeExpression)
 
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.TypeType](), chk.checkTypeIdentifier)
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.SimpleType](), chk.checkTypeIdentifier)

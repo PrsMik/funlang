@@ -8,6 +8,10 @@ import (
 
 func evalIfExpression(node *ast.IfExpression, env *object.Environment, info *types.Info) object.Object {
 	condition := Eval(node.Condition, env, info)
+	if isError(condition) {
+		return condition
+	}
+
 	var res object.Object
 	if condition == TRUE {
 		res = Eval(node.Consequence, env, info)
@@ -19,6 +23,10 @@ func evalIfExpression(node *ast.IfExpression, env *object.Environment, info *typ
 
 func evalSwitchExpression(node *ast.SwitchExpression, env *object.Environment, info *types.Info) object.Object {
 	condition := Eval(node.Value, env, info)
+	if isError(condition) {
+		return condition
+	}
+
 	var res object.Object
 	for _, caseBlock := range node.Cases {
 		pattern := Eval(caseBlock.Pattern, env, info)

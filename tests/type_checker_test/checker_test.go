@@ -28,7 +28,8 @@ func runTypeCheckerTests(t *testing.T, tests []TestCase) {
 			}
 
 			env := types.NewTypeEviroment()
-			chk := type_checker.New(env, nil)
+			info := types.NewInfo(env)
+			chk := type_checker.New(env, info)
 			chk.CheckProgram(prog)
 
 			errors := chk.Errors()

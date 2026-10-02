@@ -106,14 +106,14 @@ func (chk *TypeChecker) isImplementingType(targetType types.Type, implType *type
 		for interfaceFieldName, interfaceFieldType := range rawType.Fields {
 			implFieldType, exists := implType.Fields[interfaceFieldName]
 			if !exists {
-				// chk.typeError(fmt.Sprintf("impl missing required field '%s'", interfaceFieldName), node)
-				// continue
+				chk.typeError(fmt.Sprintf("impl missing required field '%s'", interfaceFieldName), node)
 				return false
 			}
+
 			if !types.IsAssignable(interfaceFieldType, implFieldType) {
+				chk.typeError(fmt.Sprintf("field '%s' type mismatch: expected %s, got %s",
+					interfaceFieldName, interfaceFieldType.Signature(), implFieldType.Signature()), node)
 				return false
-				// chk.typeError(fmt.Sprintf("field '%s' type mismatch: expected %s, got %s",
-				// 	interfaceFieldName, interfaceFieldType.Signature(), implFieldType.Signature()), node)
 			}
 		}
 		return true

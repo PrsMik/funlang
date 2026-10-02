@@ -30,7 +30,7 @@ func TestFirstClassTypes(t *testing.T) {
 		},
 		{
 			name: "Infinite metatype",
-			input: `let T: type = interface { let x: type = type; }; 
+			input: `let T: type = interface { let x: type = type; };
 					let U: type = impl (T) { let x: type = type; };
 					let X: T = U.{x: type};
 					let Z: X.x = int;`,
@@ -43,21 +43,53 @@ func TestFirstClassTypes(t *testing.T) {
 		},
 		{
 			name:        "Function returning a type (Generics foundation) 1",
-			input:       `let MakeType: fn() -> type = fn() { return int; }; let x: MakeType() = 5;`,
+			input:       `let MakeType: fn() -> type = comptime fn() { return int; }; let x: comptime MakeType() = 5;`,
+			expectedErr: "",
+		},
+		{
+			name: "Function returning a type (Generics foundation) 1.1",
+			input: `let MakeType: fn() -> type = comptime fn() { return int; }; 
+					let mT: type = comptime MakeType();
+					let x: mT = 5;`,
 			expectedErr: "",
 		},
 		{
 			name: "Function returning an interface (Generics foundation) 2",
 			input: `let inter: type = interface { let x: type = int; };
-					let im: type = impl (inter) { let x: int = 42; };
-					let MakeType: fn() -> inter = fn() { return im; };
-					let x: MakeType() = 5;`,
+					let im: type = comptime impl (inter) { let x: int = 42; };
+					let MakeType: fn() -> inter = comptime fn() { return im; };
+					let x: comptime MakeType() = im.{};`,
+			expectedErr: "",
+		},
+		{
+			name: "Function returning an interface (Generics foundation) 2.1",
+			input: `let inter: type = interface { let x: type = int; };
+					let im: type = comptime impl (inter) { let x: int = 42; };
+					let MakeType: fn() -> inter = comptime fn() { return im; };
+					let mT: type = comptime MakeType(); 
+					let x: mT = im.{};`,
 			expectedErr: "",
 		},
 		{
 			name:        "Type mismatch with function returning a type",
-			input:       "let MakeType: fn() -> type = fn() { return bool; }; let x: MakeType() = 5;",
-			expectedErr: "in let expected variable of type <metatype>, got <int>",
+			input:       "let MakeType: fn() -> type = comptime  fn() { return bool; }; let x: comptime MakeType() = 5;",
+			expectedErr: "in let expected variable of type <bool>, got <int>",
+		},
+		{
+			name: "Comptime generic type",
+			input: `let x: int = comptime 2;
+					let y: int = comptime 1;
+					let MakeInt: fn() -> type = comptime fn() { 
+						return int;
+					};
+					let MakeBool: fn() -> type = comptime fn() { 
+						return bool;
+					};					
+					let MakeType: fn() -> type = comptime fn() { 
+						return if (x > y) { return MakeInt(); } else { return MakeBool(); }; 
+					};
+					let z: comptime MakeType() = 5;`,
+			expectedErr: "",
 		},
 	}
 	runTypeCheckerTests(t, tests)
@@ -98,11 +130,22 @@ func TestStructuralTyping(t *testing.T) {
 					let next: type = fn() -> List1;
 				};
 
-				let impl1: List1 = impl (List1) {
-					let next: fn() -> impl1 = fn() { return impl1; };
+				let impl1: type = impl (List1) {
+					let next: fn() -> impl1 = fn() { return impl1.{}; };
 				};
 
-				let l2: List2 = impl1; 
+				let l2: List1 = impl1; 
+    	`,
+			expectedErr: "",
+		},
+		{
+			name: "Recursive impl",
+			input: `
+				let impl1: type = impl {
+					let next: fn() -> impl1 = fn() { return impl1.{}; };
+				};
+
+				let l2: impl1 = impl1.{}; 
     	`,
 			expectedErr: "",
 		},
