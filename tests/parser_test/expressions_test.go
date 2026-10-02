@@ -24,6 +24,29 @@ func TestIdentifierExpression(t *testing.T) {
 	}
 }
 
+func TestComptimeExpression(t *testing.T) {
+	input := "let x: int = comptime 5 + 10;"
+	l := lexer.New(input)
+	p := parser.New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	stmt, _ := program.Statements[0].(*ast.LetStatement)
+	literal, ok := stmt.Value.(*ast.ComptimeExpression)
+	if !ok {
+		t.Fatalf("literal not *ast.ComptimeExpression. got=%T", stmt.Value)
+	}
+
+	infix, ok := literal.Value.(*ast.InfixExpression)
+	if !ok {
+		t.Fatalf("val not *ast.InfixExpression. got=%T", stmt.Value)
+	}
+
+	if infix.Operator != "+" {
+		t.Errorf("infix.Operator not %d. got=%d", 5, literal.Value)
+	}
+}
+
 func TestIntegerLiteralExpression(t *testing.T) {
 	input := "let x: int = 5;"
 	l := lexer.New(input)

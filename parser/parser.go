@@ -62,6 +62,8 @@ type Parser struct {
 func (prs *Parser) registerPrefixParseFns() {
 	prs.prefixParseFns = make(map[token.TokenType]prefixParseFn)
 
+	prs.registerPrefix(token.COMPTIME, prs.parseComptimeExpression)
+
 	prs.registerPrefix(token.TYPE, prs.parseTypeType)
 	prs.registerPrefix(token.INT_TYPE, prs.parseSimpleType)
 	prs.registerPrefix(token.BOOL_TYPE, prs.parseSimpleType)
@@ -75,8 +77,8 @@ func (prs *Parser) registerPrefixParseFns() {
 	prs.registerPrefix(token.BANG, prs.parsePrefixExpression)
 	prs.registerPrefix(token.MINUS, prs.parsePrefixExpression)
 
-	prs.registerPrefix(token.TRUE, prs.parseBoolean)
-	prs.registerPrefix(token.FALSE, prs.parseBoolean)
+	prs.registerPrefix(token.TRUE, prs.parseBooleanLiteral)
+	prs.registerPrefix(token.FALSE, prs.parseBooleanLiteral)
 
 	prs.registerPrefix(token.LPAREN, prs.parseGroupedExpression)
 	prs.registerPrefix(token.LBRACKET, prs.parseArrayLiteral)

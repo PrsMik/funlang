@@ -24,6 +24,16 @@ func TestExpressions(t *testing.T) {
 			expectedEnd:          pos(1, 5),
 		},
 		{
+			name: "Comptime",
+			node: &ast.ComptimeExpression{
+				Token: createToken(token.COMPTIME, "comptime", 1, 1),
+				Value: &ast.IntegerLiteral{Token: createToken(token.INT, "5", 1, 2), Value: 5}},
+			expectedTokenLiteral: "comptime",
+			expectedString:       "comptime 5",
+			expectedStart:        pos(1, 1),
+			expectedEnd:          pos(1, 3),
+		},
+		{
 			name:                 "IntegerLiteral",
 			node:                 &ast.IntegerLiteral{Token: createToken(token.INT, "5", 1, 1), Value: 5},
 			expectedTokenLiteral: "5",
