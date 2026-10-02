@@ -13,6 +13,12 @@ func (prg *Program) String() string {
 	return out.String()
 }
 
+// ===== ОСОБЫЕ ВЫРАЖЕНИЯ =====
+
+func (un *BadExpression) String() string { return "" }
+
+func (ce *ComptimeExpression) String() string { return "comptime " + ce.Value.String() }
+
 // ----- ТИПЫ -----
 
 func (typeType *TypeType) String() string { return typeType.Value }

@@ -9,125 +9,18 @@ type BadExpression struct {
 
 func (un *BadExpression) expressionNode()       {}
 func (un *BadExpression) TokenLiteral() string  { return "" }
-func (un *BadExpression) String() string        { return "" }
 func (un *BadExpression) Start() token.Position { return un.From }
 func (un *BadExpression) End() token.Position   { return un.To }
 
-// литерал типа int (например "5")
-type IntegerLiteral struct {
+type ComptimeExpression struct {
 	Token token.Token
-	Value int
+	Value ExpressionNode
 }
 
-func (intLit *IntegerLiteral) expressionNode()       {}
-func (intLit *IntegerLiteral) TokenLiteral() string  { return intLit.Token.Literal }
-func (intLit *IntegerLiteral) Start() token.Position { return intLit.Token.Start }
-func (intLit *IntegerLiteral) End() token.Position   { return intLit.Token.End }
-
-// литерал типа bool (например "true")
-type BooleanLiteral struct {
-	Token token.Token
-	Value bool
-}
-
-func (boolLit *BooleanLiteral) expressionNode()       {}
-func (boolLit *BooleanLiteral) TokenLiteral() string  { return boolLit.Token.Literal }
-func (boolLit *BooleanLiteral) Start() token.Position { return boolLit.Token.Start }
-func (boolLit *BooleanLiteral) End() token.Position   { return boolLit.Token.End }
-
-// строковый литерал (например `"Hello world!"`)
-type StringLiteral struct {
-	Token token.Token
-	Value string
-}
-
-func (strLit *StringLiteral) expressionNode()       {}
-func (strLit *StringLiteral) TokenLiteral() string  { return strLit.Token.Literal }
-func (strLit *StringLiteral) Start() token.Position { return strLit.Token.Start }
-func (strLit *StringLiteral) End() token.Position   { return strLit.Token.End }
-
-// литерал массива (например "[1, 2, 3]")
-type ArrayLiteral struct {
-	Token     token.Token
-	Elements  []ExpressionNode
-	SemiToken token.Token
-}
-
-func (arrLit *ArrayLiteral) expressionNode()       {}
-func (arrLit *ArrayLiteral) TokenLiteral() string  { return arrLit.Token.Literal }
-func (arrLit *ArrayLiteral) Start() token.Position { return arrLit.Token.Start }
-func (arrLit *ArrayLiteral) End() token.Position   { return arrLit.SemiToken.End }
-
-type HashMapLiteral struct {
-	Token     token.Token
-	Pairs     map[ExpressionNode]ExpressionNode
-	SemiToken token.Token
-}
-
-func (hashMapLit *HashMapLiteral) expressionNode()       {}
-func (hashMapLit *HashMapLiteral) TokenLiteral() string  { return hashMapLit.Token.Literal }
-func (hashMapLit *HashMapLiteral) Start() token.Position { return hashMapLit.Token.Start }
-func (hashMapLit *HashMapLiteral) End() token.Position   { return hashMapLit.SemiToken.End }
-
-// литерал функции (например "fn(x) { return x; }")
-type FunctionLiteral struct {
-	Token      token.Token
-	Parameters []*Identifier
-	ParamTypes []ExpressionNode
-	ReturnType ExpressionNode
-	Body       *BlockStatement
-}
-
-func (funcLit *FunctionLiteral) expressionNode()       {}
-func (funcLit *FunctionLiteral) TokenLiteral() string  { return funcLit.Token.Literal }
-func (funcLit *FunctionLiteral) Start() token.Position { return funcLit.Token.Start }
-func (funcLit *FunctionLiteral) End() token.Position   { return funcLit.Body.End() }
-
-// литерал объявления интерфейса ( например, interface { let x: type = int; } )
-type InterfaceLiteral struct {
-	Token token.Token
-	Body  *BlockStatement
-}
-
-func (iface *InterfaceLiteral) expressionNode()       {}
-func (iface *InterfaceLiteral) TokenLiteral() string  { return iface.Token.Literal }
-func (iface *InterfaceLiteral) Start() token.Position { return iface.Token.Start }
-func (iface *InterfaceLiteral) End() token.Position   { return iface.Body.End() }
-
-// литерал объявления реализации (например, impl { let x: int = 1; } )
-type ImplLiteral struct {
-	Token      token.Token
-	TargetType ExpressionNode
-	Body       *BlockStatement
-}
-
-func (imp *ImplLiteral) expressionNode()       {}
-func (imp *ImplLiteral) TokenLiteral() string  { return imp.Token.Literal }
-func (imp *ImplLiteral) Start() token.Position { return imp.Token.Start }
-func (imp *ImplLiteral) End() token.Position   { return imp.Body.End() }
-
-// выражение создания экземпляра (например, foo.{bar : 42} )
-type ImplInstantiationExpression struct {
-	Token  token.Token
-	Left   ExpressionNode
-	Fields ExpressionNode
-}
-
-func (impInst *ImplInstantiationExpression) expressionNode()       {}
-func (impInst *ImplInstantiationExpression) TokenLiteral() string  { return impInst.Token.Literal }
-func (impInst *ImplInstantiationExpression) Start() token.Position { return impInst.Token.Start }
-func (impInst *ImplInstantiationExpression) End() token.Position   { return impInst.Fields.End() }
-
-// идентификатор - токен и литерал
-type Identifier struct {
-	Token token.Token
-	Value string
-}
-
-func (ident *Identifier) expressionNode()       {}
-func (ident *Identifier) TokenLiteral() string  { return ident.Token.Literal }
-func (ident *Identifier) Start() token.Position { return ident.Token.Start }
-func (ident *Identifier) End() token.Position   { return ident.Token.End }
+func (ce *ComptimeExpression) expressionNode()       {}
+func (ce *ComptimeExpression) TokenLiteral() string  { return ce.Token.Literal }
+func (ce *ComptimeExpression) Start() token.Position { return ce.Token.Start }
+func (ce *ComptimeExpression) End() token.Position   { return ce.Value.End() }
 
 type CallExpression struct {
 	Token     token.Token
@@ -164,51 +57,6 @@ func (infixExpr *InfixExpression) TokenLiteral() string  { return infixExpr.Toke
 func (infixExpr *InfixExpression) Start() token.Position { return infixExpr.Left.Start() }
 func (infixExpr *InfixExpression) End() token.Position   { return infixExpr.Right.End() }
 
-type IfExpression struct {
-	Token       token.Token
-	Condition   ExpressionNode
-	Consequence *BlockStatement
-	Alternative *BlockStatement
-}
-
-func (ifExpr *IfExpression) expressionNode()       {}
-func (ifExpr *IfExpression) TokenLiteral() string  { return ifExpr.Token.Literal }
-func (ifExpr *IfExpression) Start() token.Position { return ifExpr.Token.Start }
-func (ifExpr *IfExpression) End() token.Position {
-	if ifExpr.Alternative != nil {
-		return ifExpr.Alternative.End()
-	}
-	return ifExpr.Consequence.End()
-}
-
-type CaseBlock struct {
-	Token   token.Token
-	Pattern ExpressionNode
-	Body    *BlockStatement
-}
-
-func (caseBlock *CaseBlock) TokenLiteral() string  { return caseBlock.Token.Literal }
-func (caseBlock *CaseBlock) Start() token.Position { return caseBlock.Token.Start }
-func (caseBlock *CaseBlock) End() token.Position {
-	if caseBlock.Body != nil {
-		return caseBlock.Body.End()
-	}
-	return caseBlock.Token.End
-}
-
-type SwitchExpression struct {
-	Token     token.Token
-	Value     ExpressionNode
-	Cases     []*CaseBlock
-	Default   *BlockStatement
-	SemiToken token.Token
-}
-
-func (swExp *SwitchExpression) expressionNode()       {}
-func (swExp *SwitchExpression) TokenLiteral() string  { return swExp.Token.Literal }
-func (swExp *SwitchExpression) Start() token.Position { return swExp.Token.Start }
-func (swExp *SwitchExpression) End() token.Position   { return swExp.SemiToken.End }
-
 type IndexExpression struct {
 	Token     token.Token
 	Left      ExpressionNode
@@ -220,25 +68,3 @@ func (indExpr *IndexExpression) expressionNode()       {}
 func (indExpr *IndexExpression) TokenLiteral() string  { return indExpr.Token.Literal }
 func (indExpr *IndexExpression) Start() token.Position { return indExpr.Token.Start }
 func (indExpr *IndexExpression) End() token.Position   { return indExpr.SemiToken.End }
-
-type MemberAccessExpression struct {
-	Token    token.Token
-	Left     ExpressionNode
-	Property *Identifier
-}
-
-func (indExpr *MemberAccessExpression) expressionNode()       {}
-func (indExpr *MemberAccessExpression) TokenLiteral() string  { return indExpr.Token.Literal }
-func (indExpr *MemberAccessExpression) Start() token.Position { return indExpr.Left.Start() }
-func (indExpr *MemberAccessExpression) End() token.Position   { return indExpr.Property.End() }
-
-type TypeAccessExpression struct {
-	Token     token.Token
-	Left      ExpressionNode
-	SemiToken token.Token
-}
-
-func (tae *TypeAccessExpression) expressionNode()       {}
-func (tae *TypeAccessExpression) TokenLiteral() string  { return tae.Token.Literal }
-func (tae *TypeAccessExpression) Start() token.Position { return tae.Left.Start() }
-func (tae *TypeAccessExpression) End() token.Position   { return tae.SemiToken.End }
