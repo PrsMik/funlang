@@ -21,6 +21,7 @@ var Keywords = map[string]TokenType{
 	"interface": INTERFACE,
 	"impl":      IMPL,
 	"type":      TYPE,
+	"comptime":  COMPTIME,
 }
 
 var Operators = map[string]TokenType{
@@ -118,6 +119,7 @@ var tokenStrings = map[TokenType]string{
 	INTERFACE:         "INTERFACE",
 	IMPL:              "IMPL",
 	TYPE:              "TYPE",
+	COMPTIME:          "COMPTIME",
 	COMMENT:           "COMMENT",
 	IDENT:             "IDENT",
 	INT:               "INT",

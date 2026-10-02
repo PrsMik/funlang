@@ -19,6 +19,7 @@ const (
 	INTERFACE // interface
 	IMPL      // impl
 	TYPE      // type
+	COMPTIME  // comptime
 
 	// идентификаторы и литералы
 

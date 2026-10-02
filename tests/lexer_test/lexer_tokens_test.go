@@ -66,7 +66,7 @@ func TestLexer_OperatorsAndDelimiters(t *testing.T) {
 }
 
 func TestLexer_KeywordsAndTypes(t *testing.T) {
-	input := `let fn return if else true false interface impl switch case default type int bool string`
+	input := `let fn return if else true false interface impl switch case default type comptime int bool string`
 
 	tests := []expectedToken{
 		{token.LET, "let"},
@@ -82,6 +82,7 @@ func TestLexer_KeywordsAndTypes(t *testing.T) {
 		{token.CASE, "case"},
 		{token.DEFAULT, "default"},
 		{token.TYPE, "type"},
+		{token.COMPTIME, "comptime"},
 		{token.INT_TYPE, "int"},
 		{token.BOOL_TYPE, "bool"},
 		{token.STRING_TYPE, "string"},

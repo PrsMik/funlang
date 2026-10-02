@@ -18,6 +18,7 @@ func TestLookupIdentifier(t *testing.T) {
 		{"Keyword else", "else", token.ELSE},
 		{"Keyword true", "true", token.TRUE},
 		{"Keyword false", "false", token.FALSE},
+		{"Keyword comptime", "comptime", token.COMPTIME},
 		{"User defined identifier", "myVariable", token.IDENT},
 		{"Single letter identifier", "x", token.IDENT},
 	}
