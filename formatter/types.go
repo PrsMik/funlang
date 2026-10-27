@@ -22,6 +22,8 @@ func (fmtr *Formatter) formatType(node ast.ExpressionNode) {
 	case *ast.FunctionType:
 		fmtr.out.WriteString("fn(")
 		for i, pt := range t.ParamsTypes {
+			fmtr.formatExpression(t.Parameters[i])
+			fmtr.out.WriteString(": ")
 			fmtr.formatType(pt)
 			if i < len(t.ParamsTypes)-1 {
 				fmtr.out.WriteString(", ")

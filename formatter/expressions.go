@@ -29,6 +29,12 @@ func (fmtr *Formatter) formatExpression(expr ast.ExpressionNode) {
 		fmtr.formatCallExpression(node)
 	case *ast.IndexExpression:
 		fmtr.formatIndexExpression(node)
+	case *ast.ComptimeExpression:
+		fmtr.formatComptimeExpression(node)
+	case *ast.InterfaceLiteral:
+		fmtr.formatInterfaceLiteral(node)
+	case *ast.ImplLiteral:
+		fmtr.formatImplLiteral(node)
 	default:
 		fmtr.out.WriteString(node.String())
 		fmtr.prevEndLine = node.End().Line
@@ -166,6 +172,24 @@ func (fmtr *Formatter) formatIndexExpression(n *ast.IndexExpression) {
 	fmtr.out.WriteString("[")
 	fmtr.formatExpression(n.Index)
 	fmtr.out.WriteString("]")
+}
+
+func (fmtr *Formatter) formatComptimeExpression(n *ast.ComptimeExpression) {
+	fmtr.out.WriteString("comptime ")
+	fmtr.formatExpression(n.Value)
+}
+
+func (fmtr *Formatter) formatInterfaceLiteral(n *ast.InterfaceLiteral) {
+	fmtr.out.WriteString("interface ")
+	fmtr.formatStatement(n.Body)
+}
+
+func (fmtr *Formatter) formatImplLiteral(n *ast.ImplLiteral) {
+	fmtr.out.WriteString("impl ")
+	fmtr.out.WriteString("(")
+	fmtr.formatExpression(n.TargetType)
+	fmtr.out.WriteString(") ")
+	fmtr.formatStatement(n.Body)
 }
 
 type kvPair struct {

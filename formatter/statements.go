@@ -61,6 +61,7 @@ func (fmtr *Formatter) formatReturnStatement(node *ast.ReturnStatement) {
 	fmtr.prevEndLine = node.SemiToken.End.Line
 }
 
+// РАССТАВЛЯЕТ { }
 func (fmtr *Formatter) formatBlockStatement(node *ast.BlockStatement) {
 	fmtr.out.WriteString("{")
 	fmtr.prevEndLine = node.Token.End.Line
