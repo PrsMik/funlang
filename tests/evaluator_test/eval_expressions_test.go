@@ -141,9 +141,9 @@ func TestEvalSwitchExpressionValues(t *testing.T) {
 			return switch x {
 				case 1 { return 10; }
 				case 2 { return 20; }
-				default { return -1; }
+				default { return -42; }
 			};`,
-			expected: -1,
+			expected: -42,
 		},
 		{
 			input: `

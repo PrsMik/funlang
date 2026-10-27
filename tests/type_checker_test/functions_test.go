@@ -22,6 +22,7 @@ func TestCallExpressions(t *testing.T) {
 	tests := []TestCase{
 		{"Valid call", "let add: fn(int, int) -> int = fn(x, y) { return x + y; }; let z: int = add(1, 2);", ""},
 		{"Valid nested call", "let add: fn(int, int) -> int = fn(x, y) { return x + y; }; let z: int = 1 + add(1, 2);", ""},
+		{"Call wrong arg count", "let add: fn(int) -> int = fn(x) { return x; }; let z: int = add();", "wrong number of arguments"},
 		{"Call wrong arg count", "let add: fn(int, int) -> int = fn(x, y) { return x + y; }; let z: int = add(1);", "wrong number of arguments"},
 		{"Call wrong arg type", "let add: fn(int, int) -> int = fn(x, y) { return x + y; }; let z: int = add(1, true);", "type error: wrong type for argument 2: <bool> in func call \" add \"; expected <int>"},
 		{"Call non-function", "let x: int = 5; let y: int = x(1);", "identifier \"x\" is no a funciton"},

@@ -99,7 +99,7 @@ func TestExpressions(t *testing.T) {
 				Body:       &ast.BlockStatement{SemiToken: createToken(token.RBRACE, "}", 1, 15)},
 			},
 			expectedTokenLiteral: "fn",
-			expectedString:       "fn(x) ",
+			expectedString:       "fn(x) {}",
 			expectedStart:        pos(1, 1),
 			expectedEnd:          pos(1, 16),
 		},

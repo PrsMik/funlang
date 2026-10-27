@@ -186,45 +186,58 @@ func TestEvalImplMethods(t *testing.T) {
 
 func TestEvalResultErrorHandlingAndTypeSwitch(t *testing.T) {
 	inputOk := `
-	let OkType: fn(T: type) -> type = fn(T: type) -> type {
+	let OkType: fn(T: type) -> type = comptime fn(T) {
 		return interface {
 			let value: type = T;
 		};
 	};
 
-	let ErrType: fn(E: type) -> type = fn(E: type) -> type {
+	let ErrType: fn(E: type) -> type = comptime fn(E) {
 		return interface {
 			let error: type = E;
 		};
 	};
 
-	let Result: fn(T: type, E: type) -> type = fn(T: type, E: type) -> type {
-		return OkType(T) | ErrType(E);
+	let Result: fn(T: type, E: type) -> type = comptime fn(T, E) {
+		return OkType(T) | ErrType(E); 
 	};
 
-	let OkImpl: type = impl (OkType(int)) {
-		let value: int = 0;
-	};
-
-	let ErrImpl: type = impl (ErrType(string)) {
-		let error: string = "";
-	};
-
-	let divide: fn(int, int) -> Result(int, string) = fn(a: int, b: int) -> Result(int, string) {
-		return if (b == 0) {
-			return ErrImpl.{error : "Division by zero"};
-		} else {
-			return OkImpl.{value : a / b};
+	let MakeOkFor: fn(T: comptime type) -> fn(T) -> comptime OkType(T) = comptime fn(T) {
+		return fn(val: comptime T) -> comptime OkType(T) {
+			let ok: type = impl (comptime OkType(T)) {
+				let value: T = val;
+			};
+			return ok.{value : val};
 		};
 	};
 
-	let res: Result(int, string) = divide(10, 2);
+	let MakeErrFor: fn(E: comptime type) -> fn(E) -> comptime ErrType(E) = comptime fn(E) {
+		return fn(err_val: comptime E) -> comptime ErrType(E) {
+			let err: type = impl (comptime ErrType(E)) {
+				let error: E = err_val;
+			};
+			return err.{error : err_val};
+		};
+	};
+
+	let resTp: type = comptime Result(int, string);
+	let divide: fn(int, int) -> resTp = fn(a, b) {
+		return if (b == 0) {
+			let res: resTp = (comptime MakeErrFor(string))("Division by zero");
+			return res; 
+		} else {
+			let res: resTp = (comptime MakeOkFor(int))(a / b);
+			return res;
+		};
+	};
+
+	let res: comptime Result(int, string) = divide(10, 2);
 
 	return switch res.(type) {
-		case OkType(int) {
+		case comptime OkType(int) {
 			return res.value;
 		}
-		case ErrType(string) {
+		case comptime ErrType(string) {
 			return -1;
 		}
 		default {
@@ -236,45 +249,58 @@ func TestEvalResultErrorHandlingAndTypeSwitch(t *testing.T) {
 	testIntegerObject(t, evaluatedOk, 5)
 
 	inputErr := `
-	let OkType: fn(T: type) -> type = fn(T: type) -> type {
+	let OkType: fn(T: type) -> type = comptime fn(T) {
 		return interface {
 			let value: type = T;
 		};
 	};
 
-	let ErrType: fn(E: type) -> type = fn(E: type) -> type {
+	let ErrType: fn(E: type) -> type = comptime fn(E) {
 		return interface {
 			let error: type = E;
 		};
 	};
 
-	let Result: fn(T: type, E: type) -> type = fn(T: type, E: type) -> type {
-		return OkType(T) | ErrType(E);
+	let Result: fn(T: type, E: type) -> type = comptime fn(T, E) {
+		return OkType(T) | ErrType(E); 
 	};
 
-	let OkImpl: type = impl (OkType(int)) {
-		let value: int = 0;
-	};
-
-	let ErrImpl: type = impl (ErrType(string)) {
-		let error: string = "";
-	};
-
-	let divide: fn(int, int) -> Result(int, string) = fn(a: int, b: int) -> Result(int, string) {
-		return if (b == 0) {
-			return ErrImpl.{error : "Division by zero"};
-		} else {
-			return OkImpl.{value : a / b};
+	let MakeOkFor: fn(T: comptime type) -> fn(T) -> comptime OkType(T) = comptime fn(T) {
+		return fn(val: comptime T) -> comptime OkType(T) {
+			let ok: type = impl (comptime OkType(T)) {
+				let value: T = val;
+			};
+			return ok.{value : val};
 		};
 	};
 
-	let res: Result(int, string) = divide(10, 0);
+	let MakeErrFor: fn(E: comptime type) -> fn(E) -> comptime ErrType(E) = comptime fn(E) {
+		return fn(err_val: comptime E) -> comptime ErrType(E) {
+			let err: type = impl (comptime ErrType(E)) {
+				let error: E = err_val;
+			};
+			return err.{error : err_val};
+		};
+	};
+
+	let resTp: type = comptime Result(int, string);
+	let divide: fn(int, int) -> resTp = fn(a, b) {
+		return if (b == 0) {
+			let res: resTp = (comptime MakeErrFor(string))("Division by zero");
+			return res; 
+		} else {
+			let res: resTp = (comptime MakeOkFor(int))(a / b);
+			return res;
+		};
+	};
+
+	let res: comptime Result(int, string) = divide(10, 0);
 
 	return switch res.(type) {
-		case ErrType(string) {
+		case comptime ErrType(string) {
 			return res.error;
 		}
-		case OkType(int) {
+		case comptime OkType(int) {
 			return "OK";
 		}
 		default {
