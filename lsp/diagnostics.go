@@ -1,13 +1,11 @@
 package lsp
 
 import (
-	"fmt"
 	"funlang/lexer"
 	"funlang/parser"
 	"funlang/token"
 	"funlang/type_checker"
 	"funlang/types"
-	"os"
 
 	"github.com/tliron/glsp"
 	protocol "github.com/tliron/glsp/protocol_3_16"
@@ -24,7 +22,7 @@ func validateDocument(context *glsp.Context, uri string, text string) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Fprintf(os.Stderr, "Recovered from panic during LSP validation: %v\n", r)
+			// fmt.Fprintf(os.Stderr, "Recovered from panic during LSP validation: %v\n", r)
 		}
 
 		context.Notify(protocol.ServerTextDocumentPublishDiagnostics, protocol.PublishDiagnosticsParams{
