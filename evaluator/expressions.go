@@ -149,13 +149,15 @@ func evalInfixExpression(operator string, left, right object.Object) (res object
 			return newError("runtime error. operator %s for %s", operator, right.Inspect())
 		}
 	case "&", "|":
-		leftVal := left.(*object.TypeObject).TypeValue
-		rightVal := right.(*object.TypeObject).TypeValue
+		leftObj := left.(*object.TypeObject)
+		rightObj := right.(*object.TypeObject)
+		leftVal := leftObj.TypeValue
+		rightVal := rightObj.TypeValue
 		switch operator {
 		case "&":
-			return &object.TypeObject{TypeValue: &types.IntersectionType{Left: leftVal, Right: rightVal}}
+			return &object.TypeObject{TypeValue: &types.IntersectionType{Left: leftVal, Right: rightVal}, Env: leftObj.Env}
 		case "|":
-			return &object.TypeObject{TypeValue: &types.UnionType{Left: leftVal, Right: rightVal}}
+			return &object.TypeObject{TypeValue: &types.UnionType{Left: leftVal, Right: rightVal}, Env: leftObj.Env}
 		default:
 			return newError("runtime error. operator %s for %s", operator, right.Inspect())
 		}

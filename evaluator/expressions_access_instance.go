@@ -15,7 +15,7 @@ func evalMemberAccessExpression(node *ast.MemberAccessExpression, env *object.En
 
 	switch leftObj := left.(type) {
 	case *object.TypeObject:
-		return evalTypeField(leftObj.TypeValue, fieldName, env, info)
+		return evalTypeField(leftObj, fieldName, env, info)
 
 	case *object.ImplInstance:
 		val, ok := leftObj.Fields[fieldName]
@@ -27,27 +27,30 @@ func evalMemberAccessExpression(node *ast.MemberAccessExpression, env *object.En
 	return &object.Error{Message: "runtime error. left operand is not a type or instance"}
 }
 
-func evalTypeField(typeVal types.Type,
+func evalTypeField(typeObj *object.TypeObject,
 	fieldName string,
 	env *object.Environment,
 	info *types.Info) object.Object {
 
-	switch targetType := typeVal.(type) {
+	switch targetType := typeObj.TypeValue.(type) {
 	case *types.InterfaceType:
 		if fieldType, ok := targetType.Fields[fieldName]; ok {
-			return &object.TypeObject{TypeValue: fieldType}
+			return &object.TypeObject{TypeValue: fieldType, Env: typeObj.Env}
 		}
 	case *types.ImplType:
 		if defaultExpr, ok := targetType.FieldsDefaultValues[fieldName]; ok {
 			return Eval(defaultExpr, env, info)
 		}
 	case *types.IntersectionType:
-		leftRes := evalTypeField(targetType.Left, fieldName, env, info)
+		leftObj := &object.TypeObject{TypeValue: targetType.Left, Env: typeObj.Env}
+		leftRes := evalTypeField(leftObj, fieldName, env, info)
 		if _, isErr := leftRes.(*object.Error); !isErr {
 			return leftRes
 		}
 
-		return evalTypeField(targetType.Right, fieldName, env, info)
+		rightObj := &object.TypeObject{TypeValue: targetType.Right, Env: typeObj.Env}
+
+		return evalTypeField(rightObj, fieldName, env, info)
 	}
 	return &object.Error{Message: "runtime error. not a type with fields"}
 }
@@ -80,8 +83,13 @@ func evalFieldsInstantation(implTypeObject *object.TypeObject,
 
 	instanceObject := &object.ImplInstance{TypeObj: implTypeObject, Fields: make(map[string]object.Object)}
 
+	evalEnv := implTypeObject.Env
+	if evalEnv == nil {
+		evalEnv = env
+	}
+
 	for key, elemExpr := range implType.FieldsDefaultValues {
-		val := Eval(elemExpr, env, info)
+		val := Eval(elemExpr, evalEnv, info)
 		if isError(val) {
 			return val
 		}
@@ -117,5 +125,5 @@ func evalTypeAccessExpression(node *ast.TypeAccessExpression, env *object.Enviro
 		return &object.Error{Message: "runtime error. error when trying to extract type"}
 	}
 
-	return &object.TypeObject{TypeValue: tpVal}
+	return &object.TypeObject{TypeValue: tpVal, Env: env}
 }

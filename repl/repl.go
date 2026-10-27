@@ -48,6 +48,7 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
+		env.ComptimeValues = chk.ComptimeValues
 		evaluated := evaluator.Eval(prg, env, chk.Info)
 		if evaluated != nil {
 			// io.WriteString(out, evaluated.Inspect())

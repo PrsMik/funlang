@@ -156,5 +156,11 @@ func (chk *TypeChecker) checkComptimeExpression(expr ast.ExpressionNode) types.T
 		return &types.TypeType{Underlying: typeObj.TypeValue}
 	}
 
+	evaluatedType := object.GetTypeFromObject(val)
+	if _, isIllegal := evaluatedType.(*types.IllegalType); !isIllegal {
+		chk.recordType(expr, evaluatedType)
+		return evaluatedType
+	}
+
 	return valType
 }

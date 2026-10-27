@@ -44,6 +44,7 @@ func (n *Null) Type() ObjectType { return NULL_OBJ }
 
 type TypeObject struct {
 	TypeValue types.Type
+	Env       *Environment
 }
 
 func (to *TypeObject) Type() ObjectType { return TYPE_OBJ }

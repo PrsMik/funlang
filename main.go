@@ -31,7 +31,9 @@ func FormatFile(program string, out io.Writer) (string, error) {
 		return "", fmt.Errorf("Parser erorrs!")
 	}
 
-	chk := type_checker.New(typeEnv, nil)
+	tEnv := types.NewTypeEviroment()
+	info := types.NewInfo(tEnv)
+	chk := type_checker.New(typeEnv, info)
 	chk.CheckProgram(prg)
 	if len(chk.Errors()) != 0 {
 		repl.PrintCheckerErrors(out, chk.Errors())
@@ -44,7 +46,6 @@ func FormatFile(program string, out io.Writer) (string, error) {
 
 func InterpretProgram(program string, out io.Writer) {
 	typeEnv := types.NewTypeEviroment()
-	env := object.NewEnvironment()
 
 	lxr := lexer.New(program)
 
@@ -55,13 +56,17 @@ func InterpretProgram(program string, out io.Writer) {
 		return
 	}
 
-	chk := type_checker.New(typeEnv, nil)
+	tEnv := types.NewTypeEviroment()
+	info := types.NewInfo(tEnv)
+	chk := type_checker.New(typeEnv, info)
 	chk.CheckProgram(prg)
 	if len(chk.Errors()) != 0 {
 		repl.PrintCheckerErrors(out, chk.Errors())
 		return
 	}
 
+	env := object.NewEnvironment()
+	env.ComptimeValues = chk.ComptimeValues
 	evaluated := evaluator.Eval(prg, env, chk.Info)
 	if evaluated != nil {
 		// io.WriteString(out, "Result of file eval is: ")

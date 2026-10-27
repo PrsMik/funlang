@@ -3,6 +3,7 @@ package type_checker
 import (
 	"fmt"
 	"funlang/ast"
+	"funlang/object"
 	"funlang/types"
 )
 
@@ -17,6 +18,8 @@ func (chk *TypeChecker) checkCallExpression(expr ast.ExpressionNode) types.Type 
 	switch callFuncType := rawCallType.(type) {
 	case *types.FuncType:
 		if len(callExpr.Arguments) != len(callFuncType.Params) {
+			// TODO: баг с одним аргументом func = fn(int) -> int ... x = func(), нет ошибки
+			// проблема в проверке BadExpression
 			if len(callFuncType.Params) != 0 {
 				chk.typeError(fmt.Sprintf(`wrong number of arguments for "%s"`, callExpr.Function.String()), expr)
 				return &types.IllegalType{}
@@ -65,16 +68,23 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 	funLiteral := expr.(*ast.FunctionLiteral)
 
 	var expectedFuncType types.FuncType
+	chk.env = types.NewEnclosedTypeEviroment(chk.env)
 
 	// типы параметров описаны в самом литерале
 	if len(funLiteral.ParamTypes) != 0 && funLiteral.ParamTypes[0] != nil || funLiteral.ReturnType != nil {
 
 		if len(funLiteral.ParamTypes) != 0 && funLiteral.ParamTypes[0] != nil {
 			// у литерала определены типы параметров
-			for ind, param := range funLiteral.ParamTypes {
-				paramType := chk.resolveType(param)
-				funcParam := &types.FuncParam{Name: funLiteral.Parameters[ind].Value, Type: paramType}
+			for ind, paramTypeLit := range funLiteral.ParamTypes {
+				paramType := chk.resolveType(paramTypeLit)
+				param := funLiteral.Parameters[ind]
+
+				funcParam := &types.FuncParam{Name: param.Value, Type: paramType}
 				expectedFuncType.Params = append(expectedFuncType.Params, *funcParam)
+
+				if param != nil {
+					chk.env.Set(param.Value, paramType, param)
+				}
 			}
 
 		} else if expType, ok := chk.curExpectedType.(*types.FuncType); ok && len(expType.Params) != 0 {
@@ -108,8 +118,16 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 		return &types.IllegalType{}
 	}
 
-	chk.env = types.NewEnclosedTypeEviroment(chk.env)
 	chk.recordScope(expr, chk.env)
+
+	outerComptimeEnv := chk.comptimeEnv
+	chk.comptimeEnv = object.NewEnclosedEnvironment(outerComptimeEnv)
+
+	// откат окружений в конце
+	defer func() {
+		chk.env = chk.env.Outer
+		chk.comptimeEnv = outerComptimeEnv
+	}()
 
 	// спуск типов из ожидаемого типа функции на переменные в литерале
 	for i, param := range funLiteral.Parameters {
@@ -118,6 +136,10 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 
 		chk.recordType(param, expectedFuncType.Params[i].Type)
 		chk.env.Set(param.Value, expectedFuncType.Params[i].Type, param)
+
+		if types.EqualsSoft(expectedFuncType.Params[i].Type, types.MetaType) {
+			chk.comptimeEnv.Set(param.Value, object.MetaType)
+		}
 	}
 
 	oldExp := chk.curExpectedType
@@ -134,7 +156,7 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 
 	chk.curExpectedType = oldExp
 
-	chk.env = chk.env.Outer
+	// chk.env = chk.env.Outer
 
 	return resFuncType
 }

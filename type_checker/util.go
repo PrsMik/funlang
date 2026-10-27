@@ -3,6 +3,7 @@ package type_checker
 import (
 	"fmt"
 	"funlang/ast"
+	"funlang/object"
 	"funlang/token"
 	"funlang/types"
 )
@@ -87,9 +88,16 @@ func (chk *TypeChecker) resolveType(inType ast.ExpressionNode) types.Type {
 		// fn(T: type, val: T) -> T
 		funcParams := []types.FuncParam{}
 
-		for _, prm := range tp.ParamsTypes {
-			resolvedParamType := chk.resolveType(prm)
+		for i, paramType := range tp.ParamsTypes {
+			resolvedParamType := chk.resolveType(paramType)
 			funcParams = append(funcParams, types.FuncParam{Name: "", Type: resolvedParamType})
+			param := tp.Parameters[i]
+			if param != nil {
+				chk.env.Set(param.Value, resolvedParamType, param)
+				if types.EqualsSoft(types.MetaType, resolvedParamType) {
+					chk.comptimeEnv.Set(param.Value, object.MetaType)
+				}
+			}
 		}
 
 		rtrnType := chk.resolveType(tp.ReturnType)

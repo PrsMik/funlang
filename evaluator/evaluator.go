@@ -72,7 +72,7 @@ func Eval(node ast.Node, env *object.Environment, info *types.Info) object.Objec
 		}
 		return &object.Array{
 			Elements: elements,
-			TypeObj:  &object.TypeObject{TypeValue: info.TypesInfo[node]}}
+			TypeObj:  &object.TypeObject{TypeValue: info.TypesInfo[node], Env: env}}
 
 	case *ast.HashMapLiteral:
 		return evalHashMapLiteral(node, env, info)
@@ -88,6 +88,12 @@ func Eval(node ast.Node, env *object.Environment, info *types.Info) object.Objec
 		return evalTypeTypeIdentifier(node, env)
 	case *ast.SimpleType:
 		return evalTypeIdentifier(node, env)
+	case *ast.ArrayType:
+		return evalArrayType(node, env, info)
+	case *ast.HashMapType:
+		return evalHashMapType(node, env, info)
+	case *ast.FunctionType:
+		return evalFunctionType(node, env, info)
 	case *ast.IndexExpression:
 		left := Eval(node.Left, env, info)
 		if isError(left) {
@@ -101,11 +107,13 @@ func Eval(node ast.Node, env *object.Environment, info *types.Info) object.Objec
 	case *ast.FunctionLiteral:
 		resolvedType := info.TypesInfo[node]
 
+		dynamicType := evalDynamicFunctionType(node, env, info, resolvedType)
+
 		return &object.Function{
 			Parameters: node.Parameters,
 			Body:       node.Body,
 			Env:        env,
-			TypeObj:    &object.TypeObject{TypeValue: resolvedType},
+			TypeObj:    &object.TypeObject{TypeValue: dynamicType, Env: env},
 		}
 
 	case *ast.CallExpression:
