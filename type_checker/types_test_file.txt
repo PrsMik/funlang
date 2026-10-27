@@ -1,125 +1,67 @@
-let Logical: type = interface {
-    let and: type = fn(Logical, Logical) -> Logical;
-    let or: type = fn(Logical, Logical) -> Logical;
-    let not: type = fn(Logical) -> Logical;
-};
-
-let Equalable: type = interface {
-    let equal: type = fn(Equalable, Equalable) -> Logical; 
-    let notEqual: type = fn(Equalable, Equalable) -> Logical; 
-};
-
-let Comparable: type = interface{
-    let less: type = fn(Comparable, Comparable) -> Logical; 
-    let greater: type = fn(Comparable, Comparable) -> Logical; 
-};
-
-let Addable: type = interface {
-    let add: type = fn(Addable, Addable) -> Addable;
-};
-
-let Substractable: type = interface {
-    let sub: type = fn(Substractable, Substractable) -> Substractable;
-};
-
-let Multipliable: type = interface {
-    let mul: type = fn(Multipliable, Multipliable) -> Multipliable;
-};
-
-let Diviable: type = interface {
-    let div: type = fn(Diviable, Diviable) -> Diviable;
-};
-
-let Algebraic: type = Addable & Substractable & Multipliable & Diviable;
-
-let Int: type = Algebraic & interface {
-    let floatToInt: type = fn(Float) -> Int;
-};
-
-let Float: type = Algebraic & interface {
-    let intToFloat: type = fn(Int) -> Float;
-};
-
-// int как и bool - встроенные типы, это просто пример
-// =================================================== 
-let int: type = impl (Int) {
-    let floatToInt: fn(Float) -> int = fn(a) {
-        return __internalFloatToIntConvert(a);
-    }
-
-    let add, sub, let mul, let div... etc. 
-};
-
-let andBoolImpl: fn(bool, bool) -> bool = fn(a, b) {
-    return a && b;
-}
-
-let orBoolImpl, let notBoolImpl, let equalBoolImpl... etc. 
-
-let bool: type = impl (Logical & Equalable) {
-    let and: fn(bool, bool) -> bool = andBoolImpl;
-    let or: fn(bool, bool) -> bool = orBoolImpl;
-    let not: fn(bool) -> bool = notBoolImpl;
-
-    let equal: fn(bool, bool) -> bool = equalBoolImpl; 
-    let notEqual: fn(bool, bool) -> bool = notEqualBoolImpl;
-};
-// ===================================================
-
-??? let array: type = Addable | Equalable;
-??? let hashMap: type = ;
-
 ??? let map: fn(T: type, U: type, [T], fn(T) -> U) -> [U] 
 
 // ===================================================
 // ОБРАБОТКА ОШИБОК
 
-let OkType: fn(T: type) -> type = fn(T: type) {
+let OkType: fn(T: type) -> type = comptime fn(T) {
     return interface {
         let value: type = T;
     };
 };
 
-let ErrType: fn(E: type) -> type = fn(E: type) {
+let ErrType: fn(E: type) -> type = comptime fn(E) {
     return interface {
         let error: type = E;
     };
 };
 
-let Result: fn(T: type, E: type) -> type = fn(T: type, E: type) {
+let Result: fn(T: type, E: type) -> type = comptime fn(T, E) {
     return OkType(T) | ErrType(E); 
 };
 
-let Ok: fn(T: type, val: T) -> OkType(T) = fn(T: type, val: T) {
-    return impl (OkType(T)) {
-        let value: T = val;
-    };
+let MakeOkFor: fn(T: comptime type) -> fn(T) -> comptime OkType(T) = comptime fn(T) {
+	return fn(val: comptime T) -> comptime OkType(T) {
+		let ok: type = impl (comptime OkType(T)) {
+			let value: T = val;
+		};
+		return ok.{value : val};
+	};
 };
 
-let Err: fn(E: type, err_val: E) -> ErrType(E) = fn(E: type, err_val: E) {
-    return impl (ErrType(E)) {
-        let error: E = err_val;
-    };
+let MakeErrFor: fn(E: comptime type) -> fn(E) -> comptime ErrType(E) = comptime fn(E) {
+	return fn(err_val: comptime E) -> comptime ErrType(E) {
+		let err: type = impl (comptime ErrType(E)) {
+			let error: E = err_val;
+		};
+		return err.{error : err_val};
+	};
 };
 
-let divide: fn(int, int) -> Result(int, string) = fn(a, b) {
-    if (b == 0) {
-        return Err(string, "Division by zero"); 
+let tp: type = comptime int;
+let resTp: type = comptime Result(int, string);
+let divide: fn(int, int) -> resTp = fn(a, b) {
+    return if (b == 0) {
+        let res: resTp = (comptime MakeErrFor(string))("Division by zero");
+        return res; 
     } else {
-        return Ok(int, a / b); 
-    }
+        let res: resTp = (comptime MakeOkFor(tp))(a / b);
+        return res;
+    };
 };
 
-let res: Result(int, string) = divide(10, 0);
+let res: comptime Result(int, string) = divide(10, 2);
 
 let error_text: string = switch res.(type) {
-    case ErrType(string) {
-        return res.error; 
+    case comptime ErrType(string) {
+        return res.error;
     }
-    case OkType(int) {
-        return "Ошибки нет, результат: " + intToString(res.value); // псевдовызов
+    case comptime OkType(tp) {
+        let o: int = puts(res.value);
+        return "";
+    }
+    default {
+        return "";
     }
 };
 
-puts(error_text);
 // ===================================================

@@ -1,53 +1,59 @@
-let OkType: fn(T: type) -> type = fn(T) {
+let OkType: fn(T: type) -> type = comptime fn(T) {
     return interface {
         let value: type = T;
     };
 };
 
-let ErrType: fn(E: type) -> type = fn(E) {
+let ErrType: fn(E: type) -> type = comptime fn(E) {
     return interface {
         let error: type = E;
     };
 };
 
-let Result: fn(T: type, E: type) -> type = fn(T, E) {
+let Result: fn(T: type, E: type) -> type = comptime fn(T, E) {
     return OkType(T) | ErrType(E); 
 };
 
-let Ok: fn(T: type, val: T) -> OkType(T) = fn(T, val) {
-    let ok: type = impl (OkType(T)) {
-        let value: T = val;
-    };
-    return ok.{value : val};
+let MakeOkFor: fn(T: comptime type) -> fn(T) -> comptime OkType(T) = comptime fn(T) {
+	return fn(val: comptime T) -> comptime OkType(T) {
+		let ok: type = impl (comptime OkType(T)) {
+			let value: T = val;
+		};
+		return ok.{value : val};
+	};
 };
 
-let Err: fn(E: type, err_val: E) -> ErrType(E) = fn(E, err_val) {
-    let err: type = impl (ErrType(E)) {
-        let error: E = err_val;
-    };
-    return err.{error : err_val};
+let MakeErrFor: fn(E: comptime type) -> fn(E) -> comptime ErrType(E) = comptime fn(E) {
+	return fn(err_val: comptime E) -> comptime ErrType(E) {
+		let err: type = impl (comptime ErrType(E)) {
+			let error: E = err_val;
+		};
+		return err.{error : err_val};
+	};
 };
 
-let divide: fn(int, int) -> Result(int, string) = fn(a, b) {
+let resTp: type = comptime Result(int, string);
+let divide: fn(int, int) -> resTp = fn(a, b) {
     return if (b == 0) {
-        return Err(string, "Division by zero"); 
+        let res: resTp = (comptime MakeErrFor(string))("Division by zero");
+        return res; 
     } else {
-        return Ok(int, a / b); 
+        let res: resTp = (comptime MakeOkFor(int))(a / b);
+        return res;
     };
 };
 
-let res: Result(int, string) = divide(10, 0);
+let res: comptime Result(int, string) = divide(10, 2);
 
 let error_text: string = switch res.(type) {
-    case ErrType(string) {
-        return res.error; 
+    case comptime ErrType(string) {
+        return res.error;
     }
-    case OkType(int) {
-        return "Ошибки нет, результат: "; // псевдовызов
+    case comptime OkType(int) {
+        let o: int = puts(res.value);
+        return "";
     }
     default {
         return "";
     }
 };
-
-return puts(error_text);
