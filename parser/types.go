@@ -11,6 +11,7 @@ func (prs *Parser) switchToTypePrefixes() {
 	prs.registerPrefix(token.LBRACKET, prs.parseArrayType)
 	prs.registerPrefix(token.LBRACE, prs.parseHashMapType)
 	prs.registerPrefix(token.FN, prs.parseFunctionType)
+	prs.registerPrefix(token.COMPTIME, prs.parseComptimeType)
 }
 
 func (prs *Parser) convertToTypeContext(fn parsExpr) parsExpr {
@@ -44,6 +45,16 @@ func (prs *Parser) parseType() ast.ExpressionNode {
 
 func (prs *Parser) parseTypeType() ast.ExpressionNode {
 	return &ast.TypeType{Token: prs.curToken, Value: prs.curToken.Literal}
+}
+
+func (prs *Parser) parseComptimeType() ast.ExpressionNode {
+	expr := &ast.ComptimeExpression{Token: prs.curToken}
+	prs.nextToken()
+	expr.Value = prs.parseType()
+	if expr.Value == nil {
+		return nil
+	}
+	return expr
 }
 
 func (prs *Parser) parseSimpleType() ast.ExpressionNode {
@@ -161,6 +172,7 @@ func (prs *Parser) expectParseParamAndTypePair(params *[]*ast.Identifier, paramT
 		prs.nextToken()
 		*paramTypes = append(*paramTypes, prs.parseType())
 	} else {
+		*params = append(*params, nil)
 		*paramTypes = append(*paramTypes, firstLiteral)
 	}
 
