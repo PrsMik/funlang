@@ -3,6 +3,7 @@ package type_checker
 import (
 	"fmt"
 	"funlang/ast"
+	"funlang/object"
 	"funlang/types"
 )
 
@@ -176,8 +177,18 @@ func (chk *TypeChecker) checkBlockStatement(stmt *ast.BlockStatement) types.Type
 		return &types.IllegalType{}
 	}
 
-	chk.env = types.NewEnclosedTypeEviroment(chk.env)
+	outerEnv := chk.env
+	outerComptimeEnv := chk.comptimeEnv
+
+	chk.env = types.NewEnclosedTypeEviroment(outerEnv)
 	chk.recordScope(stmt, chk.env)
+	chk.comptimeEnv = object.NewEnclosedEnvironment(outerComptimeEnv)
+
+	// откат окружений в конце
+	defer func() {
+		chk.env = outerEnv
+		chk.comptimeEnv = outerComptimeEnv
+	}()
 
 	var returnType types.Type = &types.IllegalType{}
 
@@ -189,8 +200,6 @@ func (chk *TypeChecker) checkBlockStatement(stmt *ast.BlockStatement) types.Type
 			chk.checkStatement(stmt)
 		}
 	}
-
-	chk.env = chk.env.Outer
 
 	return returnType
 }

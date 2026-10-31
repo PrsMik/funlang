@@ -68,7 +68,21 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 	funLiteral := expr.(*ast.FunctionLiteral)
 
 	var expectedFuncType types.FuncType
-	chk.env = types.NewEnclosedTypeEviroment(chk.env)
+
+	outerEnv := chk.env
+	outerComptimeEnv := chk.comptimeEnv
+	outerExpectedType := chk.curExpectedType
+
+	chk.env = types.NewEnclosedTypeEviroment(outerEnv)
+	chk.recordScope(expr, chk.env)
+	chk.comptimeEnv = object.NewEnclosedEnvironment(outerComptimeEnv)
+
+	// откат окружений в конце
+	defer func() {
+		chk.env = outerEnv
+		chk.comptimeEnv = outerComptimeEnv
+		chk.curExpectedType = outerExpectedType
+	}()
 
 	// типы параметров описаны в самом литерале
 	if len(funLiteral.ParamTypes) != 0 && funLiteral.ParamTypes[0] != nil || funLiteral.ReturnType != nil {
@@ -117,17 +131,6 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 			len(funLiteral.Parameters), len(expectedFuncType.Params)), expr)
 		return &types.IllegalType{}
 	}
-
-	chk.recordScope(expr, chk.env)
-
-	outerComptimeEnv := chk.comptimeEnv
-	chk.comptimeEnv = object.NewEnclosedEnvironment(outerComptimeEnv)
-
-	// откат окружений в конце
-	defer func() {
-		chk.env = chk.env.Outer
-		chk.comptimeEnv = outerComptimeEnv
-	}()
 
 	// спуск типов из ожидаемого типа функции на переменные в литерале
 	for i, param := range funLiteral.Parameters {

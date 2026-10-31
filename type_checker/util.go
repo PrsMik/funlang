@@ -84,6 +84,15 @@ func (chk *TypeChecker) resolveType(inType ast.ExpressionNode) types.Type {
 		}
 		return &types.HashMapType{KeyType: keyType, ElementType: chk.resolveType(tp.ElementType)}
 	case *ast.FunctionType:
+		outerEnv := chk.env
+		outerComptimeEnv := chk.comptimeEnv
+		chk.env = types.NewEnclosedTypeEviroment(outerEnv)
+		chk.comptimeEnv = object.NewEnclosedEnvironment(outerComptimeEnv)
+		defer func() {
+			chk.env = outerEnv
+			chk.comptimeEnv = outerComptimeEnv
+		}()
+
 		// TODO: добавить немедленное добавление параметров с метатипом в окружение для
 		// fn(T: type, val: T) -> T
 		funcParams := []types.FuncParam{}
