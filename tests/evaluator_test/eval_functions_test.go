@@ -30,6 +30,7 @@ func TestEvalFunctionApplication(t *testing.T) {
 		expected int
 	}{
 		{"let identity: fn(int) -> int = fn(x) { return x; }; return identity(5);", 5},
+		{"let identity: fn(type) -> int = fn(t) { return switch t { case int { return 1; } default { return -1; } }; }; return identity(int);", 1},
 		{"let double: fn(int) -> int = fn(x) { return x * 2; }; return double(5);", 10},
 		{"let add: fn(int, int) -> int = fn(x, y) { return x + y; }; return add(5, 5);", 10},
 		{"let add: fn() -> int = fn() { return 1; }; return add();", 1},
