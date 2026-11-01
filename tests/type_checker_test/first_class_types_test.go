@@ -252,6 +252,46 @@ func TestStructuralTyping(t *testing.T) {
 			expectedErr: "",
 		},
 		{
+			name: "Invalid structural typing",
+			input: `
+				let OkType: fn(T: type) -> type = comptime fn(T) {
+					return interface { let value: type = T; };
+				};
+				let ErrType: fn(E: type) -> type = comptime fn(E) {
+					return interface { let error: type = E; };
+				};
+				let Result: fn(T: type, E: type) -> type = comptime fn(T, E) {
+					return OkType(T) | ErrType(E);
+				};
+				let MakeOkFor: fn(T: comptime type) -> fn(T) -> comptime OkType(T) = comptime fn(T) {
+					return fn(val: comptime T) -> comptime OkType(T) {
+						let ok: type = impl (comptime OkType(T)) { let value: T = val; };
+						return ok.{value : val};
+					};
+				};
+				let MakeErrFor: fn(E: comptime type) -> fn(E) -> comptime ErrType(E) = comptime fn(E) {
+					return fn(err_val: comptime E) -> comptime ErrType(E) {
+						let err: type = impl (comptime ErrType(E)) { let error: E = err_val; };
+						return err.{error : err_val};
+					};
+				};
+				let tp: type = comptime int;
+				let resTp: type = comptime Result(int, string);
+				let divide: fn(int, int) -> resTp = fn(a, b) {
+					return if (b == 0) {
+						let res: resTp = (comptime MakeErrFor(string))("Division by zero");
+						return res;
+					} else {
+						let res: resTp = (comptime MakeOkFor(tp))(a / b);
+						return res;
+					};
+				};
+				let Other: type = interface { let value: type = int; };
+				let o: Other = (comptime MakeOkFor(tp))(1);
+    	`,
+			expectedErr: "type error",
+		},
+		{
 			name: "Valid impl (interface)",
 			input: `
 				let obj: interface { let val: type = int; } = impl (interface { let val: type = int; }) { let val: int = 42; };

@@ -6,7 +6,7 @@ func TestArrays(t *testing.T) {
 	tests := []TestCase{
 		{"Valid empty array", "let x: [int] =[];", ""},
 		{"Valid int array", "let x: [int] = [1, 2, 3];", ""},
-		{"Mismatch element types", "let x: [int] = [1, true, 3];", "type error: array literal has elements of different types <int> & <bool>"},
+		{"Mismatch element types", "let x: [int] = [1, true, 3];", "type error: array literal has element of type <bool>, but expected <int>"},
 		{"Nested array", "let x: [[int]] = [[1, 2], [3]];", ""},
 	}
 	runTypeCheckerTests(t, tests)
@@ -15,8 +15,8 @@ func TestArrays(t *testing.T) {
 func TestHashMaps(t *testing.T) {
 	tests := []TestCase{
 		{"Valid int map", `let x: {string : int} = {"a": 1, "b": 2};`, ""},
-		{"Mismatch map keys", `let x: {string : int} = {"a": 1, true: 2};`, "type error: map literal has keys of different types"},
-		{"Mismatch map values", `let x: {string : int} = {"a": 1, "b": true};`, "type error: map literal has elements of different types"},
+		{"Mismatch map keys", `let x: {string : int} = {"a": 1, true: 2};`, "type error: map literal has key of type <bool>, but expected <string>"},
+		{"Mismatch map values", `let x: {string : int} = {"a": 1, "b": true};`, "type error: map literal has element of type <bool>, but expected <int>"},
 		{"Invalid map key type", `let x: {[int] : int} = {};`, "type error: cannot use type <[<int>]> for hash map key"},
 	}
 	runTypeCheckerTests(t, tests)
