@@ -32,6 +32,7 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 
 	expectedType := chk.resolveType(stmt.Type)
 
+	prevExpectedType := chk.curExpectedType
 	chk.curExpectedType = expectedType
 
 	chk.recordType(stmt.Name, expectedType)
@@ -143,7 +144,7 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 		chk.env.Set(stmt.Name.Value, expectedType, stmt.Name)
 	}
 
-	chk.curExpectedType = nil
+	chk.curExpectedType = prevExpectedType
 
 	return actualType
 }

@@ -15,23 +15,26 @@ func (chk *TypeChecker) checkCallExpression(expr ast.ExpressionNode) types.Type 
 		return &types.IllegalType{}
 	}
 
+	// предотвращает баг с одним аргументом func = fn(int) -> int ... x = func(),
+	// нет ошибки; проблема была в проверке BadExpression
+	if len(callExpr.Arguments) == 1 {
+		if _, isBad := callExpr.Arguments[0].(*ast.BadExpression); isBad {
+			callExpr.Arguments = callExpr.Arguments[:0]
+		}
+	}
+
 	switch callFuncType := rawCallType.(type) {
 	case *types.FuncType:
 		if len(callExpr.Arguments) != len(callFuncType.Params) {
-			// TODO: баг с одним аргументом func = fn(int) -> int ... x = func(), нет ошибки
-			// проблема в проверке BadExpression
-			if len(callFuncType.Params) != 0 {
-				chk.typeError(fmt.Sprintf(`wrong number of arguments for "%s"`, callExpr.Function.String()), expr)
-				return &types.IllegalType{}
-			} else {
-				if _, ok := callExpr.Arguments[0].(*ast.BadExpression); ok {
-					callExpr.Arguments = callExpr.Arguments[1:]
-				}
-			}
+			chk.typeError(fmt.Sprintf(`wrong number of arguments for "%s"`, callExpr.Function.String()), expr)
+			return &types.IllegalType{}
 		}
 
 		for i, arg := range callExpr.Arguments {
+			outerExpectedType := chk.curExpectedType
+			chk.curExpectedType = callFuncType.Params[i].Type
 			argType := chk.checkExpression(arg)
+			chk.curExpectedType = outerExpectedType
 
 			if !types.IsAssignable(callFuncType.Params[i].Type, argType) {
 				chk.typeError(fmt.Sprintf("wrong type for argument %d: %s in func call \" %s \"; expected %s",
@@ -145,8 +148,6 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 		}
 	}
 
-	oldExp := chk.curExpectedType
-
 	chk.curExpectedType = expectedFuncType.ReturnType
 
 	resFuncType.ReturnType = chk.checkBlockStatement(funLiteral.Body)
@@ -156,10 +157,6 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 			resFuncType.ReturnType.Signature(), expectedFuncType.ReturnType.Signature()), expr)
 		return &types.IllegalType{}
 	}
-
-	chk.curExpectedType = oldExp
-
-	// chk.env = chk.env.Outer
 
 	return resFuncType
 }

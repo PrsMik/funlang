@@ -66,33 +66,55 @@ func (chk *TypeChecker) checkArrayLiteral(expr ast.ExpressionNode) types.Type {
 	}
 
 	oldType := chk.curExpectedType
+	defer func() { chk.curExpectedType = oldType }()
 
-	expType, ok := chk.curExpectedType.(*types.ArrayType)
-	if ok {
+	var expectedElemType types.Type
+	// ожидается тип массива
+	if expType, ok := chk.curExpectedType.(*types.ArrayType); ok {
 		chk.curExpectedType = expType.ElementsType
-	}
-
-	firstArrLitType := chk.checkExpression(arrLit.Elements[0])
-
-	for _, param := range arrLit.Elements[1:] {
-		curParamType := chk.checkExpression(param)
-		if !types.Equals(firstArrLitType, curParamType) {
-			// if tp, ok := arrLit.Elements[index].(*ast.UnparsedNode); ok {
-
-			// }
-			chk.typeError(fmt.Sprintf("array literal has elements of different types %s & %s",
-				firstArrLitType.Signature(), curParamType.Signature()), expr)
-			return &types.IllegalType{}
+		if _, isIllegal := expType.ElementsType.(*types.IllegalType); !isIllegal {
+			expectedElemType = expType.ElementsType
 		}
 	}
 
-	chk.curExpectedType = oldType
+	// фактические типы элементов
+	elementTypes := make([]types.Type, len(arrLit.Elements))
+	for i, element := range arrLit.Elements {
+		elementTypes[i] = chk.checkExpression(element)
+	}
+
+	if expectedElemType != nil {
+		// тип элементов - ожидаемый тип
+		for i, elementType := range elementTypes {
+			if _, isIllegal := elementType.(*types.IllegalType); isIllegal {
+				// ошибка уже в элементе
+				return &types.IllegalType{}
+			}
+
+			if !types.IsAssignable(expectedElemType, elementType) {
+				chk.typeError(fmt.Sprintf("array literal has element of type %s, but expected %s",
+					elementType.Signature(), expectedElemType.Signature()), arrLit.Elements[i])
+				return &types.IllegalType{}
+			}
+		}
+
+		arrType.ElementsType = expectedElemType
+	} else {
+		// тип элементов - фактический тип
+		for _, curParamType := range elementTypes[1:] {
+			if !types.Equals(elementTypes[0], curParamType) {
+				chk.typeError(fmt.Sprintf("array literal has elements of different types %s & %s",
+					elementTypes[0].Signature(), curParamType.Signature()), expr)
+				return &types.IllegalType{}
+			}
+		}
+
+		arrType.ElementsType = elementTypes[0]
+	}
 
 	if _, ok := arrLit.Elements[0].(*ast.BadExpression); len(arrLit.Elements) == 1 && ok {
 		arrLit.Elements = arrLit.Elements[1:]
 	}
-
-	arrType.ElementsType = firstArrLitType
 
 	return arrType
 }
@@ -106,6 +128,8 @@ func (chk *TypeChecker) checkHashMapLiteral(expr ast.ExpressionNode) types.Type 
 	}
 
 	oldExpectedType := chk.curExpectedType
+	defer func() { chk.curExpectedType = oldExpectedType }()
+
 	var keyExpectedType types.Type = nil
 	var elemExpectedType types.Type = nil
 
@@ -114,16 +138,43 @@ func (chk *TypeChecker) checkHashMapLiteral(expr ast.ExpressionNode) types.Type 
 		elemExpectedType = tp.ElementType
 	}
 
+	useExpected := keyExpectedType != nil && elemExpectedType != nil
+	if _, isIllegal := keyExpectedType.(*types.IllegalType); isIllegal {
+		useExpected = false
+	}
+	if _, isIllegal := elemExpectedType.(*types.IllegalType); isIllegal {
+		useExpected = false
+	}
+
 	var firstHashMapKeyType types.Type = nil
 	var firstHashMapElementType types.Type = nil
 
 	for key, elem := range hashMapLiteral.Pairs {
+		if _, isBad := key.(*ast.BadExpression); isBad {
+			continue
+		}
 
 		chk.curExpectedType = keyExpectedType
 		curHashMapKeyType := chk.checkExpression(key)
 
 		chk.curExpectedType = elemExpectedType
 		curHashMapElementType := chk.checkExpression(elem)
+
+		if useExpected {
+			if !types.IsAssignable(keyExpectedType, curHashMapKeyType) {
+				chk.typeError(fmt.Sprintf("map literal has key of type %s, but expected %s",
+					curHashMapKeyType.Signature(), keyExpectedType.Signature()), key)
+				return &types.IllegalType{}
+			}
+
+			if !types.IsAssignable(elemExpectedType, curHashMapElementType) {
+				chk.typeError(fmt.Sprintf("map literal has element of type %s, but expected %s",
+					curHashMapElementType.Signature(), elemExpectedType.Signature()), elem)
+				return &types.IllegalType{}
+			}
+
+			continue
+		}
 
 		if firstHashMapKeyType == nil && firstHashMapElementType == nil {
 			firstHashMapKeyType = curHashMapKeyType
@@ -143,9 +194,13 @@ func (chk *TypeChecker) checkHashMapLiteral(expr ast.ExpressionNode) types.Type 
 		}
 	}
 
-	chk.curExpectedType = oldExpectedType
-	hashMapType.KeyType = firstHashMapKeyType
-	hashMapType.ElementType = firstHashMapElementType
+	if useExpected {
+		hashMapType.KeyType = keyExpectedType
+		hashMapType.ElementType = elemExpectedType
+	} else {
+		hashMapType.KeyType = firstHashMapKeyType
+		hashMapType.ElementType = firstHashMapElementType
+	}
 
 	return hashMapType
 }
