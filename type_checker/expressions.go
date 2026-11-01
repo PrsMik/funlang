@@ -135,12 +135,17 @@ func (chk *TypeChecker) checkInfixExpression(expr ast.ExpressionNode) types.Type
 func (chk *TypeChecker) checkComptimeExpression(expr ast.ExpressionNode) types.Type {
 	comptimeExpr := expr.(*ast.ComptimeExpression)
 
+	errorsBefore := len(chk.errors)
 	valType := chk.checkExpression(comptimeExpr.Value)
 	if _, isIllegal := valType.(*types.IllegalType); isIllegal {
 		return valType
 	}
 
-	val := evaluator.Eval(comptimeExpr.Value, chk.comptimeEnv, chk.Info)
+	if len(chk.errors) > errorsBefore {
+		return &types.IllegalType{}
+	}
+
+	val := chk.evalComptime(comptimeExpr.Value)
 	if val == nil || val.Type() == object.ERROR_OBJ {
 		errMsg := "unknown comptime error"
 		if errObj, ok := val.(*object.Error); ok {
@@ -163,4 +168,14 @@ func (chk *TypeChecker) checkComptimeExpression(expr ast.ExpressionNode) types.T
 	}
 
 	return valType
+}
+
+func (chk *TypeChecker) evalComptime(node ast.Node) (result object.Object) {
+	defer func() {
+		if r := recover(); r != nil {
+			result = &object.Error{Message: fmt.Sprintf("internal error during comptime evaluation: %v", r)}
+		}
+	}()
+
+	return evaluator.Eval(node, chk.comptimeEnv, chk.Info)
 }

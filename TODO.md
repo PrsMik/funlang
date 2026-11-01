@@ -2,7 +2,7 @@
 2. В функции T стирается в MetaType (resolveType, checkFunctionLiteral, checkComptimeExpression).
 3. ~~Утечка имён параметров функции во внешнее окружение.~~
 4. ~~Неправильные восстановления curExpectedType в чекере.~~
-5. Неправильная логика проверки ошибок во время comptime в checkComptimeExpression.
+5. ~~Неправильная логика проверки ошибок во время comptime в checkComptimeExpression.~~
 6. Типы массивов и мап с параметрами type берутся из чекера.
 7. Проблемы с окружением в evalTypeField, evalTypeAccessExpression и в операторах | и &, if/switch.
 8. evalInterfaceLiteral исполняет let в окружении вызывающего.
@@ -14,4 +14,4 @@
 14. checkImplLiteral пишет в Fields фактический тип, а не объявленный
 15. isImplementingType для | пишет ошибки левой ветки, даже если подойдёт правая.
 16. TailCall возвращается из if/switch.
-17. push требует строгого совпадения типов.
+17. ~~push требует строгого совпадения типов.~~
