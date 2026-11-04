@@ -12,7 +12,7 @@ endif
 
 all: build
 
-build: kill
+build: clean
 	go build -o $(BINARY_NAME) .
 
 kill:

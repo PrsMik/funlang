@@ -16,9 +16,17 @@ func (prs *Parser) switchToTypePrefixes() {
 
 func (prs *Parser) convertToTypeContext(fn parsExpr) parsExpr {
 	return func(precedence int) ast.ExpressionNode {
+		savedPrefixFns := prs.prefixParseFns
+
+		typePrefixFns := make(map[token.TokenType]prefixParseFn, len(savedPrefixFns))
+		for tokenType, parseFn := range savedPrefixFns {
+			typePrefixFns[tokenType] = parseFn
+		}
+
+		prs.prefixParseFns = typePrefixFns
 		prs.switchToTypePrefixes()
 
-		defer prs.registerPrefixParseFns()
+		defer func() { prs.prefixParseFns = savedPrefixFns }()
 
 		res := fn(precedence)
 

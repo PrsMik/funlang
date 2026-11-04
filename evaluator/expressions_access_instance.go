@@ -11,6 +11,10 @@ func evalMemberAccessExpression(node *ast.MemberAccessExpression, env *object.En
 	info *types.Info) object.Object {
 
 	left := Eval(node.Left, env, info)
+	if isError(left) {
+		return left
+	}
+
 	fieldName := node.Property.Value
 
 	switch leftObj := left.(type) {
@@ -59,6 +63,10 @@ func evalImplInstantiationExpression(node *ast.ImplInstantiationExpression, env 
 	info *types.Info) object.Object {
 
 	left := Eval(node.Left, env, info)
+	if isError(left) {
+		return left
+	}
+
 	switch leftObj := left.(type) {
 	case *object.TypeObject:
 		fields, ok := node.Fields.(*ast.HashMapLiteral)
@@ -100,7 +108,7 @@ func evalFieldsInstantation(implTypeObject *object.TypeObject,
 		keyIndent, ok := keyNode.(*ast.Identifier)
 		if !ok {
 			return &object.Error{Message: fmt.Sprintf("runtime error. field key %s is not an identifier",
-				keyIndent.String())}
+				keyNode.String())}
 		}
 
 		elemVal := Eval(elemExpr, env, info)

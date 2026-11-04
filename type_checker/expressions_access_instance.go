@@ -107,18 +107,27 @@ func (chk *TypeChecker) checkFieldsInstantation(implType *types.ImplType,
 	fields *ast.HashMapLiteral, node ast.ExpressionNode) {
 
 	for key, elem := range fields.Pairs {
-		instElementType := chk.checkExpression(elem)
+		if _, isBad := key.(*ast.BadExpression); isBad {
+			continue
+		}
 
 		keyIndent, ok := key.(*ast.Identifier)
 		if !ok {
-			chk.typeError(fmt.Sprintf("%s is not an identifier", keyIndent.String()), node)
+			chk.typeError(fmt.Sprintf("%s is not an identifier", key.String()), node)
 			return
 		}
 
 		fieldType, ok := chk.getFieldType(implType, keyIndent.Value, node)
 		if !ok {
 			chk.typeError(fmt.Sprintf("type %s has no field named *%s*", implType.Signature(), keyIndent.Value), node)
+			chk.checkExpression(elem)
+			continue
 		}
+
+		outerExpectedType := chk.curExpectedType
+		chk.curExpectedType = fieldType
+		instElementType := chk.checkExpression(elem)
+		chk.curExpectedType = outerExpectedType
 
 		if !types.IsAssignable(fieldType, instElementType) {
 			chk.typeError(fmt.Sprintf(`type mismatch in instatation expression of %s between field named *%s* with type %s, and value %s with type %s`,

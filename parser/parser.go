@@ -56,6 +56,8 @@ type Parser struct {
 	prefixParseFns map[token.TokenType]prefixParseFn
 	infixParseFns  map[token.TokenType]infixParseFn
 
+	exprPrefixFns map[token.TokenType]prefixParseFn
+
 	Comments []token.Token
 }
 
@@ -91,6 +93,8 @@ func (prs *Parser) registerPrefixParseFns() {
 
 	prs.registerPrefix(token.INTERFACE, prs.parseInterfaceLiteral)
 	prs.registerPrefix(token.IMPL, prs.parseImplLiteral)
+
+	prs.exprPrefixFns = prs.prefixParseFns
 }
 
 func (prs *Parser) registerInfixParseFns() {

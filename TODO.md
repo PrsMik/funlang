@@ -6,8 +6,8 @@
 6. Типы массивов и мап с параметрами type берутся из чекера.
 7. Проблемы с окружением в evalTypeField, evalTypeAccessExpression и в операторах | и &, if/switch.
 8. evalInterfaceLiteral исполняет let в окружении вызывающего.
-9. Ошибка в convertToTypeContext с восстановлением таблицы функций.
-10. Паника на keyIndent.String() в checkFieldsInstantation и в evalFieldsInstantation.
+9. ~~Ошибка в convertToTypeContext с восстановлением таблицы функций.~~
+10. ~~Паника на keyIndent.String() в checkFieldsInstantation и в evalFieldsInstantation.~~
 11. ~~Баг в checkCallExpression при вызове функции без параметров с аргументами.~~
 12. В IsAssignable: объединения сравниваются позиционно, нет ветки для ожидаемого & с не-& значением, неверно сравниваются параметры функций.
 13.  Сужение res до типа из case не проверяет может ли тип быть вариантом объединения.

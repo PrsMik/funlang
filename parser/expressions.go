@@ -96,5 +96,8 @@ func (prs *Parser) parseComptimeExpression() ast.ExpressionNode {
 	expr := &ast.ComptimeExpression{Token: prs.curToken}
 	prs.nextToken()
 	expr.Value = prs.parseExpression(LOWEST)
+	if expr.Value == nil {
+		return nil
+	}
 	return expr
 }

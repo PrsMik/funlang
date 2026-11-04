@@ -110,6 +110,10 @@ func (prs *Parser) parseReturnStatement() *ast.ReturnStatement {
 }
 
 func (prs *Parser) parseBlockStatement() *ast.BlockStatement {
+	savedPrefixFns := prs.prefixParseFns
+	prs.prefixParseFns = prs.exprPrefixFns
+	defer func() { prs.prefixParseFns = savedPrefixFns }()
+
 	block := &ast.BlockStatement{Token: prs.curToken}
 	block.Statements = []ast.StatementNode{}
 
