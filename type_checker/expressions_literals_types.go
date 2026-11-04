@@ -79,6 +79,10 @@ func (chk *TypeChecker) checkImplLiteral(expr ast.ExpressionNode) types.Type {
 			continue
 		}
 
+		if symbol, found := chk.env.Get(letStmt.Name.Value); found && symbol.SymbolType != nil {
+			fieldType = symbol.SymbolType
+		}
+
 		if _, exists := implType.Fields[letStmt.Name.Value]; exists {
 			chk.typeError(fmt.Sprintf("duplicate field '%s' in impl", letStmt.Name.Value), letStmt)
 			continue
@@ -93,7 +97,7 @@ func (chk *TypeChecker) checkImplLiteral(expr ast.ExpressionNode) types.Type {
 
 	if targetType != nil {
 		if !chk.isImplementingType(targetType, implType, expr) {
-			chk.typeError("impl does not implement requiered types", expr)
+			chk.typeError("impl does not implement required types", expr)
 		}
 	}
 
@@ -123,8 +127,13 @@ func (chk *TypeChecker) isImplementingType(targetType types.Type, implType *type
 			chk.isImplementingType(rawType.Right, implType, node)
 
 	case *types.UnionType:
-		return chk.isImplementingType(rawType.Left, implType, node) ||
-			chk.isImplementingType(rawType.Right, implType, node)
+		errorsBefore := len(chk.errors)
+		if chk.isImplementingType(rawType.Left, implType, node) ||
+			chk.isImplementingType(rawType.Right, implType, node) {
+			chk.errors = chk.errors[:errorsBefore]
+			return true
+		}
+		return false
 
 	case *types.TypeType:
 		return chk.isImplementingType(rawType.Underlying, implType, node)

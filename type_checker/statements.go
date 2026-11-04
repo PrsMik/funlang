@@ -20,6 +20,7 @@ func (chk *TypeChecker) checkStatement(stmt ast.StatementNode) types.Type {
 	return &types.IllegalType{}
 }
 
+// возвращает ФАКТИЧЕСКИЙ тип (справа от =)
 func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 	if stmt == nil {
 		return &types.IllegalType{}
@@ -146,6 +147,7 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 
 	chk.curExpectedType = prevExpectedType
 
+	// почему не expected?
 	return actualType
 }
 
