@@ -634,6 +634,25 @@ func TestTypeNarrowing(t *testing.T) {
 			expectedErr: "",
 		},
 		{
+			name: "Invalid narrowing in switch",
+			input: `
+				let res: int | bool  = 5;
+				let boolArr: type = [bool];
+				let final: int = switch res.(type) {
+					case int | string | boolArr { 
+						return res + 1; 
+					}
+					case [int] { 
+						return len(res); 
+					}
+					default { 
+						return 0; 
+					}
+				};
+			`,
+			expectedErr: "type error",
+		},
+		{
 			name: "Invalid operation in narrowed context (catches type error correctly)",
 			input: `
 				let res: int | string = 5;

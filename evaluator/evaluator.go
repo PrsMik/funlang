@@ -40,7 +40,15 @@ func Eval(node ast.Node, env *object.Environment, info *types.Info) object.Objec
 			return &object.ReturnValue{Value: &object.TailCall{Function: function, Arguments: args}}
 		}
 
-		val := Eval(node.Value, env, info)
+		var val object.Object
+		switch valueNode := node.Value.(type) {
+		case *ast.IfExpression:
+			val = evalIfExpressionTail(valueNode, env, info)
+		case *ast.SwitchExpression:
+			val = evalSwitchExpressionTail(valueNode, env, info)
+		default:
+			val = Eval(node.Value, env, info)
+		}
 		if isError(val) {
 			return val
 		}

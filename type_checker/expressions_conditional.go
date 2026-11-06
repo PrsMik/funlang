@@ -122,6 +122,15 @@ func (chk *TypeChecker) checkCaseBlocks(switchExpr *ast.SwitchExpression, valTyp
 			if _, isIllegal := patternType.(*types.IllegalType); isIllegal {
 				continue
 			}
+
+			if typeOfValue, ok := valType.(*types.TypeType); ok {
+				if staticUnion, isUnion := typeOfValue.Underlying.(*types.UnionType); isUnion {
+					if !types.IsAssignable(staticUnion, patternType) && !types.IsAssignable(patternType, staticUnion) {
+						chk.typeError(fmt.Sprintf("case type %s can never match a value of type %s",
+							patternType.Signature(), staticUnion.Signature()), caseBlock.Pattern)
+					}
+				}
+			}
 		} else {
 			oldExp := chk.curExpectedType
 			chk.curExpectedType = valType
