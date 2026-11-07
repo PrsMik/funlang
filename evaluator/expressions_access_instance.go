@@ -5,6 +5,7 @@ import (
 	"funlang/ast"
 	"funlang/object"
 	"funlang/types"
+	"sort"
 )
 
 func evalMemberAccessExpression(node *ast.MemberAccessExpression, env *object.Environment,
@@ -31,6 +32,16 @@ func evalMemberAccessExpression(node *ast.MemberAccessExpression, env *object.En
 	return &object.Error{Message: "runtime error. left operand is not a type or instance"}
 }
 
+func implEnv(implType *types.ImplType, objEnv *object.Environment, fallback *object.Environment) *object.Environment {
+	if typeEnv, ok := implType.Env.(*object.Environment); ok && typeEnv != nil {
+		return typeEnv
+	}
+	if objEnv != nil {
+		return objEnv
+	}
+	return fallback
+}
+
 func evalTypeField(typeObj *object.TypeObject,
 	fieldName string,
 	env *object.Environment,
@@ -43,7 +54,7 @@ func evalTypeField(typeObj *object.TypeObject,
 		}
 	case *types.ImplType:
 		if defaultExpr, ok := targetType.FieldsDefaultValues[fieldName]; ok {
-			return Eval(defaultExpr, env, info)
+			return Eval(defaultExpr, implEnv(targetType, typeObj.Env, env), info)
 		}
 	case *types.IntersectionType:
 		leftObj := &object.TypeObject{TypeValue: targetType.Left, Env: typeObj.Env}
@@ -91,42 +102,79 @@ func evalFieldsInstantation(implTypeObject *object.TypeObject,
 
 	instanceObject := &object.ImplInstance{TypeObj: implTypeObject, Fields: make(map[string]object.Object)}
 
-	evalEnv := implTypeObject.Env
-	if evalEnv == nil {
-		evalEnv = env
-	}
-
-	for key, elemExpr := range implType.FieldsDefaultValues {
-		val := Eval(elemExpr, evalEnv, info)
-		if isError(val) {
-			return val
-		}
-		instanceObject.Fields[key] = val
-	}
-
+	provided := make(map[string]ast.ExpressionNode, len(fields.Pairs))
 	for keyNode, elemExpr := range fields.Pairs {
-		keyIndent, ok := keyNode.(*ast.Identifier)
-		if !ok {
+		if _, isBad := keyNode.(*ast.BadExpression); isBad {
+			continue
+		}
+
+		keyIdent, isIdent := keyNode.(*ast.Identifier)
+		if !isIdent {
 			return &object.Error{Message: fmt.Sprintf("runtime error. field key %s is not an identifier",
 				keyNode.String())}
 		}
 
-		elemVal := Eval(elemExpr, env, info)
+		provided[keyIdent.Value] = elemExpr
+	}
 
-		if isError(elemVal) {
-			return elemVal
+	defaultsEnv := object.NewEnclosedEnvironment(implEnv(implType, implTypeObject.Env, env))
+
+	for _, fieldName := range implFieldsOrder(implType) {
+		var val object.Object
+		if elemExpr, isProvided := provided[fieldName]; isProvided {
+			val = Eval(elemExpr, env, info)
+		} else {
+			val = Eval(implType.FieldsDefaultValues[fieldName], defaultsEnv, info)
 		}
 
-		instanceObject.Fields[keyIndent.Value] = elemVal
+		if isError(val) {
+			return val
+		}
+
+		instanceObject.Fields[fieldName] = val
+		defaultsEnv.Set(fieldName, val)
+	}
+
+	// если дополнительные поля каким-то образом прошли проверку чекера
+	extraNames := make([]string, 0)
+	for name := range provided {
+		if _, exists := instanceObject.Fields[name]; !exists {
+			extraNames = append(extraNames, name)
+		}
+	}
+	sort.Strings(extraNames)
+
+	for _, name := range extraNames {
+		val := Eval(provided[name], env, info)
+		if isError(val) {
+			return val
+		}
+		instanceObject.Fields[name] = val
 	}
 
 	return instanceObject
+}
+
+func implFieldsOrder(implType *types.ImplType) []string {
+	if len(implType.FieldsOrder) == len(implType.FieldsDefaultValues) {
+		return implType.FieldsOrder
+	}
+
+	names := make([]string, 0, len(implType.FieldsDefaultValues))
+	for name := range implType.FieldsDefaultValues {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	return names
 }
 
 func evalTypeAccessExpression(node *ast.TypeAccessExpression, env *object.Environment,
 	info *types.Info) object.Object {
 
 	left := Eval(node.Left, env, info)
+	if isError(left) {
+		return left
+	}
 
 	tpVal := object.GetTypeFromObject(left)
 	if _, isIllegal := tpVal.(*types.IllegalType); isIllegal {

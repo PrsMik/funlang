@@ -89,6 +89,7 @@ func (chk *TypeChecker) checkImplLiteral(expr ast.ExpressionNode) types.Type {
 		}
 
 		implType.Fields[letStmt.Name.Value] = fieldType
+		implType.FieldsOrder = append(implType.FieldsOrder, letStmt.Name.Value)
 
 		implType.FieldsDefaultValues[letStmt.Name.Value] = letStmt.Value
 	}

@@ -62,7 +62,7 @@ func TestFirstClassTypes(t *testing.T) {
 		},
 		{
 			name: "Function returning an interface (Generics foundation) 2",
-			input: `let inter: type = interface { let x: type = int; };
+			input: `let inter: type = comptime interface { let x: type = int; };
 					let im: type = comptime impl (inter) { let x: int = 42; };
 					let MakeType: fn() -> inter = comptime fn() { return im; };
 					let x: comptime MakeType() = im.{};`,
@@ -70,7 +70,7 @@ func TestFirstClassTypes(t *testing.T) {
 		},
 		{
 			name: "Function returning an interface (Generics foundation) 2.1",
-			input: `let inter: type = interface { let x: type = int; };
+			input: `let inter: type = comptime interface { let x: type = int; };
 					let im: type = comptime impl (inter) { let x: int = 42; };
 					let MakeType: fn() -> inter = comptime fn() { return im; };
 					let mT: type = comptime MakeType(); 

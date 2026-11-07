@@ -161,6 +161,7 @@ func (t *FuncType) Signature() string {
 
 type InterfaceType struct {
 	Name   string
+	Decl   ast.Node
 	Fields map[string]Type
 }
 
@@ -170,9 +171,12 @@ func (t *InterfaceType) isComparable()     {}
 
 type ImplType struct {
 	Name                string
+	Decl                ast.Node
 	ImplementedType     Type
 	Fields              map[string]Type
+	Env                 any
 	FieldsDefaultValues map[string]ast.ExpressionNode
+	FieldsOrder         []string
 }
 
 func (t *ImplType) isType() {}
