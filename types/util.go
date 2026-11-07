@@ -7,19 +7,19 @@ func IsAssignable(expected, actual Type) bool {
 		return true
 	}
 
+	if actualUnion, ok := actual.(*UnionType); ok {
+		return IsAssignable(expected, actualUnion.Left) && IsAssignable(expected, actualUnion.Right)
+	}
+
 	if expectedUnion, ok := expected.(*UnionType); ok {
-		if actualUnion, ok := actual.(*UnionType); ok {
-			return IsAssignable(expectedUnion.Left, actualUnion.Left) &&
-				IsAssignable(expectedUnion.Right, actualUnion.Right)
-		}
 		return IsAssignable(expectedUnion.Left, actual) || IsAssignable(expectedUnion.Right, actual)
 	}
 
+	if expectedIntersection, ok := expected.(*IntersectionType); ok {
+		return IsAssignable(expectedIntersection.Left, actual) && IsAssignable(expectedIntersection.Right, actual)
+	}
+
 	if actualIntersection, ok := actual.(*IntersectionType); ok {
-		if exprectedIntersection, ok := expected.(*IntersectionType); ok {
-			return IsAssignable(exprectedIntersection.Left, actualIntersection.Left) &&
-				IsAssignable(exprectedIntersection.Right, actualIntersection.Right)
-		}
 		return IsAssignable(expected, actualIntersection.Left) || IsAssignable(expected, actualIntersection.Right)
 	}
 
@@ -222,7 +222,8 @@ func EqualsSoft(rawLeftType, rawRightType Type) bool {
 		}
 
 		for i := range leftType.Params {
-			if !IsAssignable(leftType.Params[i].Type, rightType.Params[i].Type) {
+			// подставляемая функция должна иметь такой же или более широкий тип
+			if !IsAssignable(rightType.Params[i].Type, leftType.Params[i].Type) {
 				return false
 			}
 		}

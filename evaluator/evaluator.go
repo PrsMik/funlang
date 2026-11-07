@@ -74,14 +74,7 @@ func Eval(node ast.Node, env *object.Environment, info *types.Info) object.Objec
 	case *ast.StringLiteral:
 		return &object.String{Value: node.Value}
 	case *ast.ArrayLiteral:
-		elements := evalExpressions(node.Elements, env, info)
-		if len(elements) == 1 && isError(elements[0]) {
-			return elements[0]
-		}
-		return &object.Array{
-			Elements: elements,
-			TypeObj:  &object.TypeObject{TypeValue: info.TypesInfo[node], Env: env}}
-
+		return evalArrayLiteral(node, env, info)
 	case *ast.HashMapLiteral:
 		return evalHashMapLiteral(node, env, info)
 	// лиетралы типов
