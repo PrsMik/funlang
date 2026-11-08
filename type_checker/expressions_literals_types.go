@@ -11,6 +11,7 @@ func (chk *TypeChecker) checkInterfaceLiteral(expr ast.ExpressionNode) types.Typ
 
 	interfaceType := &types.InterfaceType{
 		Name:   "",
+		Decl:   interfaceLiteral,
 		Fields: make(map[string]types.Type),
 	}
 
@@ -59,6 +60,7 @@ func (chk *TypeChecker) checkImplLiteral(expr ast.ExpressionNode) types.Type {
 
 	implType := &types.ImplType{
 		Name:                "",
+		Decl:                implLit,
 		ImplementedType:     targetType,
 		FieldsDefaultValues: make(map[string]ast.ExpressionNode),
 		Fields:              make(map[string]types.Type),

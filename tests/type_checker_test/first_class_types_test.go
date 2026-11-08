@@ -91,6 +91,16 @@ func TestFirstClassTypes(t *testing.T) {
 			expectedErr: "",
 		},
 		{
+			name: "Bad functions with typed params (Generics foundation) 3.1",
+			input: `let bad: fn(T: type, U: type, x: T) -> U = comptime fn(T, U, x) {
+						return x;
+					};
+					let bad2: fn(T: type, x: T) -> T = comptime fn(T, x) {
+						return int;
+					};`,
+			expectedErr: "type error",
+		},
+		{
 			name: "Generics interface",
 			input: `let OkType: fn(T: type) -> type = comptime fn(T) {
 						return interface{let value: type = T;};
@@ -294,14 +304,16 @@ func TestStructuralTyping(t *testing.T) {
 		{
 			name: "Valid impl (interface)",
 			input: `
-				let obj: interface { let val: type = int; } = impl (interface { let val: type = int; }) { let val: int = 42; };
+				let myIface: type = interface { let val: type = int; };
+				let obj: myIface = impl (myIface) { let val: int = 42; };
 			`,
 			expectedErr: "",
 		},
 		{
 			name: "Valid impl (empty interface)",
 			input: `
-				let obj: interface {} = impl (interface {let val: type = int;}) { let val: int = 42; };
+				let myAny: type = interface {};
+				let obj: myAny = impl (interface {let val: type = int;} & myAny) { let val: int = 42; };
 			`,
 			expectedErr: "",
 		},
@@ -475,14 +487,6 @@ func TestMemberAccess(t *testing.T) {
 			expectedErr: "",
 		},
 		{
-			name: "Valid member access (anonymous interfaces)",
-			input: `
-				let obj: interface { let val: type = int; } = impl (interface { let val: type = int; }) { let val: int = 42; };
-				let x: int = obj.val;
-			`,
-			expectedErr: "",
-		},
-		{
 			name: "Valid member access",
 			input: `
 				let x: int = ((impl (interface { let val: type = int; }) { let val: int = 42; }).{}).val;
@@ -608,6 +612,50 @@ func TestSwitchExpression(t *testing.T) {
 				};
 			`,
 			expectedErr: "switch must return some value in case blocks",
+		},
+		{
+			name: "Invalid switch (unreachable)",
+			input: `
+				let OkType: fn(T: type) -> type = comptime fn(T) {
+					return interface { let value: type = T; };
+				};
+				let ErrType: fn(E: type) -> type = comptime fn(E) {
+					return interface { let error: type = E; };
+				};
+				let Result: fn(T: type, E: type) -> type = comptime fn(T, E) {
+					return OkType(T) | ErrType(E);
+				};
+				let MakeOkFor: fn(T: comptime type) -> fn(T) -> comptime OkType(T) = comptime fn(T) {
+					return fn(val: comptime T) -> comptime OkType(T) {
+						let ok: type = impl (comptime OkType(T)) { let value: T = val; };
+						return ok.{value : val};
+					};
+				};
+				let MakeErrFor: fn(E: comptime type) -> fn(E) -> comptime ErrType(E) = comptime fn(E) {
+					return fn(err_val: comptime E) -> comptime ErrType(E) {
+						let err: type = impl (comptime ErrType(E)) { let error: E = err_val; };
+						return err.{error : err_val};
+					};
+				};
+				let tp: type = comptime int;
+				let resTp: type = comptime Result(int, string);
+				let divide: fn(int, int) -> resTp = fn(a, b) {
+					return if (b == 0) {
+						let res: resTp = (comptime MakeErrFor(string))("Division by zero");
+						return res;
+					} else {
+						let res: resTp = (comptime MakeOkFor(tp))(a / b);
+						return res;
+					};
+				};
+
+				let res: comptime Result(int, string) = divide(10, 2);
+				let bad: string = switch res.(type) {
+					case comptime ErrType(int) { return "x"; }
+					default { return ""; }
+				};
+			`,
+			expectedErr: "type error",
 		},
 	}
 	runTypeCheckerTests(t, tests)

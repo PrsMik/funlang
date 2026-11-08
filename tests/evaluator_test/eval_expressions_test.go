@@ -178,10 +178,25 @@ func TestEvalSwitchExpressionValues(t *testing.T) {
 		{
 			input: `
 			let tp: type = int;
-			let flag: type = interface { let x: type = int; };
+			let iface1: type = interface { let x: type = int; };
+			let iface2: type = interface { let x: type = int; };
+			let flag: type = iface1;
 			return switch flag {
-				case interface { let x: type = int; } { return 0; }
-				case interface { let x: type = string; } { return 1; }
+				case iface2 { return 1; }
+				case iface1 { return 3; }
+				default { return -1; }
+			};`,
+			expected: 3,
+		},
+		{
+			input: `
+			let tp: type = int;
+			let impl1: type = impl { let x: type = int; };
+			let impl2: type = impl { let x: type = int; };
+			let flag: type = impl1;
+			return switch flag {
+				case impl1 { return 0; }
+				case impl2 { return 1; }
 				default { return -1; }
 			};`,
 			expected: 0,
@@ -189,21 +204,13 @@ func TestEvalSwitchExpressionValues(t *testing.T) {
 		{
 			input: `
 			let tp: type = int;
-			let flag: type = impl { let x: type = int; };
+			let impl1: type = impl { let x: type = int; };
+			let impl2: type = impl { let x: type = string; };
+			let impl3: type = impl { let x: type = [string]; };
+			let flag: type = impl1;
 			return switch flag {
-				case impl { let x: type = int; } { return 0; }
-				case impl { let x: type = string; } { return 1; }
-				default { return -1; }
-			};`,
-			expected: 0,
-		},
-		{
-			input: `
-			let tp: type = int;
-			let flag: type = impl { let x: type = string; };
-			return switch flag {
-				case impl { let x: type = int; } | impl { let x: type = string; } { return 2; }
-				case impl { let x: type = [string]; } { return 1; }
+				case impl1 | impl2 { return 2; }
+				case impl3 { return 1; }
 				default { return -1; }
 			};`,
 			expected: 2,
@@ -211,10 +218,13 @@ func TestEvalSwitchExpressionValues(t *testing.T) {
 		{
 			input: `
 			let tp: type = int;
-			let flag: type = impl { let x: type = string; };
+			let impl1: type = impl { let x: type = int; };
+			let impl2: type = impl { let x: type = string; };
+			let impl3: type = impl { let x: type = [string]; };
+			let flag: type = impl1;
 			return switch flag {
-				case impl { let x: type = int; } & impl { let x: type = string; } { return 2; }
-				case impl { let x: type = [string]; } { return 1; }
+				case impl1 & impl2 { return 2; }
+				case impl3 { return 1; }
 				default { return -1; }
 			};`,
 			expected: -1,
@@ -240,10 +250,15 @@ func TestEvalSwitchExpressionValues(t *testing.T) {
 		},
 		{
 			input: `
-			return switch ((impl { let x: type = string; }).{}).(type) {
-				case impl { let x: type = string; } { return 1; }
-				case impl { let x: type = int; } { return 2; }
-				case impl { let x: type = [string]; } { return 3; }
+			let iface: type = interface { let x: type = type; };
+			let impl1: type = impl (iface) { let x: type = string; };
+			let impl2: type = impl (iface) { let x: type = int; };
+			let impl3: type = impl (iface) { let x: type = [string]; };
+			let flag: iface = impl1.{};
+			return switch flag.(type) {
+				case impl1 { return 1; }
+				case impl2 { return 2; }
+				case impl3 { return 3; }
 				default { return -1; }
 			};`,
 			expected: 1,

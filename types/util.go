@@ -104,46 +104,14 @@ func Equals(rawLeftType, rawRightType Type) bool {
 			return false
 		}
 
-		if leftType.Name != "" && rightType.Name != "" {
-			return leftType.Name == rightType.Name
-		}
-
-		// if len(leftType.Fields) != len(rightType.Fields) {
-		// 	return false
-		// }
-
-		for leftFieldName, leftFieldType := range leftType.Fields {
-			rightFieldType, exists := rightType.Fields[leftFieldName]
-			if !exists {
-				return false
-			}
-			if !Equals(leftFieldType, rightFieldType) {
-				return false
-			}
-		}
-
-		return true
+		return sameInterface(leftType, rightType)
 	case *ImplType:
 		rightType, ok := rawRightType.(*ImplType)
 		if !ok {
 			return false
 		}
 
-		if leftType.ImplementedType != nil && rightType.ImplementedType != nil {
-			return Equals(leftType.ImplementedType, rightType.ImplementedType)
-		}
-
-		for leftFieldName, leftFieldType := range leftType.Fields {
-			rightFieldType, exists := rightType.Fields[leftFieldName]
-			if !exists {
-				return false
-			}
-			if !Equals(leftFieldType, rightFieldType) {
-				return false
-			}
-		}
-
-		return true
+		return sameImpl(leftType, rightType)
 
 	case *UnionType:
 		rightType, ok := rawRightType.(*UnionType)
@@ -235,46 +203,14 @@ func EqualsSoft(rawLeftType, rawRightType Type) bool {
 			return false
 		}
 
-		if leftType.Name != "" && rightType.Name != "" {
-			return leftType.Name == rightType.Name
-		}
-
-		// if len(leftType.Fields) != len(rightType.Fields) {
-		// 	return false
-		// }
-
-		for leftFieldName, leftFieldType := range leftType.Fields {
-			rightFieldType, exists := rightType.Fields[leftFieldName]
-			if !exists {
-				return false
-			}
-			if !Equals(leftFieldType, rightFieldType) {
-				return false
-			}
-		}
-
-		return true
+		return sameInterface(leftType, rightType)
 	case *ImplType:
 		rightType, ok := rawRightType.(*ImplType)
 		if !ok {
 			return false
 		}
 
-		if leftType.ImplementedType != nil && rightType.ImplementedType != nil {
-			return Equals(leftType.ImplementedType, rightType.ImplementedType)
-		}
-
-		for leftFieldName, leftFieldType := range leftType.Fields {
-			rightFieldType, exists := rightType.Fields[leftFieldName]
-			if !exists {
-				return false
-			}
-			if !Equals(leftFieldType, rightFieldType) {
-				return false
-			}
-		}
-
-		return true
+		return sameImpl(leftType, rightType)
 
 	case *UnionType:
 		rightType, ok := rawRightType.(*UnionType)
@@ -295,4 +231,43 @@ func EqualsSoft(rawLeftType, rawRightType Type) bool {
 	default:
 		return false
 	}
+}
+
+func sameInterface(left, right *InterfaceType) bool {
+	if left == right {
+		return true
+	}
+	if left.Decl == nil || right.Decl == nil || left.Decl != right.Decl {
+		return false
+	}
+	return sameFields(left.Fields, right.Fields)
+}
+
+func sameImpl(left, right *ImplType) bool {
+	if left == right {
+		return true
+	}
+	if left.Decl == nil || right.Decl == nil || left.Decl != right.Decl {
+		return false
+	}
+	if (left.ImplementedType == nil) != (right.ImplementedType == nil) {
+		return false
+	}
+	if left.ImplementedType != nil && !Equals(left.ImplementedType, right.ImplementedType) {
+		return false
+	}
+	return sameFields(left.Fields, right.Fields)
+}
+
+func sameFields(left, right map[string]Type) bool {
+	if len(left) != len(right) {
+		return false
+	}
+	for name, lt := range left {
+		rt, ok := right[name]
+		if !ok || !Equals(lt, rt) {
+			return false
+		}
+	}
+	return true
 }
