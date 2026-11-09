@@ -41,6 +41,8 @@ func evalHashMapType(node *ast.HashMapType, env *object.Environment, info *types
 }
 
 func evalFunctionType(node *ast.FunctionType, env *object.Environment, info *types.Info) object.Object {
+	sigEnv := object.NewEnclosedEnvironment(env)
+
 	params := make([]types.FuncParam, len(node.ParamsTypes))
 	for i, pTypeNode := range node.ParamsTypes {
 		pObj := Eval(pTypeNode, env, info)
@@ -50,7 +52,14 @@ func evalFunctionType(node *ast.FunctionType, env *object.Environment, info *typ
 		if tObj, ok := pObj.(*object.TypeObject); ok {
 			params[i] = types.FuncParam{Type: tObj.TypeValue}
 			if i < len(node.Parameters) && node.Parameters[i] != nil {
-				params[i].Name = node.Parameters[i].Value
+				name := node.Parameters[i].Value
+				params[i].Name = name
+
+				if types.EqualsSoft(types.MetaType, tObj.TypeValue) {
+					tparam := &types.TypeParam{Name: name}
+					params[i].TypeParam = tparam
+					sigEnv.Set(name, &object.TypeObject{TypeValue: tparam})
+				}
 			}
 		} else {
 			return &object.Error{Message: "runtime error: parameter is not a type"}

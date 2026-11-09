@@ -1,9 +1,9 @@
 1. ~~Убрать структрную типизацию в types/util.go: Equals/EqualsSoft для InterfaceType и ImplType.~~
-2. В функции T стирается в MetaType (resolveType, checkFunctionLiteral, checkComptimeExpression).
+2. ~~В функции T стирается в MetaType (resolveType, checkFunctionLiteral, checkComptimeExpression).~~
 3. ~~Утечка имён параметров функции во внешнее окружение.~~
 4. ~~Неправильные восстановления curExpectedType в чекере.~~
 5. ~~Неправильная логика проверки ошибок во время comptime в checkComptimeExpression.~~
-6. Типы массивов и мап с параметрами type берутся из чекера.
+6. ~~Типы массивов и мап с параметрами type берутся из чекера.~~
 7. ~~Проблемы с окружением в evalTypeField, evalTypeAccessExpression и в операторах | и &, if/switch.~~
 8. ~~evalInterfaceLiteral исполняет let в окружении вызывающего.~~
 9. ~~Ошибка в convertToTypeContext с восстановлением таблицы функций.~~

@@ -30,10 +30,12 @@ func NewEnvironment() *Environment {
 }
 
 func NewEnclosedEnvironment(outer *Environment) *Environment {
-	env := NewEnvironment()
-	env.outer = outer
-	env.ComptimeValues = outer.ComptimeValues
-	return env
+	return &Environment{
+		store:          make(map[string]Object),
+		types:          make(map[string]types.Type),
+		outer:          outer,
+		ComptimeValues: outer.ComptimeValues,
+	}
 }
 
 func (env *Environment) Get(name string) (Object, bool) {

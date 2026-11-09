@@ -99,14 +99,14 @@ func (chk *TypeChecker) resolveType(inType ast.ExpressionNode) types.Type {
 
 		for i, paramType := range tp.ParamsTypes {
 			resolvedParamType := chk.resolveType(paramType)
-			funcParams = append(funcParams, types.FuncParam{Name: "", Type: resolvedParamType})
-			param := tp.Parameters[i]
-			if param != nil {
-				chk.env.Set(param.Value, resolvedParamType, param)
-				if types.EqualsSoft(types.MetaType, resolvedParamType) {
-					chk.comptimeEnv.Set(param.Value, object.MetaType)
-				}
+			funcParam := types.FuncParam{Type: resolvedParamType}
+
+			if i < len(tp.Parameters) && tp.Parameters[i] != nil {
+				funcParam.Name = tp.Parameters[i].Value
+				funcParam.TypeParam = chk.bindParam(tp.Parameters[i], resolvedParamType, nil)
 			}
+
+			funcParams = append(funcParams, funcParam)
 		}
 
 		rtrnType := chk.resolveType(tp.ReturnType)
@@ -117,4 +117,24 @@ func (chk *TypeChecker) resolveType(inType ast.ExpressionNode) types.Type {
 	}
 	chk.typeError(fmt.Sprintf("%s is not a valid type", inType.String()), inType)
 	return &types.IllegalType{}
+}
+
+func (chk *TypeChecker) bindParam(param *ast.Identifier, paramType types.Type, existing *types.TypeParam) *types.TypeParam {
+	if param == nil {
+		return nil
+	}
+
+	if types.EqualsSoft(types.MetaType, paramType) {
+		tparam := existing
+		if tparam == nil {
+			tparam = &types.TypeParam{Name: param.Value}
+		}
+
+		chk.env.Set(param.Value, &types.TypeType{Underlying: tparam}, param)
+		chk.comptimeEnv.Set(param.Value, &object.TypeObject{TypeValue: tparam})
+		return tparam
+	}
+
+	chk.env.Set(param.Value, paramType, param)
+	return nil
 }

@@ -18,6 +18,16 @@ func evalDynamicFunctionType(node *ast.FunctionLiteral, env *object.Environment,
 		}
 		copy(dynFuncType.Params, statFuncType.Params)
 
+		typeEnv := env
+		for i, param := range statFuncType.Params {
+			if param.TypeParam != nil && i < len(node.Parameters) && node.Parameters[i] != nil {
+				if typeEnv == env {
+					typeEnv = object.NewEnclosedEnvironment(env)
+				}
+				typeEnv.Set(node.Parameters[i].Value, &object.TypeObject{TypeValue: param.TypeParam})
+			}
+		}
+
 		if node.ReturnType != nil {
 			rtVal := Eval(node.ReturnType, env, info)
 			if tObj, isType := rtVal.(*object.TypeObject); isType {
@@ -77,13 +87,13 @@ func evalArrayLiteral(node *ast.ArrayLiteral, env *object.Environment, info *typ
 
 	return &object.Array{
 		Elements: elements,
-		TypeObj:  &object.TypeObject{TypeValue: info.TypesInfo[node], Env: env}}
+		TypeObj:  &object.TypeObject{TypeValue: arrayRuntimeType(info.TypesInfo[node], elements), Env: env}}
 }
 
 func evalHashMapLiteral(node *ast.HashMapLiteral, env *object.Environment, info *types.Info) object.Object {
 	pairs := make(map[object.HashKey]object.HashPair)
 
-	// var firstKey, firstValue object.Object
+	var firstKey, firstValue object.Object
 
 	for _, keyNode := range sortedPairKeys(node.Pairs) {
 		if _, isBad := keyNode.(*ast.BadExpression); isBad {
@@ -110,9 +120,9 @@ func evalHashMapLiteral(node *ast.HashMapLiteral, env *object.Environment, info 
 			return value
 		}
 
-		// if firstKey == nil {
-		// 	firstKey, firstValue = key, value
-		// }
+		if firstKey == nil {
+			firstKey, firstValue = key, value
+		}
 
 		hashed := hashKey.HashKey()
 		pairs[hashed] = object.HashPair{Key: key, Value: value}
@@ -120,7 +130,36 @@ func evalHashMapLiteral(node *ast.HashMapLiteral, env *object.Environment, info 
 
 	return &object.HashMap{
 		Pairs:   pairs,
-		TypeObj: &object.TypeObject{TypeValue: info.TypesInfo[node], Env: env}}
+		TypeObj: &object.TypeObject{TypeValue: hashMapRuntimeType(info.TypesInfo[node], firstKey, firstValue), Env: env}}
+}
+
+func arrayRuntimeType(static types.Type, elements []object.Object) types.Type {
+	if len(elements) == 0 || elements[0] == nil || !types.ContainsTypeParam(static) {
+		return static
+	}
+
+	elemType := object.GetTypeFromObject(elements[0])
+	if _, isIllegal := elemType.(*types.IllegalType); isIllegal {
+		return static
+	}
+
+	return &types.ArrayType{ElementsType: elemType}
+}
+
+func hashMapRuntimeType(static types.Type, firstKey, firstValue object.Object) types.Type {
+	if firstKey == nil || firstValue == nil || !types.ContainsTypeParam(static) {
+		return static
+	}
+
+	keyType := object.GetTypeFromObject(firstKey)
+	valueType := object.GetTypeFromObject(firstValue)
+	_, keyIllegal := keyType.(*types.IllegalType)
+	_, valueIllegal := valueType.(*types.IllegalType)
+	if keyIllegal || valueIllegal {
+		return static
+	}
+
+	return &types.HashMapType{KeyType: keyType, ElementType: valueType}
 }
 
 // ключи литерала map в порядке записи

@@ -96,12 +96,9 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 				paramType := chk.resolveType(paramTypeLit)
 				param := funLiteral.Parameters[ind]
 
-				funcParam := &types.FuncParam{Name: param.Value, Type: paramType}
-				expectedFuncType.Params = append(expectedFuncType.Params, *funcParam)
-
-				if param != nil {
-					chk.env.Set(param.Value, paramType, param)
-				}
+				funcParam := types.FuncParam{Name: param.Value, Type: paramType}
+				funcParam.TypeParam = chk.bindParam(param, paramType, nil)
+				expectedFuncType.Params = append(expectedFuncType.Params, funcParam)
 			}
 
 		} else if expType, ok := chk.curExpectedType.(*types.FuncType); ok && len(expType.Params) != 0 {
@@ -137,15 +134,13 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 
 	// спуск типов из ожидаемого типа функции на переменные в литерале
 	for i, param := range funLiteral.Parameters {
-		parameter := types.FuncParam{Name: param.Value, Type: expectedFuncType.Params[i].Type}
-		resFuncType.Params = append(resFuncType.Params, parameter)
+		paramType := expectedFuncType.Params[i].Type
+		tparam := chk.bindParam(param, paramType, expectedFuncType.Params[i].TypeParam)
 
-		chk.recordType(param, expectedFuncType.Params[i].Type)
-		chk.env.Set(param.Value, expectedFuncType.Params[i].Type, param)
+		resFuncType.Params = append(resFuncType.Params,
+			types.FuncParam{Name: param.Value, Type: paramType, TypeParam: tparam})
 
-		if types.EqualsSoft(expectedFuncType.Params[i].Type, types.MetaType) {
-			chk.comptimeEnv.Set(param.Value, object.MetaType)
-		}
+		chk.recordType(param, paramType)
 	}
 
 	chk.curExpectedType = expectedFuncType.ReturnType

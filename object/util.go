@@ -93,6 +93,11 @@ func compareHashMaps(leftMap, rightMap *HashMap) bool {
 }
 
 func comapreInstances(leftInstance, rightInstance *ImplInstance) bool {
+	if leftInstance.TypeObj != nil && rightInstance.TypeObj != nil &&
+		!types.Equals(leftInstance.TypeObj.TypeValue, rightInstance.TypeObj.TypeValue) {
+		return false
+	}
+
 	if len(leftInstance.Fields) != len(rightInstance.Fields) {
 		return false
 	}

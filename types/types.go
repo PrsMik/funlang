@@ -55,6 +55,13 @@ func (n *NullType) isType()           {}
 func (n *NullType) Signature() string { return "<null>" }
 func (t *NullType) isPrintable()      {}
 
+type TypeParam struct {
+	Name string
+}
+
+func (t *TypeParam) isType()           {}
+func (t *TypeParam) Signature() string { return "<" + t.Name + ">" }
+
 // ===========================================================
 // ПРОСТЫЕ ТИПЫ
 // ===========================================================
@@ -126,8 +133,9 @@ func (bt *BuiltinFunc) isType()           {}
 func (bt *BuiltinFunc) Signature() string { return "<builtin_func>" }
 
 type FuncParam struct {
-	Name string
-	Type Type
+	Name      string
+	Type      Type
+	TypeParam *TypeParam
 }
 
 type FuncType struct {

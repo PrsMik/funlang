@@ -271,3 +271,60 @@ func sameFields(left, right map[string]Type) bool {
 	}
 	return true
 }
+
+func ContainsTypeParam(t Type) bool {
+	return containsTypeParam(t, make(map[Type]bool))
+}
+
+func containsTypeParam(t Type, visited map[Type]bool) bool {
+	if t == nil {
+		return false
+	}
+
+	switch tt := t.(type) {
+	case *TypeParam:
+		return true
+	case *ArrayType:
+		return containsTypeParam(tt.ElementsType, visited)
+	case *HashMapType:
+		return containsTypeParam(tt.KeyType, visited) || containsTypeParam(tt.ElementType, visited)
+	case *FuncType:
+		for _, param := range tt.Params {
+			if containsTypeParam(param.Type, visited) {
+				return true
+			}
+		}
+		return containsTypeParam(tt.ReturnType, visited)
+	case *UnionType:
+		return containsTypeParam(tt.Left, visited) || containsTypeParam(tt.Right, visited)
+	case *IntersectionType:
+		return containsTypeParam(tt.Left, visited) || containsTypeParam(tt.Right, visited)
+	case *TypeType:
+		return containsTypeParam(tt.Underlying, visited)
+	case *InterfaceType:
+		if visited[t] {
+			return false
+		}
+		visited[t] = true
+		for _, fieldType := range tt.Fields {
+			if containsTypeParam(fieldType, visited) {
+				return true
+			}
+		}
+	case *ImplType:
+		if visited[t] {
+			return false
+		}
+		visited[t] = true
+		if containsTypeParam(tt.ImplementedType, visited) {
+			return true
+		}
+		for _, fieldType := range tt.Fields {
+			if containsTypeParam(fieldType, visited) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
