@@ -47,6 +47,7 @@ let res: comptime Result(int, string) = divide(10, 2);
 
 let error_text: string = switch res.(type) {
     case comptime ErrType(string) {
+        let o: int = puts(res.error);
         return res.error;
     }
     case comptime OkType(int) {
