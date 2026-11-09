@@ -27,11 +27,11 @@ func IsAssignable(expected, actual Type) bool {
 		return IsAssignable(expected, actualImpl.ImplementedType)
 	}
 
-	if actualTypeType, ok := actual.(*TypeType); ok {
-		if actualUnderImpl, ok := actualTypeType.Underlying.(*ImplType); ok {
-			return IsAssignable(expected, actualUnderImpl)
-		}
-	}
+	// if actualTypeType, ok := actual.(*TypeType); ok {
+	// 	if actualUnderImpl, ok := actualTypeType.Underlying.(*ImplType); ok {
+	// 		return IsAssignable(expected, actualUnderImpl)
+	// 	}
+	// }
 
 	return false
 }

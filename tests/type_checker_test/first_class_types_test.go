@@ -64,7 +64,7 @@ func TestFirstClassTypes(t *testing.T) {
 			name: "Function returning an interface (Generics foundation) 2",
 			input: `let inter: type = comptime interface { let x: type = int; };
 					let im: type = comptime impl (inter) { let x: int = 42; };
-					let MakeType: fn() -> inter = comptime fn() { return im; };
+					let MakeType: fn() -> type = comptime fn() { return im; };
 					let x: comptime MakeType() = im.{};`,
 			expectedErr: "",
 		},
@@ -72,7 +72,7 @@ func TestFirstClassTypes(t *testing.T) {
 			name: "Function returning an interface (Generics foundation) 2.1",
 			input: `let inter: type = comptime interface { let x: type = int; };
 					let im: type = comptime impl (inter) { let x: int = 42; };
-					let MakeType: fn() -> inter = comptime fn() { return im; };
+					let MakeType: fn() -> type = comptime fn() { return im; };
 					let mT: type = comptime MakeType(); 
 					let x: mT = im.{};`,
 			expectedErr: "",
@@ -159,7 +159,7 @@ func TestStructuralTyping(t *testing.T) {
 			input: `
 				let HasName: type = interface { let name: type = string; };
 				let Person: type = impl (HasName) { let name: string = "Alice"; };
-				let obj: HasName = Person;
+				let obj: HasName = Person.{};
 			`,
 			expectedErr: "",
 		},
@@ -169,7 +169,7 @@ func TestStructuralTyping(t *testing.T) {
 				let HasName: type = interface { let name: type = string; };
 				let HasNameTwo: type = HasName;
 				let Person: type = impl (HasName) { let name: string = "Alice"; };
-				let obj: HasNameTwo = Person;
+				let obj: HasNameTwo = Person.{};
 			`,
 			expectedErr: "",
 		},
@@ -191,7 +191,7 @@ func TestStructuralTyping(t *testing.T) {
 					let next: fn() -> impl1 = fn() { return impl1.{}; };
 				};
 
-				let l2: List1 = impl1;
+				let l2: List1 = impl1.{};
 		`,
 			expectedErr: "",
 		},
@@ -305,7 +305,8 @@ func TestStructuralTyping(t *testing.T) {
 			name: "Valid impl (interface)",
 			input: `
 				let myIface: type = interface { let val: type = int; };
-				let obj: myIface = impl (myIface) { let val: int = 42; };
+				let myImpl: type = impl (myIface) { let val: int = 42; };
+				let obj: myIface = myImpl.{};
 			`,
 			expectedErr: "",
 		},
@@ -313,7 +314,8 @@ func TestStructuralTyping(t *testing.T) {
 			name: "Valid impl (empty interface)",
 			input: `
 				let myAny: type = interface {};
-				let obj: myAny = impl (interface {let val: type = int;} & myAny) { let val: int = 42; };
+				let myImpl: type = impl (interface {let val: type = int;} & myAny) { let val: int = 42; };
+				let obj: myAny = myImpl.{};
 			`,
 			expectedErr: "",
 		},
@@ -322,7 +324,7 @@ func TestStructuralTyping(t *testing.T) {
 			input: `
 				let HasName: type = interface { let name: type = string; };
 				let Person: type = impl (HasName) { let name: string = "Alice"; let age: int = 30; };
-				let obj: HasName = Person;
+				let obj: HasName = Person.{};
 			`,
 			expectedErr: "",
 		},
@@ -332,7 +334,7 @@ func TestStructuralTyping(t *testing.T) {
 				let HasName: type = interface { let name: type = string; };
 				let HasYear: type = interface { let age: type = int; };
 				let Person: type = impl (HasName & HasYear) { let name: string = "Alice"; let age: int = 30; };
-				let obj: HasName = Person;
+				let obj: HasName = Person.{};
 			`,
 			expectedErr: "",
 		},
@@ -412,7 +414,8 @@ func TestAlgebraicTypes(t *testing.T) {
 			input: `
 				let A: type = interface { let a: type = int; };
 				let B: type = interface { let b: type = string; };
-				let obj: A & B = impl (A & B) { let a: int = 1; let b: string = "hello"; };
+				let ABimpl: type = impl (A & B) { let a: int = 1; let b: string = "hello"; };
+				let obj: A & B = ABimpl.{};
 			`,
 			expectedErr: "",
 		},
@@ -478,16 +481,17 @@ func TestImplInstantiationTypeChecking(t *testing.T) {
 func TestMemberAccess(t *testing.T) {
 	tests := []TestCase{
 		{
-			name: "Valid member access",
+			name: "Valid member access 1",
 			input: `
 				let MyIface: type = interface { let val: type = int; };
-				let obj: MyIface = impl (MyIface) { let val: int = 42; };
+				let MyImpl: type = impl (MyIface) { let val: int = 42; };
+				let obj: MyIface = MyImpl.{};
 				let x: int = obj.val;
 			`,
 			expectedErr: "",
 		},
 		{
-			name: "Valid member access",
+			name: "Valid member access 2",
 			input: `
 				let x: int = ((impl (interface { let val: type = int; }) { let val: int = 42; }).{}).val;
 			`,
@@ -725,7 +729,7 @@ func TestTypeNarrowing(t *testing.T) {
 				let OkType: type = interface { let value: type = int; };
 				let ErrType: type = interface { let error: type = string; };
 				
-				let res: OkType | ErrType = impl (OkType) { let value: int = 5; };
+				let res: OkType | ErrType = (impl (OkType) { let value: int = 5; }).{};
 				
 				let final: int = switch res.(type) {
 					case OkType { 

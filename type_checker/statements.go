@@ -31,6 +31,7 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 		return &types.IllegalType{}
 	}
 
+	// TODO: добавить автоматический вывод типов, если stmt.Type == nil
 	expectedType := chk.resolveType(stmt.Type)
 
 	prevExpectedType := chk.curExpectedType
@@ -147,7 +148,7 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 
 	chk.curExpectedType = prevExpectedType
 
-	// почему не expected?
+	// TODO: почему не expected?
 	return actualType
 }
 

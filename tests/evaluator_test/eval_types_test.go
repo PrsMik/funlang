@@ -74,7 +74,7 @@ func TestEvalImplInstantiationAndFieldAccess(t *testing.T) {
 				let x: int = 42;
 				let y: int = 42;
 			};
-			let p: Geometric = Point;
+			let p: Geometric = Point.{};
 			return p.x + p.y;`,
 			expected: 84,
 		},
