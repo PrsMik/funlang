@@ -151,9 +151,9 @@ func (fmtr *Formatter) formatInfixExpression(n *ast.InfixExpression) {
 
 func (fmtr *Formatter) formatIfExpression(n *ast.IfExpression) {
 	fmtr.out.WriteString("if ")
-	fmtr.out.WriteString("(")
+	fmtr.out.WriteString("")
 	fmtr.formatExpression(n.Condition)
-	fmtr.out.WriteString(") ")
+	fmtr.out.WriteString(" ")
 	fmtr.formatStatement(n.Consequence)
 
 	if n.Alternative != nil {

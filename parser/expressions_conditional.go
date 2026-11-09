@@ -8,9 +8,9 @@ import (
 func (prs *Parser) parseIfExpression() ast.ExpressionNode {
 	expr := &ast.IfExpression{Token: prs.curToken}
 
-	if !prs.expectPeek(token.LPAREN) {
-		return nil
-	}
+	// if !prs.expectPeek(token.LPAREN) {
+	// 	return nil
+	// }
 
 	reserveCurToken := prs.curToken
 
@@ -24,16 +24,8 @@ func (prs *Parser) parseIfExpression() ast.ExpressionNode {
 		expr.Condition = &ast.BadExpression{From: reserveCurToken.End, To: reserveEndToken.Start}
 	}
 
-	// if !prs.expectPeek(token.RPAREN) {
-	// 	return nil
-	// }
-
-	if !prs.curTokenIs(token.RPAREN) {
-		prs.expectPeek(token.RPAREN)
-	}
-
-	// if !prs.expectPeek(token.LBRACE) {
-	// 	return nil
+	// if !prs.curTokenIs(token.RPAREN) {
+	// 	prs.expectPeek(token.RPAREN)
 	// }
 
 	if !prs.curTokenIs(token.LBRACE) {
