@@ -173,9 +173,11 @@ type InterfaceType struct {
 	Fields map[string]Type
 }
 
-func (t *InterfaceType) isType()           {}
-func (t *InterfaceType) Signature() string { return fmt.Sprintf("<interface %s>", t.Name) }
-func (t *InterfaceType) isComparable()     {}
+func (t *InterfaceType) isType() {}
+func (t *InterfaceType) Signature() string {
+	return fmt.Sprintf("<interface %s>", declName(t.Name, t.Decl))
+}
+func (t *InterfaceType) isComparable() {}
 
 type ImplType struct {
 	Name                string
@@ -189,9 +191,9 @@ type ImplType struct {
 
 func (t *ImplType) isType() {}
 func (t *ImplType) Signature() string {
-	res := fmt.Sprintf("<impl %s>", t.Name)
+	res := fmt.Sprintf("<impl %s>", declName(t.Name, t.Decl))
 	if t.ImplementedType != nil {
-		res = fmt.Sprintf("<impl %s (%s)>", t.Name, t.ImplementedType.Signature())
+		res = fmt.Sprintf("<impl %s (%s)>", declName(t.Name, t.Decl), t.ImplementedType.Signature())
 	}
 	return res
 }
@@ -218,3 +220,11 @@ func (t *IntersectionType) Signature() string {
 	return fmt.Sprintf("<intersection %s & %s>", t.Left.Signature(), t.Right.Signature())
 }
 func (t *IntersectionType) isComparable() {}
+
+func declName(name string, decl ast.Node) string {
+	if name != "" || decl == nil {
+		return name
+	}
+	pos := decl.Start()
+	return fmt.Sprintf("@%d:%d", pos.Line, pos.Column)
+}

@@ -47,7 +47,10 @@ func (chk *TypeChecker) checkCallExpression(expr ast.ExpressionNode) types.Type 
 	case *types.BuiltinFunc:
 		argTypes := make([]types.Type, len(callExpr.Arguments))
 		for i, argExpr := range callExpr.Arguments {
+			outerExpectedType := chk.curExpectedType
+			chk.curExpectedType = nil
 			argTypes[i] = chk.checkExpression(argExpr)
+			chk.curExpectedType = outerExpectedType
 		}
 
 		returnType, err := callFuncType.CheckFunc(argTypes)

@@ -29,15 +29,15 @@ func evalDynamicFunctionType(node *ast.FunctionLiteral, env *object.Environment,
 		}
 
 		if node.ReturnType != nil {
-			rtVal := Eval(node.ReturnType, env, info)
+			rtVal := Eval(node.ReturnType, typeEnv, info)
 			if tObj, isType := rtVal.(*object.TypeObject); isType {
 				dynFuncType.ReturnType = tObj.TypeValue
 			}
 		}
 
 		for i, pTypeNode := range node.ParamTypes {
-			if pTypeNode != nil {
-				ptVal := Eval(pTypeNode, env, info)
+			if pTypeNode != nil && i < len(dynFuncType.Params) {
+				ptVal := Eval(pTypeNode, typeEnv, info)
 				if tObj, isType := ptVal.(*object.TypeObject); isType {
 					dynFuncType.Params[i].Type = tObj.TypeValue
 				}
