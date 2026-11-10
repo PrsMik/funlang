@@ -3,6 +3,7 @@ package parser
 import (
 	"funlang/ast"
 	"funlang/token"
+	"maps"
 )
 
 type parsExpr = func(int) ast.ExpressionNode
@@ -19,9 +20,7 @@ func (prs *Parser) convertToTypeContext(fn parsExpr) parsExpr {
 		savedPrefixFns := prs.prefixParseFns
 
 		typePrefixFns := make(map[token.TokenType]prefixParseFn, len(savedPrefixFns))
-		for tokenType, parseFn := range savedPrefixFns {
-			typePrefixFns[tokenType] = parseFn
-		}
+		maps.Copy(typePrefixFns, savedPrefixFns)
 
 		prs.prefixParseFns = typePrefixFns
 		prs.switchToTypePrefixes()
@@ -70,21 +69,18 @@ func (prs *Parser) parseSimpleType() ast.ExpressionNode {
 }
 
 func (prs *Parser) parseArrayType() ast.ExpressionNode {
-	arrType := &ast.ArrayType{Token: prs.curToken}
-
-	if prs.peekTokenIs(token.RBRACKET) {
-		prs.nextToken()
-		prs.typeError()
+	lbracket := prs.curToken
+	if !prs.expectPeek(token.RBRACKET) {
 		return nil
-	} else {
-		prs.nextToken()
 	}
-
-	arrType.ElementsType = prs.parseType()
 
 	prs.nextToken()
 
-	return arrType
+	elemType := prs.parseType()
+	if elemType == nil {
+		return nil
+	}
+	return &ast.ArrayType{Token: lbracket, ElementsType: elemType}
 }
 
 func (prs *Parser) parseHashMapType() ast.ExpressionNode {

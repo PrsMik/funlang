@@ -68,3 +68,14 @@ func (indExpr *IndexExpression) expressionNode()       {}
 func (indExpr *IndexExpression) TokenLiteral() string  { return indExpr.Token.Literal }
 func (indExpr *IndexExpression) Start() token.Position { return indExpr.Token.Start }
 func (indExpr *IndexExpression) End() token.Position   { return indExpr.SemiToken.End }
+
+type GroupedExpression struct {
+	Token     token.Token
+	Value     ExpressionNode
+	SemiToken token.Token
+}
+
+func (ge *GroupedExpression) expressionNode()       {}
+func (ge *GroupedExpression) TokenLiteral() string  { return ge.Token.Literal }
+func (ge *GroupedExpression) Start() token.Position { return ge.Token.Start }
+func (ge *GroupedExpression) End() token.Position   { return ge.SemiToken.End }

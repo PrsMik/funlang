@@ -31,11 +31,28 @@ func (prs *Parser) parseBooleanLiteral() ast.ExpressionNode {
 	return &ast.BooleanLiteral{Token: prs.curToken, Value: prs.curTokenIs(token.TRUE)}
 }
 
-func (prs *Parser) parseArrayLiteral() ast.ExpressionNode {
-	array := &ast.ArrayLiteral{Token: prs.curToken}
-	array.Elements = prs.parseExpressionList(token.RBRACKET)
-	array.SemiToken = prs.curToken
-	return array
+func (prs *Parser) parseArrayPrefix() ast.ExpressionNode {
+	lbracket := prs.curToken
+	if !prs.expectPeek(token.RBRACKET) {
+		return nil
+	}
+
+	prs.nextToken()
+
+	elemType := prs.parseType()
+	if elemType == nil {
+		return nil
+	}
+
+	if prs.peekTokenIs(token.LBRACE) {
+		prs.expectPeek(token.LBRACE)
+		array := &ast.ArrayLiteral{Token: lbracket, TypeExpr: elemType}
+		array.Elements = prs.parseExpressionList(token.RBRACE)
+		array.SemiToken = prs.curToken
+		return array
+	}
+
+	return &ast.ArrayType{Token: lbracket, ElementsType: elemType}
 }
 
 func (prs *Parser) parseExpressionList(end token.TokenType) []ast.ExpressionNode {

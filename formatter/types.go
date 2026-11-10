@@ -10,9 +10,8 @@ func (fmtr *Formatter) formatType(node ast.ExpressionNode) {
 	case *ast.SimpleType:
 		fmtr.out.WriteString(t.Value)
 	case *ast.ArrayType:
-		fmtr.out.WriteString("[")
+		fmtr.out.WriteString("[]")
 		fmtr.formatType(t.ElementsType)
-		fmtr.out.WriteString("]")
 	case *ast.HashMapType:
 		fmtr.out.WriteString("{")
 		fmtr.formatType(t.KeyType)

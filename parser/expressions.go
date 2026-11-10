@@ -81,6 +81,8 @@ func (prs *Parser) parseInfixExpression(left ast.ExpressionNode) ast.ExpressionN
 }
 
 func (prs *Parser) parseGroupedExpression() ast.ExpressionNode {
+	lparen := prs.curToken
+
 	prs.nextToken()
 
 	expr := prs.parseExpression(LOWEST)
@@ -89,7 +91,11 @@ func (prs *Parser) parseGroupedExpression() ast.ExpressionNode {
 		return nil
 	}
 
-	return expr
+	return &ast.GroupedExpression{
+		Token:     lparen,
+		Value:     expr,
+		SemiToken: prs.curToken,
+	}
 }
 
 func (prs *Parser) parseComptimeExpression() ast.ExpressionNode {

@@ -31,6 +31,10 @@ func (chk *TypeChecker) checkBadExpression(expr ast.ExpressionNode) types.Type {
 	return &types.IllegalType{}
 }
 
+func (chk *TypeChecker) checkGroupedExpression(expr ast.ExpressionNode) types.Type {
+	return chk.checkExpression(expr.(*ast.GroupedExpression).Value)
+}
+
 func (chk *TypeChecker) checkPrefixExpression(expr ast.ExpressionNode) types.Type {
 	op := expr.(*ast.PrefixExpression).Operator
 

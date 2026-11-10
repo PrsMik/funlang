@@ -145,6 +145,8 @@ func Eval(node ast.Node, env *object.Environment, info *types.Info) object.Objec
 		}
 
 		return evalInfixExpression(node.Operator, left, right)
+	case *ast.GroupedExpression:
+		return Eval(node.Value, env, info)
 	case *ast.IfExpression:
 		return evalIfExpression(node, env, info)
 	case *ast.SwitchExpression:

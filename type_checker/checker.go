@@ -60,6 +60,7 @@ func New(curEnv *types.TypeEviroment, info *types.Info) *TypeChecker {
 
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.PrefixExpression](), chk.checkPrefixExpression)
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.InfixExpression](), chk.checkInfixExpression)
+	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.GroupedExpression](), chk.checkGroupedExpression)
 
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.IfExpression](), chk.checkIfExpression)
 

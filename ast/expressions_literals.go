@@ -49,6 +49,7 @@ func (strLit *StringLiteral) End() token.Position   { return strLit.Token.End }
 // литерал массива (например "[1, 2, 3]")
 type ArrayLiteral struct {
 	Token     token.Token
+	TypeExpr  ExpressionNode
 	Elements  []ExpressionNode
 	SemiToken token.Token
 }
@@ -60,6 +61,7 @@ func (arrLit *ArrayLiteral) End() token.Position   { return arrLit.SemiToken.End
 
 type HashMapLiteral struct {
 	Token     token.Token
+	TypeExpr  ExpressionNode
 	Pairs     map[ExpressionNode]ExpressionNode
 	SemiToken token.Token
 }

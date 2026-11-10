@@ -23,6 +23,8 @@ func (fmtr *Formatter) formatExpression(expr ast.ExpressionNode) {
 		fmtr.formatInfixExpression(node)
 	case *ast.PrefixExpression:
 		fmtr.formatPrefixExpression(node)
+	case *ast.GroupedExpression:
+		fmtr.formatGroupedExpression(node)
 	case *ast.IfExpression:
 		fmtr.formatIfExpression(node)
 	case *ast.CallExpression:
@@ -42,7 +44,15 @@ func (fmtr *Formatter) formatExpression(expr ast.ExpressionNode) {
 }
 
 func (fmtr *Formatter) formatArrayLiteral(n *ast.ArrayLiteral) {
-	fmtr.out.WriteString("[")
+	if n.TypeExpr != nil {
+		fmtr.out.WriteString("[]")
+		// fmtr.out.WriteString(n.TypeExpr.String())
+		fmtr.formatExpression(n.TypeExpr)
+		fmtr.out.WriteString("{")
+	} else {
+		fmtr.out.WriteString("[")
+	}
+
 	isMulti := n.Token.Start.Line != n.End().Line
 
 	fmtr.formatSequence(
@@ -53,7 +63,11 @@ func (fmtr *Formatter) formatArrayLiteral(n *ast.ArrayLiteral) {
 		func(i int) { fmtr.formatExpression(n.Elements[i]) },
 	)
 
-	fmtr.out.WriteString("]")
+	if n.TypeExpr != nil {
+		fmtr.out.WriteString("}")
+	} else {
+		fmtr.out.WriteString("]")
+	}
 	fmtr.prevEndLine = n.End().Line
 }
 
@@ -149,6 +163,18 @@ func (fmtr *Formatter) formatInfixExpression(n *ast.InfixExpression) {
 	}
 }
 
+func (fmtr *Formatter) formatPrefixExpression(n *ast.PrefixExpression) {
+	fmtr.out.WriteString(n.Operator)
+	fmtr.formatExpression(n.Right)
+}
+
+func (fmtr *Formatter) formatGroupedExpression(n *ast.GroupedExpression) {
+	fmtr.out.WriteString("(")
+	fmtr.formatExpression(n.Value)
+	fmtr.out.WriteString(")")
+	fmtr.prevEndLine = n.SemiToken.End.Line
+}
+
 func (fmtr *Formatter) formatIfExpression(n *ast.IfExpression) {
 	fmtr.out.WriteString("if ")
 	fmtr.out.WriteString("")
@@ -160,11 +186,6 @@ func (fmtr *Formatter) formatIfExpression(n *ast.IfExpression) {
 		fmtr.out.WriteString(" else ")
 		fmtr.formatStatement(n.Alternative)
 	}
-}
-
-func (fmtr *Formatter) formatPrefixExpression(n *ast.PrefixExpression) {
-	fmtr.out.WriteString(n.Operator)
-	fmtr.formatExpression(n.Right)
 }
 
 func (fmtr *Formatter) formatIndexExpression(n *ast.IndexExpression) {
@@ -186,9 +207,9 @@ func (fmtr *Formatter) formatInterfaceLiteral(n *ast.InterfaceLiteral) {
 
 func (fmtr *Formatter) formatImplLiteral(n *ast.ImplLiteral) {
 	fmtr.out.WriteString("impl ")
-	fmtr.out.WriteString("(")
-	fmtr.formatExpression(n.TargetType)
-	fmtr.out.WriteString(") ")
+	if n.TargetType != nil {
+		fmtr.formatExpression(n.TargetType)
+	}
 	fmtr.formatStatement(n.Body)
 }
 

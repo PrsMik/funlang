@@ -25,7 +25,7 @@ func (typeType *TypeType) String() string { return typeType.Value }
 
 func (simpType *SimpleType) String() string { return simpType.Value }
 
-func (arrType *ArrayType) String() string { return "[" + arrType.ElementsType.String() + "]" }
+func (arrType *ArrayType) String() string { return "[]" + arrType.ElementsType.String() }
 
 func (hashMapType *HashMapType) String() string {
 	return "{" + hashMapType.KeyType.String() + " : " + hashMapType.ElementType.String() + "}"
@@ -55,13 +55,25 @@ func (strLit *StringLiteral) String() string { return strLit.Token.Literal }
 
 func (arrLit *ArrayLiteral) String() string {
 	var out bytes.Buffer
+	if arrLit.TypeExpr != nil {
+		out.WriteString("[]")
+		out.WriteString(arrLit.TypeExpr.String())
+		out.WriteString("{")
+	} else {
+		out.WriteString("[")
+	}
+
 	elements := []string{}
 	for _, elem := range arrLit.Elements {
 		elements = append(elements, elem.String())
 	}
-	out.WriteString("[")
 	out.WriteString(strings.Join(elements, ", "))
-	out.WriteString("]")
+
+	if arrLit.TypeExpr != nil {
+		out.WriteString("}")
+	} else {
+		out.WriteString("]")
+	}
 	return out.String()
 }
 
@@ -191,6 +203,10 @@ func (infixExpr *InfixExpression) String() string {
 	out.WriteString(infixExpr.Right.String())
 	out.WriteString(")")
 	return out.String()
+}
+
+func (ge *GroupedExpression) String() string {
+	return ge.Value.String()
 }
 
 func (ifExpr *IfExpression) String() string {

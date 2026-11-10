@@ -62,6 +62,9 @@ func (chk *TypeChecker) checkArrayLiteral(expr ast.ExpressionNode) types.Type {
 	arrLit := expr.(*ast.ArrayLiteral)
 
 	if len(arrLit.Elements) == 0 {
+		if arrLit.TypeExpr != nil {
+			return &types.ArrayType{ElementsType: chk.resolveType(arrLit.TypeExpr)}
+		}
 		return arrType
 	}
 
