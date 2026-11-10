@@ -39,7 +39,7 @@ var builtins = map[string]*object.Builtin{
 		copy(newElements[1:length+1], arr.Elements)
 		newElements[0] = args[1]
 
-		return &object.Array{Elements: newElements}
+		return &object.Array{Elements: newElements, TypeObj: arr.TypeObj}
 	},
 	},
 	"puts": {Fn: func(args ...object.Object) object.Object {
