@@ -20,7 +20,7 @@ func TestRuntimeErrorHandling(t *testing.T) {
 			"runtime error: integer divide by zero",
 		},
 		{
-			"let arr: [int] = [1, 2]; let x: int = arr[5];",
+			"let arr: []int = []int{1, 2}; let x: int = arr[5];",
 			"runtime error: array index 5 is out of bounds (max is 1)",
 		},
 	}

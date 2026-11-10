@@ -32,7 +32,7 @@ func TestIdentifiers(t *testing.T) {
 		{"Valid shadowing and scope", "let x: int = 5; let y: int = x + 3;", ""},
 		{"Use before declare (invalid)", "let y: int = x + 3; let x: int = 5;", "unknown identifier: x"},
 		{"Self assignment (invalid)", "let x: int = x;", "unknown identifier: x"},
-		{"Valid identifier array", `let y: [int] = [1, 2, 3]; let x: [int] = y;`, ""},
+		{"Valid identifier array", `let y: []int = []int{1, 2, 3}; let x: []int = y;`, ""},
 		{"Valid identifier nested scope", "let z: int = 5; let y: int = if (z > 1) { let x: int = 1; return x + z; } else { return 1; };", ""},
 	}
 	runTypeCheckerTests(t, tests)

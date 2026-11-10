@@ -206,7 +206,7 @@ func TestEvalSwitchExpressionValues(t *testing.T) {
 			let tp: type = int;
 			let impl1: type = impl { let x: type = int; };
 			let impl2: type = impl { let x: type = string; };
-			let impl3: type = impl { let x: type = [string]; };
+			let impl3: type = impl { let x: type = []string; };
 			let flag: type = impl1;
 			return switch flag {
 				case impl1 | impl2 { return 2; }
@@ -220,7 +220,7 @@ func TestEvalSwitchExpressionValues(t *testing.T) {
 			let tp: type = int;
 			let impl1: type = impl { let x: type = int; };
 			let impl2: type = impl { let x: type = string; };
-			let impl3: type = impl { let x: type = [string]; };
+			let impl3: type = impl { let x: type = []string; };
 			let flag: type = impl1;
 			return switch flag {
 				case impl1 & impl2 { return 2; }
@@ -253,7 +253,7 @@ func TestEvalSwitchExpressionValues(t *testing.T) {
 			let iface: type = interface { let x: type = type; };
 			let impl1: type = impl (iface) { let x: type = string; };
 			let impl2: type = impl (iface) { let x: type = int; };
-			let impl3: type = impl (iface) { let x: type = [string]; };
+			let impl3: type = impl (iface) { let x: type = []string; };
 			let flag: iface = impl1.{};
 			return switch flag.(type) {
 				case impl1 { return 1; }
@@ -272,7 +272,7 @@ func TestEvalSwitchExpressionValues(t *testing.T) {
 }
 
 func TestEvalArrayExpressions(t *testing.T) {
-	input := "return[1, 2 * 2, 3 + 3];"
+	input := "return []int{1, 2 * 2, 3 + 3};"
 	evaluated := testEval(t, input)
 	result, ok := evaluated.(*object.Array)
 	if !ok {
@@ -291,13 +291,13 @@ func TestEvalArrayIndexExpressions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
-		{"return [1, 2, 3][0];", 1},
-		{"return[1, 2, 3][1];", 2},
-		{"return[1, 2, 3][2];", 3},
-		{"let i: int = 0; return [1][i];", 1},
-		{"return [1, 2, 3][1 + 1];", 3},
-		{"let myArray: [int] = [1, 2, 3]; return myArray[2];", 3},
-		{"let myArray: [int] =[1, 2, 3]; return myArray[0] + myArray[1] + myArray[2];", 6},
+		{"return []int{1, 2, 3}[0];", 1},
+		{"return []int{1, 2, 3}[1];", 2},
+		{"return []int{1, 2, 3}[2];", 3},
+		{"let i: int = 0; return []int{1}[i];", 1},
+		{"return []int{1, 2, 3}[1 + 1];", 3},
+		{"let myArray: []int = []int{1, 2, 3}; return myArray[2];", 3},
+		{"let myArray: []int = []int{1, 2, 3}; return myArray[0] + myArray[1] + myArray[2];", 6},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(t, tt.input)

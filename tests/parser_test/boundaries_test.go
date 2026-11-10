@@ -64,9 +64,9 @@ func TestASTExpressionBoundaries(t *testing.T) {
 		},
 		{
 			"Array literal: [1, 2, 3]",
-			`let x: int = [1, 2, 3];`,
+			`let x: int = []int{1, 2, 3};`,
 			token.Position{Line: 0, Column: 13},
-			token.Position{Line: 0, Column: 22},
+			token.Position{Line: 0, Column: 27},
 		},
 		{
 			`Hash map literal: {"a" : 1, "b" : 2, "c" : 3}`,
@@ -112,9 +112,9 @@ func TestASTExpressionBoundaries(t *testing.T) {
 		},
 		{
 			"Index Expression: [1, 2, 3][1 + 0]",
-			`let x: int = [1, 2, 3][1 + 0];`,
-			token.Position{Line: 0, Column: 22},
-			token.Position{Line: 0, Column: 29},
+			`let x: int = []int{1, 2, 3}[1 + 0];`,
+			token.Position{Line: 0, Column: 27},
+			token.Position{Line: 0, Column: 34},
 		},
 	}
 

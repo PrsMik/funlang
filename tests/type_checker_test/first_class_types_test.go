@@ -689,12 +689,12 @@ func TestTypeNarrowing(t *testing.T) {
 			name: "Invalid narrowing in switch",
 			input: `
 				let res: int | bool  = 5;
-				let boolArr: type = [bool];
+				let boolArr: type = []bool;
 				let final: int = switch res.(type) {
 					case int | string | boolArr { 
 						return res + 1; 
 					}
-					case [int] { 
+					case ([]int) { 
 						return len(res); 
 					}
 					default { 
@@ -751,7 +751,7 @@ func TestTypeNarrowing(t *testing.T) {
 				let OkType: type = interface { let value: type = int; };
 				let ErrType: type = interface { let error: type = string; };
 				
-				let res: OkType | ErrType = impl (OkType) { let value: int = 5; };
+				let res: OkType | ErrType = impl OkType { let value: int = 5; };
 				
 				let _: int = switch res.(type) {
 					case OkType { 

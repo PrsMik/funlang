@@ -26,7 +26,7 @@ func TestCallExpressions(t *testing.T) {
 		{"Call wrong arg count", "let add: fn(int, int) -> int = fn(x, y) { return x + y; }; let z: int = add(1);", "wrong number of arguments"},
 		{"Call wrong arg type", "let add: fn(int, int) -> int = fn(x, y) { return x + y; }; let z: int = add(1, true);", "type error: wrong type for argument 2: <bool> in func call \" add \"; expected <int>"},
 		{"Call non-function", "let x: int = 5; let y: int = x(1);", "identifier \"x\" is no a funciton"},
-		{"Valid array of functions", `let y: fn() -> int = fn() { return 1; }; let x: [fn() -> int] =[y, y, y];`, ""},
+		{"Valid array of functions", `let y: fn() -> int = fn() { return 1; }; let x: []fn() -> int = []fn()->int{y, y, y};`, ""},
 	}
 	runTypeCheckerTests(t, tests)
 }

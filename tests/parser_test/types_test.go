@@ -42,7 +42,7 @@ func TestTypeParsing(t *testing.T) {
 		},
 		{
 			name:  "Array Type",
-			input: "let x: [string] =[];",
+			input: "let x: []string = []string{};",
 			check: func(t *testing.T, node ast.ExpressionNode) {
 				at, ok := node.(*ast.ArrayType)
 				if !ok {

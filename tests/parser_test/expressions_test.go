@@ -99,7 +99,7 @@ func TestStringLiteralExpression(t *testing.T) {
 }
 
 func TestParsingArrayLiterals(t *testing.T) {
-	input := "let x: [int] =[1, 2 * 2, 3 + 3];"
+	input := "let x: []int = []int{1, 2 * 2, 3 + 3};"
 	l := lexer.New(input)
 	p := parser.New(l)
 	program := p.ParseProgram()
@@ -331,7 +331,7 @@ func TestParsingInfixExpressions(t *testing.T) {
 }
 
 func TestParsingIfExpression(t *testing.T) {
-	input := "let x: bool = if (x < y) { let y: int = 5; return x + y; } else { return 5; };"
+	input := "let x: bool = if x < y { let y: int = 5; return x + y; } else { return 5; };"
 	lxr := lexer.New(input)
 	prs := parser.New(lxr)
 	prg := prs.ParseProgram()
@@ -365,8 +365,8 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 			"let x: int = ((5 + 5) * 2);",
 		},
 		{
-			"let x: int = a *[1, 2, 3, 4][b * c] * d;",
-			"let x: int = ((a * ([1, 2, 3, 4][(b * c)])) * d);",
+			"let x: int = a * []int{1, 2, 3, 4}[b * c] * d;",
+			"let x: int = ((a * ([]int{1, 2, 3, 4}[(b * c)])) * d);",
 		},
 	}
 	for _, tt := range tests {
@@ -418,7 +418,7 @@ func TestParsingInterfaceLiteral(t *testing.T) {
 
 func TestParsingImplLiteral(t *testing.T) {
 	input := `
-	let myInt: type = impl (Int & Hashable & Printable) {
+	let myInt: type = impl Int & Hashable & Printable {
 		let floatToInt: fn(Float) -> int = fn(a) {
 			return a;
 		};

@@ -4,18 +4,18 @@ import "testing"
 
 func TestFormat_Arrays(t *testing.T) {
 	input := `
-let empty: [int] = [  ];
-let arr :[int]=[ 1,
+let empty: []int = []int{  };
+let arr :[]int= []int{ 1,
 
 2,3
-];
+};
 `
-	expected := `let empty: [int] = [];
-let arr: [int] = [
+	expected := `let empty: []int = []int{};
+let arr: []int = []int{
 	1,
 
 	2, 3
-];
+};
 `
 	assertFormat(t, "Array Formatting", input, expected)
 }

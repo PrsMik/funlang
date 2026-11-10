@@ -12,7 +12,7 @@ func TestLetStatements(t *testing.T) {
 		{"Complex valid int", "let z: int = 5 + 5 * 5;", ""},
 		{"Complex valid bool", "let z: bool = false && true || !false;", ""},
 		{"Undefined identifier in let", "let y: int = unknown_var;", "unknown identifier"},
-		{"Let with array", `let x: [string] = ["hello", "world!"];`, ""},
+		{"Let with array", `let x: []string = []string{"hello", "world!"};`, ""},
 		{"Let with map", `let x: {string : int} = {"hello" : 1};`, ""},
 		{"Let with empty map", `let x: {string : int} = {};`, ""},
 	}
@@ -22,7 +22,7 @@ func TestLetStatements(t *testing.T) {
 func TestReturnStatements(t *testing.T) {
 	tests := []TestCase{
 		{"Return matching types", "let x: int = if (2 > 1) { return 5; } else { return 2; };", ""},
-		{"Return arrays", "let x: [int] = if (2 > 1) { return []; } else { return[2, 3]; };", ""},
+		{"Return arrays", "let x: []int = if (2 > 1) { return []int{}; } else { return []int{2, 3}; };", ""},
 		{"Return maps", "let x: {int : int} = if (2 > 1) { return {}; } else { return {2 : 3}; };", ""},
 		{"Return bool complex", "let x: bool = if (true) { return true && false || false; } else { return true; };", ""},
 		{"Condition not bool", "let x: bool = if (2 + 1) { return true; } else { return true; };", "type error: wrong type <int> for if condition"},

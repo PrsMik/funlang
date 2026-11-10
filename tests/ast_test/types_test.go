@@ -36,7 +36,7 @@ func TestTypes(t *testing.T) {
 				},
 			},
 			expectedTokenLiteral: "[",
-			expectedString:       "[int]",
+			expectedString:       "[]int",
 			expectedStart:        pos(1, 1),
 			expectedEnd:          pos(1, 5),
 		},

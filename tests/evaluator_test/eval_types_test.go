@@ -52,7 +52,7 @@ func TestEvalFirstClassTypes(t *testing.T) {
 			};
 			let IntBox: type = Box(int);
 			return IntBox;`,
-			expectedSig: "<interface >",
+			expectedSig: "<interface @2:11>",
 		},
 	}
 

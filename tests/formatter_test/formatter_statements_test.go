@@ -22,9 +22,9 @@ return 10;
 }else {
    return 20;} ;
 
-let empty: int = if (true) {} else {};
+let empty: int = if true {} else {};
 `
-	expected := `let res: int = if x == 1 {
+	expected := `let res: int = if (x == 1) {
 	return 10;
 } else {
 	return 20;
