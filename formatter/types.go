@@ -15,9 +15,8 @@ func (fmtr *Formatter) formatType(node ast.ExpressionNode) {
 	case *ast.HashMapType:
 		fmtr.out.WriteString("{")
 		fmtr.formatType(t.KeyType)
-		fmtr.out.WriteString(": ")
-		fmtr.formatType(t.ElementType)
 		fmtr.out.WriteString("}")
+		fmtr.formatType(t.ElementType)
 	case *ast.FunctionType:
 		fmtr.out.WriteString("fn(")
 		for i, pt := range t.ParamsTypes {

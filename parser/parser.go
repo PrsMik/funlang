@@ -85,7 +85,7 @@ func (prs *Parser) registerPrefixParseFns() {
 	prs.registerPrefix(token.LPAREN, prs.parseGroupedExpression)
 
 	prs.registerPrefix(token.LBRACKET, prs.parseArrayPrefix)
-	prs.registerPrefix(token.LBRACE, prs.parseHashMapLiteral)
+	prs.registerPrefix(token.LBRACE, prs.parseHashMapPrefix)
 
 	prs.registerPrefix(token.FN, prs.parseFunctionLiteral)
 

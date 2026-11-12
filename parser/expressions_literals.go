@@ -32,27 +32,34 @@ func (prs *Parser) parseBooleanLiteral() ast.ExpressionNode {
 }
 
 func (prs *Parser) parseArrayPrefix() ast.ExpressionNode {
-	lbracket := prs.curToken
-	if !prs.expectPeek(token.RBRACKET) {
-		return nil
-	}
+	array := &ast.ArrayLiteral{Token: prs.curToken}
+	// lbracket := prs.curToken
+	// if !prs.expectPeek(token.RBRACKET) {
+	// 	return nil
+	// }
 
-	prs.nextToken()
+	// prs.nextToken()
 
-	elemType := prs.parseType()
-	if elemType == nil {
+	// elemType := prs.parseType()
+	// if elemType == nil {
+	// 	return nil
+	// }
+
+	arrType, ok := prs.parseType().(*ast.ArrayType)
+	if !ok {
 		return nil
 	}
 
 	if prs.peekTokenIs(token.LBRACE) {
 		prs.expectPeek(token.LBRACE)
-		array := &ast.ArrayLiteral{Token: lbracket, TypeExpr: elemType}
 		array.Elements = prs.parseExpressionList(token.RBRACE)
+		array.TypeExpr = arrType.ElementsType
 		array.SemiToken = prs.curToken
 		return array
 	}
 
-	return &ast.ArrayType{Token: lbracket, ElementsType: elemType}
+	// return &ast.ArrayType{Token: lbracket, ElementsType: elemType}
+	return arrType
 }
 
 func (prs *Parser) parseExpressionList(end token.TokenType) []ast.ExpressionNode {
@@ -91,32 +98,96 @@ func (prs *Parser) parseExpressionList(end token.TokenType) []ast.ExpressionNode
 		list = append(list, expr)
 	}
 
-	// if prs.curTokenIs(end) {
-	// 	return list
-	// }
-
-	// if !prs.expectPeek(end) {
-	// 	return nil
-	// }
 	prs.expectPeek(end)
 
 	return list
 }
 
-func (prs *Parser) parseHashMapLiteral() ast.ExpressionNode {
+func (prs *Parser) parseHashMapPrefix() ast.ExpressionNode {
 	hashMapLiteral := &ast.HashMapLiteral{Token: prs.curToken}
 	hashMapLiteral.Pairs = make(map[ast.ExpressionNode]ast.ExpressionNode)
 
-	for !prs.peekTokenIs(token.RBRACE) {
+	hashMapType, ok := prs.parseType().(*ast.HashMapType)
+	if !ok {
+		return nil
+	}
+
+	if prs.peekTokenIs(token.LBRACE) {
+		prs.expectPeek(token.LBRACE)
+
+		// for !prs.peekTokenIs(token.RBRACE) {
+		// 	reserveCurToken := prs.curToken
+
+		// 	prs.nextToken()
+		// 	key := prs.parseExpression(LOWEST)
+
+		// 	prs.expectPeek(token.COLON)
+
+		// 	if key == nil {
+		// 		key = &ast.BadExpression{From: reserveCurToken.Start, To: prs.curToken.Start}
+		// 	}
+
+		// 	reserveCurToken = prs.curToken
+
+		// 	prs.nextToken()
+
+		// 	value := prs.parseExpression(LOWEST)
+
+		// 	if value == nil {
+		// 		hashMapLiteral.Pairs[key] = &ast.BadExpression{From: reserveCurToken.Start, To: prs.curToken.Start}
+		// 	} else {
+		// 		hashMapLiteral.Pairs[key] = value
+		// 	}
+
+		// 	if !prs.peekTokenIs(token.RBRACE) && !prs.expectPeek(token.COMMA) {
+		// 		break
+		// 	}
+		// }
+
+		// if prs.curTokenIs(token.COMMA) {
+		// 	resTailCurToken := prs.curToken
+
+		// 	prs.expectPeek(token.RBRACE)
+
+		// 	tailVirtualExpr := &ast.BadExpression{From: resTailCurToken.End, To: prs.curToken.Start}
+
+		// 	hashMapLiteral.Pairs[tailVirtualExpr] = &ast.BadExpression{
+		// 		From: token.Position{Line: -1, Column: -1},
+		// 		To:   token.Position{Line: -1, Column: -1},
+		// 	}
+		// } else {
+		// 	prs.expectPeek(token.RBRACE)
+		// }
+
+		list := prs.parsePairedExpressionList(token.COLON, token.RBRACE)
+		hashMapLiteral.Pairs = list
+
+		hashMapLiteral.SemiToken = prs.curToken
+		hashMapLiteral.TypeExpr = hashMapType
+
+		return hashMapLiteral
+	}
+
+	return hashMapType
+}
+
+// предполагает, что находится на открывающем токене
+// начала списка, аналогичном закрывающему
+// пример: если список {a : b, c : d}
+// начальный токен - первая {
+func (prs *Parser) parsePairedExpressionList(
+	delimeter,
+	end token.TokenType) map[ast.ExpressionNode]ast.ExpressionNode {
+
+	res := make(map[ast.ExpressionNode]ast.ExpressionNode)
+
+	for !prs.peekTokenIs(end) {
 		reserveCurToken := prs.curToken
 
 		prs.nextToken()
 		key := prs.parseExpression(LOWEST)
 
-		// if !prs.expectPeek(token.COLON) {
-		// 	return nil
-		// }
-		prs.expectPeek(token.COLON)
+		prs.expectPeek(delimeter)
 
 		if key == nil {
 			key = &ast.BadExpression{From: reserveCurToken.Start, To: prs.curToken.Start}
@@ -129,37 +200,30 @@ func (prs *Parser) parseHashMapLiteral() ast.ExpressionNode {
 		value := prs.parseExpression(LOWEST)
 
 		if value == nil {
-			hashMapLiteral.Pairs[key] = &ast.BadExpression{From: reserveCurToken.Start, To: prs.curToken.Start}
+			res[key] = &ast.BadExpression{From: reserveCurToken.Start, To: prs.curToken.Start}
 		} else {
-			hashMapLiteral.Pairs[key] = value
+			res[key] = value
 		}
 
-		if !prs.peekTokenIs(token.RBRACE) && !prs.expectPeek(token.COMMA) {
-			// return nil
+		if !prs.peekTokenIs(end) && !prs.expectPeek(token.COMMA) {
 			break
 		}
 	}
 
-	// if !prs.expectPeek(token.RBRACE) {
-	// 	return nil
-	// }
-
 	if prs.curTokenIs(token.COMMA) {
 		resTailCurToken := prs.curToken
 
-		prs.expectPeek(token.RBRACE)
+		prs.expectPeek(end)
 
 		tailVirtualExpr := &ast.BadExpression{From: resTailCurToken.End, To: prs.curToken.Start}
 
-		hashMapLiteral.Pairs[tailVirtualExpr] = &ast.BadExpression{
+		res[tailVirtualExpr] = &ast.BadExpression{
 			From: token.Position{Line: -1, Column: -1},
 			To:   token.Position{Line: -1, Column: -1},
 		}
 	} else {
-		prs.expectPeek(token.RBRACE)
+		prs.expectPeek(end)
 	}
 
-	hashMapLiteral.SemiToken = prs.curToken
-
-	return hashMapLiteral
+	return res
 }

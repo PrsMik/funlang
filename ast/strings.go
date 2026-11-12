@@ -28,7 +28,7 @@ func (simpType *SimpleType) String() string { return simpType.Value }
 func (arrType *ArrayType) String() string { return "[]" + arrType.ElementsType.String() }
 
 func (hashMapType *HashMapType) String() string {
-	return "{" + hashMapType.KeyType.String() + " : " + hashMapType.ElementType.String() + "}"
+	return "{" + hashMapType.KeyType.String() + "}" + hashMapType.ElementType.String()
 }
 
 func (funcType *FunctionType) String() string {
@@ -80,6 +80,10 @@ func (arrLit *ArrayLiteral) String() string {
 func (hashMapLiteral *HashMapLiteral) String() string {
 	var out bytes.Buffer
 	pairs := []string{}
+
+	if hashMapLiteral.TypeExpr != nil {
+		out.WriteString(hashMapLiteral.TypeExpr.String())
+	}
 
 	for key, value := range hashMapLiteral.Pairs {
 		pairs = append(pairs, key.String()+":"+value.String())

@@ -86,25 +86,36 @@ func (prs *Parser) parseArrayType() ast.ExpressionNode {
 func (prs *Parser) parseHashMapType() ast.ExpressionNode {
 	hashMapType := &ast.HashMapType{Token: prs.curToken}
 
-	if prs.peekTokenIs(token.RBRACE) {
-		prs.nextToken()
-		prs.typeError()
-		return nil
-	} else {
-		prs.nextToken()
-	}
+	prs.nextToken()
 
-	hashMapType.KeyType = prs.parseType()
+	keyType := prs.parseType()
 
-	if !prs.expectPeek(token.COLON) {
+	if !prs.expectPeek(token.RBRACE) {
 		return nil
 	}
 
 	prs.nextToken()
 
-	hashMapType.ElementType = prs.parseType()
+	// if prs.peekTokenIs(token.RBRACE) {
+	// 	prs.nextToken()
+	// 	prs.typeError()
+	// 	return nil
+	// } else {
+	// 	prs.nextToken()
+	// }
+	// hashMapType.KeyType = prs.parseType()
 
-	prs.nextToken()
+	elemType := prs.parseType()
+
+	// if !prs.expectPeek(token.COLON) {
+	// 	return nil
+	// }
+	// prs.nextToken()
+	// hashMapType.ElementType = prs.parseType()
+	// prs.nextToken()
+
+	hashMapType.KeyType = keyType
+	hashMapType.ElementType = elemType
 
 	return hashMapType
 }

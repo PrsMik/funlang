@@ -72,6 +72,8 @@ func (fmtr *Formatter) formatArrayLiteral(n *ast.ArrayLiteral) {
 }
 
 func (fmtr *Formatter) formatHashMapLiteral(n *ast.HashMapLiteral) {
+	fmtr.out.WriteString(n.TypeExpr.String())
+
 	fmtr.out.WriteString("{")
 	isMulti := n.Token.Start.Line != n.End().Line
 

@@ -127,6 +127,10 @@ func (chk *TypeChecker) checkHashMapLiteral(expr ast.ExpressionNode) types.Type 
 	hashMapLiteral := expr.(*ast.HashMapLiteral)
 
 	if len(hashMapLiteral.Pairs) == 0 {
+		if hmTp, ok := hashMapLiteral.TypeExpr.(*ast.HashMapType); ok {
+			hashMapType.KeyType = chk.resolveType(hmTp.KeyType)
+			hashMapType.ElementType = chk.resolveType(hmTp.ElementType)
+		}
 		return hashMapType
 	}
 

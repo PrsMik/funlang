@@ -70,11 +70,16 @@ func (prs *Parser) parseImplInstantiationExpression(left ast.ExpressionNode) ast
 
 	prs.nextToken()
 
-	fields := prs.parseHashMapLiteral()
+	fields := &ast.HashMapLiteral{Token: prs.curToken}
 
-	if fields == nil {
+	list := prs.parsePairedExpressionList(token.COLON, token.RBRACE)
+
+	if list == nil {
 		return nil
 	}
+
+	fields.Pairs = list
+	fields.SemiToken = prs.curToken
 
 	expr.Fields = fields
 
