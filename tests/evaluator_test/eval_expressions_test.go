@@ -312,7 +312,7 @@ func TestEvalArrayIndexExpressions(t *testing.T) {
 
 func TestEvalHashExpressions(t *testing.T) {
 	input := `let two: string = "two";
-			  return {
+			  return {string}int{
 				"one": 10 - 9,
 				two: 1 + 1,
 				"thr" + "ee": 6 / 2 
@@ -344,12 +344,12 @@ func TestEvalHashIndexExpressions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
-		{`return {"foo": 5}["foo"];`, 5},
-		{`return {"foo": 5}["bar"];`, nil},
-		{`let key: string = "foo"; return {"foo": 5}[key];`, 5},
-		{`return {5: 5}[5];`, 5},
-		{`return {true: 5}[true];`, 5},
-		{`return {false: 5}[false];`, 5},
+		{`return {string}int{"foo": 5}["foo"];`, 5},
+		{`return {string}int{"foo": 5}["bar"];`, nil},
+		{`let key: string = "foo"; return {string}int{"foo": 5}[key];`, 5},
+		{`return {int}int{5: 5}[5];`, 5},
+		{`return {bool}int{true: 5}[true];`, 5},
+		{`return {bool}int{false: 5}[false];`, 5},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(t, tt.input)

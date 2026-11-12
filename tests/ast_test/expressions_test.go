@@ -81,13 +81,22 @@ func TestExpressions(t *testing.T) {
 			name: "HashMapLiteral",
 			node: &ast.HashMapLiteral{
 				Token: createToken(token.LBRACE, "{", 1, 1),
+				TypeExpr: &ast.HashMapType{
+					Token: createToken(token.LBRACE, "{", 1, 1),
+					KeyType: &ast.SimpleType{
+						Token: createToken(token.INT_TYPE, "int", 1, 2),
+						Value: "int"},
+					ElementType: &ast.SimpleType{
+						Token: createToken(token.INT_TYPE, "int", 1, 5),
+						Value: "int"},
+				},
 				Pairs: map[ast.ExpressionNode]ast.ExpressionNode{
 					&ast.Identifier{Value: "a"}: &ast.IntegerLiteral{Token: createToken(token.INT, "1", 1, 5)},
 				},
 				SemiToken: createToken(token.RBRACE, "}", 1, 6),
 			},
 			expectedTokenLiteral: "{",
-			expectedString:       "{a:1}",
+			expectedString:       "{int}int{a:1}",
 			expectedStart:        pos(1, 1),
 			expectedEnd:          pos(1, 7),
 		},

@@ -70,9 +70,9 @@ func TestASTExpressionBoundaries(t *testing.T) {
 		},
 		{
 			`Hash map literal: {"a" : 1, "b" : 2, "c" : 3}`,
-			`let x: int = {"a" : 1, "b" : 2, "c" : 3};`,
+			`let x: int = {string}int{"a" : 1, "b" : 2, "c" : 3};`,
 			token.Position{Line: 0, Column: 13},
-			token.Position{Line: 0, Column: 40},
+			token.Position{Line: 0, Column: 51},
 		},
 		{
 			"Function literal: fn(x) { return 1; }",

@@ -119,7 +119,7 @@ func TestParsingArrayLiterals(t *testing.T) {
 }
 
 func TestParsingHashLiteralsStringKeys(t *testing.T) {
-	input := `let x: {string : int} = {"one": 1, "two": 2, "three": 3};`
+	input := `let x: {string}int = {string}int{"one": 1, "two": 2, "three": 3};`
 	l := lexer.New(input)
 	p := parser.New(l)
 	program := p.ParseProgram()
@@ -150,7 +150,7 @@ func TestParsingHashLiteralsStringKeys(t *testing.T) {
 }
 
 func TestParsingHashLiteralsWithExpressions(t *testing.T) {
-	input := `let x: {string : int} = {"one": 0 + 1, "two": 10 - 8, "three": 15 / 5};`
+	input := `let x: {string}int = {string}int{"one": 0 + 1, "two": 10 - 8, "three": 15 / 5};`
 	l := lexer.New(input)
 	p := parser.New(l)
 	program := p.ParseProgram()

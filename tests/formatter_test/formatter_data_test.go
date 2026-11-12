@@ -22,11 +22,11 @@ let arr: []int = []int{
 
 func TestFormat_HashMaps(t *testing.T) {
 	input := `
-let emptyHash: {string: int} = {  };
-let mp: {string: int} = {"a" :1,  "b":  2};
+let emptyHash: {string}int = {string}int{  };
+let mp: {string}int = {string}int{"a" :1,  "b":  2};
 `
-	expected := `let emptyHash: {string: int} = {};
-let mp: {string: int} = {"a": 1, "b": 2};
+	expected := `let emptyHash: {string}int = {string}int{};
+let mp: {string}int = {string}int{"a": 1, "b": 2};
 `
 	assertFormat(t, "HashMap Formatting", input, expected)
 }

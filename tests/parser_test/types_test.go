@@ -56,7 +56,7 @@ func TestTypeParsing(t *testing.T) {
 		},
 		{
 			name:  "HashMap Type",
-			input: "let x: {string: int} = {};",
+			input: "let x: {string}int = {string}int{};",
 			check: func(t *testing.T, node ast.ExpressionNode) {
 				ht, ok := node.(*ast.HashMapType)
 				if !ok {
