@@ -720,9 +720,9 @@ func TestParsingFirstClassTypesAndGenerics(t *testing.T) {
 		t.Errorf("Expected parameter 'T', got=%s", funcLit.Parameters[0].Value)
 	}
 
-	paramType, ok := funcLit.ParamTypes[0].(*ast.TypeType)
+	paramType, ok := funcLit.ParamsTypes[0].(*ast.TypeType)
 	if !ok {
-		t.Fatalf("Parameter type is not TypeType. got=%T", funcLit.ParamTypes[0])
+		t.Fatalf("Parameter type is not TypeType. got=%T", funcLit.ParamsTypes[0])
 	}
 	if paramType.Value != "type" {
 		t.Errorf("Expected parameter type 'type', got=%s", paramType.Value)
