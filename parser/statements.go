@@ -53,11 +53,11 @@ func (prs *Parser) parseLetStatement() *ast.LetStatement {
 
 	prs.nextToken()
 
-	if _, ok := statement.Type.(*ast.TypeType); ok {
-		statement.Value = prs.parseType()
-	} else {
-		statement.Value = prs.parseExpression(LOWEST)
-	}
+	// if _, ok := statement.Type.(*ast.TypeType); ok {
+	// 	statement.Value = prs.parseType()
+	// } else {
+	statement.Value = prs.parseExpression(LOWEST)
+	// }
 
 	if statement.Value == nil {
 		// return nil
@@ -111,8 +111,15 @@ func (prs *Parser) parseReturnStatement() *ast.ReturnStatement {
 
 func (prs *Parser) parseBlockStatement() *ast.BlockStatement {
 	savedPrefixFns := prs.prefixParseFns
+	savedTypeDepth := prs.typeDepth
+
 	prs.prefixParseFns = prs.exprPrefixFns
-	defer func() { prs.prefixParseFns = savedPrefixFns }()
+	prs.typeDepth = 0
+
+	defer func() {
+		prs.prefixParseFns = savedPrefixFns
+		prs.typeDepth = savedTypeDepth
+	}()
 
 	block := &ast.BlockStatement{Token: prs.curToken}
 	block.Statements = []ast.StatementNode{}

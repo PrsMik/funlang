@@ -73,17 +73,25 @@ func (hashMapLit *HashMapLiteral) End() token.Position   { return hashMapLit.Sem
 
 // литерал функции (например "fn(x) { return x; }")
 type FunctionLiteral struct {
-	Token      token.Token
-	Parameters []*Identifier
-	ParamTypes []ExpressionNode
-	ReturnType ExpressionNode
-	Body       *BlockStatement
+	Token       token.Token
+	Parameters  []*Identifier
+	ParamsTypes []ExpressionNode
+	ReturnType  ExpressionNode
+	Body        *BlockStatement
 }
 
 func (funcLit *FunctionLiteral) expressionNode()       {}
 func (funcLit *FunctionLiteral) TokenLiteral() string  { return funcLit.Token.Literal }
 func (funcLit *FunctionLiteral) Start() token.Position { return funcLit.Token.Start }
-func (funcLit *FunctionLiteral) End() token.Position   { return funcLit.Body.End() }
+func (funcLit *FunctionLiteral) End() token.Position {
+	if funcLit.Body != nil {
+		return funcLit.Body.End()
+	}
+	if funcLit.ReturnType != nil {
+		return funcLit.ReturnType.End()
+	}
+	return funcLit.Token.End
+}
 
 // литерал объявления интерфейса ( например, interface { let x: type = int; } )
 type InterfaceLiteral struct {

@@ -117,9 +117,9 @@ func (fmtr *Formatter) formatFunctionLiteral(n *ast.FunctionLiteral) {
 	fmtr.out.WriteString("fn(")
 	for i, param := range n.Parameters {
 		fmtr.out.WriteString(param.Value)
-		if i < len(n.ParamTypes) && n.ParamTypes[i] != nil {
+		if i < len(n.ParamsTypes) && n.ParamsTypes[i] != nil {
 			fmtr.out.WriteString(": ")
-			fmtr.formatType(n.ParamTypes[i])
+			fmtr.formatType(n.ParamsTypes[i])
 		}
 		if i < len(n.Parameters)-1 {
 			fmtr.out.WriteString(", ")

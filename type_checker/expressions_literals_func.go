@@ -91,11 +91,11 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 	}()
 
 	// типы параметров описаны в самом литерале
-	if len(funLiteral.ParamTypes) != 0 && funLiteral.ParamTypes[0] != nil || funLiteral.ReturnType != nil {
+	if len(funLiteral.ParamsTypes) != 0 && funLiteral.ParamsTypes[0] != nil || funLiteral.ReturnType != nil {
 
-		if len(funLiteral.ParamTypes) != 0 && funLiteral.ParamTypes[0] != nil {
+		if len(funLiteral.ParamsTypes) != 0 && funLiteral.ParamsTypes[0] != nil {
 			// у литерала определены типы параметров
-			for ind, paramTypeLit := range funLiteral.ParamTypes {
+			for ind, paramTypeLit := range funLiteral.ParamsTypes {
 				paramType := chk.resolveType(paramTypeLit)
 				param := funLiteral.Parameters[ind]
 

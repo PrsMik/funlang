@@ -99,15 +99,27 @@ func (hashMapLiteral *HashMapLiteral) String() string {
 func (funcLit *FunctionLiteral) String() string {
 	var out bytes.Buffer
 	params := []string{}
-	for _, p := range funcLit.Parameters {
-		params = append(params, p.String())
+	for i, p := range funcLit.Parameters {
+		switch {
+		case p != nil && i < len(funcLit.ParamsTypes) && funcLit.ParamsTypes[i] != nil:
+			params = append(params, p.Value+": "+funcLit.ParamsTypes[i].String())
+		case p != nil:
+			params = append(params, p.Value)
+		case i < len(funcLit.ParamsTypes) && funcLit.ParamsTypes[i] != nil:
+			params = append(params, funcLit.ParamsTypes[i].String())
+		}
 	}
-	out.WriteString(funcLit.TokenLiteral())
-	out.WriteString("(")
+	out.WriteString("fn(")
 	out.WriteString(strings.Join(params, ", "))
-	out.WriteString(") ")
-	out.WriteString("{")
-	out.WriteString(funcLit.Body.String())
+	out.WriteString(")")
+	if funcLit.ReturnType != nil {
+		out.WriteString(" -> ")
+		out.WriteString(funcLit.ReturnType.String())
+	}
+	out.WriteString(" {")
+	if funcLit.Body != nil {
+		out.WriteString(funcLit.Body.String())
+	}
 	out.WriteString("}")
 	return out.String()
 }
