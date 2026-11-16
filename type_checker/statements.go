@@ -26,30 +26,40 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 		return &types.IllegalType{}
 	}
 
-	if stmt.Type == nil {
-		chk.typeError("missing type in let statement", stmt)
-		return &types.IllegalType{}
+	var expectedType types.Type
+	var isDeclaringType bool
+	var isInferredTypeDecl bool
+
+	if stmt.Type != nil {
+		// TODO: добавить автоматический вывод типов, если stmt.Type == nil
+		expectedType = chk.resolveType(stmt.Type)
+		chk.recordType(stmt.Name, expectedType)
+		chk.recordExpectedType(stmt.Value, expectedType)
+		_, isDeclaringType = expectedType.(*types.TypeType)
+	} else {
+		// chk.typeError("missing type in let statement", stmt)
+		// return &types.IllegalType{}
+		switch stmt.Value.(type) {
+		case *ast.InterfaceLiteral, *ast.ImplLiteral:
+			isInferredTypeDecl = true
+			expectedType = types.MetaType
+		}
 	}
 
-	// TODO: добавить автоматический вывод типов, если stmt.Type == nil
-	expectedType := chk.resolveType(stmt.Type)
-
 	prevExpectedType := chk.curExpectedType
-	chk.curExpectedType = expectedType
-
-	chk.recordType(stmt.Name, expectedType)
-	chk.recordExpectedType(stmt.Value, expectedType)
-
-	_, isDeclaringType := expectedType.(*types.TypeType)
+	if expectedType != nil {
+		chk.curExpectedType = expectedType
+	}
 
 	// для самоссылающихся типов
-	if isDeclaringType {
+	if isDeclaringType || isInferredTypeDecl {
 		var forwardDecl types.Type
 
 		switch val := stmt.Value.(type) {
 		case *ast.InterfaceLiteral:
 			forwardDecl = &types.InterfaceType{
 				Name:   stmt.Name.Value,
+				Decl:   val,
 				Fields: make(map[string]types.Type)}
 		case *ast.ImplLiteral:
 			var targetType types.Type
@@ -59,6 +69,7 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 
 			forwardDecl = &types.ImplType{
 				Name:                stmt.Name.Value,
+				Decl:                val,
 				ImplementedType:     targetType,
 				Fields:              make(map[string]types.Type),
 				FieldsDefaultValues: make(map[string]ast.ExpressionNode)}
@@ -67,21 +78,35 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 		if forwardDecl != nil {
 			chk.env.Set(stmt.Name.Value, &types.TypeType{Underlying: forwardDecl}, stmt.Name)
 		}
-	} else if _, isFunc := expectedType.(*types.FuncType); isFunc {
-		chk.env.Set(stmt.Name.Value, expectedType, stmt.Name)
+	} else if stmt.Type != nil {
+		if _, isFunc := expectedType.(*types.FuncType); isFunc {
+			chk.env.Set(stmt.Name.Value, expectedType, stmt.Name)
+		}
 	}
 
 	// установка имен для параметров функции
 	funcLit, isFuncLit := stmt.Value.(*ast.FunctionLiteral)
 	if isFuncLit {
+		if stmt.Type == nil {
+			expectedType = chk.resolveType(&ast.FunctionType{
+				Token:       funcLit.Token,
+				Parameters:  funcLit.Parameters,
+				ParamsTypes: funcLit.ParamsTypes,
+				ReturnType:  funcLit.ReturnType})
+			chk.env.Set(stmt.Name.Value, expectedType, stmt.Name)
+		}
+
 		if expFnType, ok := expectedType.(*types.FuncType); ok {
 			for i, param := range funcLit.Parameters {
+				if param == nil {
+					chk.typeError("function literal has no parameters specified", stmt)
+					return &types.IllegalType{}
+				}
 				if i < len(expFnType.Params) {
 					expFnType.Params[i].Name = param.Value
 				}
 			}
 		}
-		// chk.env.Set(stmt.Name.Value, expectedType, stmt.Name)
 	}
 
 	actualType := chk.checkExpression(stmt.Value)
@@ -90,15 +115,18 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 		chk.comptimeEnv.Set(stmt.Name.Value, cachedVal)
 	}
 
-	if !types.IsAssignable(expectedType, actualType) {
-		if expectedType != nil && actualType != nil {
-			// if len(chk.errors) == 0 {
-			chk.typeError(fmt.Sprintf("in let expected variable of type %s, got %s", expectedType.Signature(), actualType.Signature()), stmt)
-			// }
+	if stmt.Type != nil {
+		if !types.IsAssignable(expectedType, actualType) {
+			if expectedType != nil && actualType != nil {
+				chk.typeError(fmt.Sprintf("in let expected variable of type %s, got %s",
+					expectedType.Signature(), actualType.Signature()), stmt)
+			}
 		}
+	} else {
+		expectedType = actualType
 	}
 
-	if isDeclaringType {
+	if isDeclaringType || isInferredTypeDecl {
 		if actTypeType, ok := actualType.(*types.TypeType); ok {
 			actualUnderlying := actTypeType.Underlying
 
@@ -135,15 +163,25 @@ func (chk *TypeChecker) checkLetStatement(stmt *ast.LetStatement) types.Type {
 		chk.env.Set(stmt.Name.Value, actualType, stmt.Name)
 		chk.recordType(stmt.Name, actualType)
 	} else if isFuncLit {
-		if funcExpType, isDeclaringFunc := expectedType.(*types.FuncType); isDeclaringFunc {
-			chk.env.Set(stmt.Name.Value, funcExpType, stmt.Name)
-			chk.recordType(stmt.Name, funcExpType)
+		if stmt.Type != nil {
+			if funcExpType, isDeclaringFunc := expectedType.(*types.FuncType); isDeclaringFunc {
+				chk.env.Set(stmt.Name.Value, funcExpType, stmt.Name)
+				chk.recordType(stmt.Name, funcExpType)
+			} else {
+				chk.env.Set(stmt.Name.Value, actualType, stmt.Name)
+				chk.recordType(stmt.Name, actualType)
+			}
 		} else {
 			chk.env.Set(stmt.Name.Value, actualType, stmt.Name)
 			chk.recordType(stmt.Name, actualType)
 		}
 	} else {
-		chk.env.Set(stmt.Name.Value, expectedType, stmt.Name)
+		if stmt.Type != nil {
+			chk.env.Set(stmt.Name.Value, expectedType, stmt.Name)
+		} else {
+			chk.env.Set(stmt.Name.Value, actualType, stmt.Name)
+			chk.recordType(stmt.Name, actualType)
+		}
 	}
 
 	chk.curExpectedType = prevExpectedType

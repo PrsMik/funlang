@@ -154,9 +154,13 @@ func (letStmt *LetStatement) String() string {
 	out.WriteString(letStmt.TokenLiteral())
 	out.WriteString(" ")
 	out.WriteString(letStmt.Name.String())
-	out.WriteString(": ")
-	out.WriteString(letStmt.Type.String())
-	out.WriteString(" = ")
+	out.WriteString(":")
+	if letStmt.Type != nil {
+		out.WriteString(" ")
+		out.WriteString(letStmt.Type.String())
+		out.WriteString(" ")
+	}
+	out.WriteString("= ")
 	if letStmt.Value != nil {
 		out.WriteString(letStmt.Value.String())
 	}

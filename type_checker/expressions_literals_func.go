@@ -96,6 +96,10 @@ func (chk *TypeChecker) checkFunctionLiteral(expr ast.ExpressionNode) types.Type
 		if len(funLiteral.ParamsTypes) != 0 && funLiteral.ParamsTypes[0] != nil {
 			// у литерала определены типы параметров
 			for ind, paramTypeLit := range funLiteral.ParamsTypes {
+				if paramTypeLit == nil {
+					chk.typeError("function literal with specified types must have it for all parameters", expr)
+					return &types.IllegalType{}
+				}
 				paramType := chk.resolveType(paramTypeLit)
 				param := funLiteral.Parameters[ind]
 

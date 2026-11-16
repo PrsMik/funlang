@@ -39,9 +39,14 @@ func (fmtr *Formatter) formatLetStatement(node *ast.LetStatement) {
 	fmtr.forceNewLine(node)
 	fmtr.out.WriteString("let ")
 	fmtr.out.WriteString(node.Name.Value)
-	fmtr.out.WriteString(": ")
-	fmtr.formatType(node.Type)
-	fmtr.out.WriteString(" = ")
+	if node.Type != nil {
+		fmtr.out.WriteString(": ")
+		fmtr.formatType(node.Type)
+		fmtr.out.WriteString(" ")
+	} else {
+		fmtr.out.WriteString(" :")
+	}
+	fmtr.out.WriteString("= ")
 
 	fmtr.prevEndLine = node.Value.Start().Line
 	fmtr.formatExpression(node.Value)

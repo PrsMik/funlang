@@ -57,6 +57,10 @@ func (chk *TypeChecker) resolveTypeExpression(expr ast.ExpressionNode) types.Typ
 }
 
 func (chk *TypeChecker) resolveType(inType ast.ExpressionNode) types.Type {
+	if inType == nil {
+		return &types.IllegalType{}
+	}
+
 	chk.recordTypeNode(inType, true)
 	switch tp := inType.(type) {
 	case *ast.TypeType:

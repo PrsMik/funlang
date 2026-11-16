@@ -22,12 +22,6 @@ func (chk *TypeChecker) checkInterfaceLiteral(expr ast.ExpressionNode) types.Typ
 			continue
 		}
 
-		fieldDeclType := chk.resolveType(letStmt.Type)
-		if _, isTypeType := fieldDeclType.(*types.TypeType); !isTypeType {
-			chk.typeError(fmt.Sprintf("interface fields must be defined as types, got %s", fieldDeclType.Signature()), letStmt)
-			continue
-		}
-
 		if _, exists := interfaceType.Fields[letStmt.Name.Value]; exists {
 			chk.typeError(fmt.Sprintf("duplicate field '%s' in interface", letStmt.Name.Value), letStmt)
 			continue
@@ -36,6 +30,17 @@ func (chk *TypeChecker) checkInterfaceLiteral(expr ast.ExpressionNode) types.Typ
 		fieldType := chk.resolveType(letStmt.Value)
 		if _, isIllegal := fieldType.(*types.IllegalType); isIllegal {
 			continue
+		}
+
+		var fieldDeclType types.Type
+		if letStmt.Type != nil {
+			fieldDeclType = chk.resolveType(letStmt.Type)
+			if _, isTypeType := fieldDeclType.(*types.TypeType); !isTypeType {
+				chk.typeError(fmt.Sprintf("interface fields must be defined as types, got %s", fieldDeclType.Signature()), letStmt)
+				continue
+			}
+		} else {
+			fieldDeclType = fieldType
 		}
 
 		interfaceType.Fields[letStmt.Name.Value] = fieldType

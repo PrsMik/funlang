@@ -49,6 +49,9 @@ func (chk *TypeChecker) checkPrefixExpression(expr ast.ExpressionNode) types.Typ
 
 	rightType := chk.checkExpression(expr.(*ast.PrefixExpression).Right)
 	chk.curExpectedType = oldType
+	if types.Equals(rightType, &types.TypeParam{}) {
+		return &types.TypeParam{}
+	}
 
 	switch op {
 	case "-":
@@ -89,6 +92,9 @@ func (chk *TypeChecker) checkInfixExpression(expr ast.ExpressionNode) types.Type
 
 	rightType := chk.checkExpression(expr.(*ast.InfixExpression).Right)
 	chk.curExpectedType = oldType
+	if types.Equals(rightType, &types.TypeParam{}) || types.Equals(leftType, &types.TypeParam{}) {
+		return &types.TypeParam{}
+	}
 
 	switch op {
 	case "-", "+", "*", "/":

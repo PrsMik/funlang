@@ -38,11 +38,14 @@ func (prs *Parser) parseLetStatement() *ast.LetStatement {
 		return nil
 	}
 
-	prs.nextToken()
-
-	statement.Type = prs.parseType()
-	if statement.Type == nil {
-		return nil
+	if prs.peekTokenIs(token.ASSIGN) {
+		statement.Type = nil
+	} else {
+		prs.nextToken()
+		statement.Type = prs.parseType()
+		if statement.Type == nil {
+			return nil
+		}
 	}
 
 	if !prs.expectPeek(token.ASSIGN) {
