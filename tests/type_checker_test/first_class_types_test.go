@@ -12,8 +12,18 @@ func TestFirstClassTypes(t *testing.T) {
 			expectedErr: "",
 		},
 		{
+			name:        "Assign primitive type to type variable infer",
+			input:       "let T := int; let x: T = 5;",
+			expectedErr: "",
+		},
+		{
 			name:        "Assign type to type variable",
 			input:       "let T: int = int;",
+			expectedErr: "type error",
+		},
+		{
+			name:        "Assign type to type variable infer",
+			input:       "let T := int; let x: T = int;",
 			expectedErr: "type error",
 		},
 		{
@@ -22,9 +32,21 @@ func TestFirstClassTypes(t *testing.T) {
 			expectedErr: "",
 		},
 		{
+			name:        "Chain assign of types infer",
+			input:       "let T := int; let U := T; let V := U; let x: V = 5;",
+			expectedErr: "",
+		},
+		{
 			name: "Simple impl and interface assignment",
 			input: `let T: type = interface { let x: type = int; };
 					let U: type = impl (T) { let x: int = 42; };
+					let X: T = U.{x: 43};`,
+			expectedErr: "",
+		},
+		{
+			name: "Simple impl and interface assignment infer",
+			input: `let T := interface { let x := int; };
+					let U := impl (T) { let x := 42; };
 					let X: T = U.{x: 43};`,
 			expectedErr: "",
 		},
@@ -44,8 +66,21 @@ func TestFirstClassTypes(t *testing.T) {
 			expectedErr: "",
 		},
 		{
+			name: "Infinite metatype infer",
+			input: `let T := interface { let x := type; };
+					let U := impl (T) { let x := type; };
+					let X: T = U.{x: type};
+					let Z: X.x = int;`,
+			expectedErr: "",
+		},
+		{
 			name:        "Type mismatch using type variable",
 			input:       "let T: type = string; let x: T = 5;",
+			expectedErr: "in let expected variable of type <string>, got <int>",
+		},
+		{
+			name:        "Type mismatch using type variable infer",
+			input:       "let T := string; let x: T = 5;",
 			expectedErr: "in let expected variable of type <string>, got <int>",
 		},
 		{
@@ -54,9 +89,21 @@ func TestFirstClassTypes(t *testing.T) {
 			expectedErr: "",
 		},
 		{
+			name:        "Function returning a type (Generics foundation) 1 infer",
+			input:       `let MakeType := comptime fn() -> type { return int; }; let x: comptime MakeType() = 5;`,
+			expectedErr: "",
+		},
+		{
 			name: "Function returning a type (Generics foundation) 1.1",
 			input: `let MakeType: fn() -> type = comptime fn() { return int; }; 
 					let mT: type = comptime MakeType();
+					let x: mT = 5;`,
+			expectedErr: "",
+		},
+		{
+			name: "Function returning a type (Generics foundation) 1.1 infer",
+			input: `let MakeType := comptime fn() -> type { return int; }; 
+					let mT := comptime MakeType();
 					let x: mT = 5;`,
 			expectedErr: "",
 		},
@@ -88,6 +135,19 @@ func TestFirstClassTypes(t *testing.T) {
 
 					let genString: fn(string) -> string = comptime makeGen(string);
 					let x: string = genString("42");`,
+			expectedErr: "",
+		},
+		{
+			name: "Function with typed params (Generics foundation) 3 infer",
+			input: `let makeGen := comptime fn(T: type) -> (fn(T) -> T) {
+    					return fn(val: T) -> T {
+							let x: T = val;
+        					return val;
+    					};
+					};
+
+					let genString := comptime makeGen(string);
+					let x := genString("42");`,
 			expectedErr: "",
 		},
 		{
@@ -125,6 +185,19 @@ func TestFirstClassTypes(t *testing.T) {
 
 					let err: fn(string) -> type = comptime MakeErr(string);
 					let errImpl: comptime err("") = (comptime err("")).{error: "value"};`,
+			expectedErr: "",
+		},
+		{
+			name: "Generics func",
+			input: `let myAdd := comptime fn(T: comptime type) -> fn(T, T) -> T {
+					let add := fn(left: T, right: T) -> T {
+						return left + right;
+					};
+						return add;
+					};
+
+					let intAdd := comptime myAdd(int);
+					let res := intAdd(1, 2);`,
 			expectedErr: "",
 		},
 		{

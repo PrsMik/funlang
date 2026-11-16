@@ -14,6 +14,7 @@ func TestFunctionLiterals(t *testing.T) {
 			return z; 
 		};`, ""},
 		{"Recursive function", "let add: fn(int, int) -> int = fn(x, y) { return add(x, y); };", ""},
+		{"Recursive function infer", "let add := fn(x: int, y: int) -> int { return add(x, y); };", ""},
 	}
 	runTypeCheckerTests(t, tests)
 }
