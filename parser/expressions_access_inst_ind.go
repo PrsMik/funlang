@@ -30,7 +30,7 @@ func (prs *Parser) parseIndexExpression(left ast.ExpressionNode) ast.ExpressionN
 
 func (prs *Parser) parseDotOperatorExpression(left ast.ExpressionNode) ast.ExpressionNode {
 	if prs.peekTokenIs(token.LPAREN) {
-		return prs.parseTypeAccessExpression(left)
+		return prs.parseTypeCastAccessExpression(left)
 	} else if prs.peekTokenIs(token.LBRACE) {
 		return prs.parseImplInstantiationExpression(left)
 	} else {
@@ -38,19 +38,56 @@ func (prs *Parser) parseDotOperatorExpression(left ast.ExpressionNode) ast.Expre
 	}
 }
 
-func (prs *Parser) parseTypeAccessExpression(left ast.ExpressionNode) ast.ExpressionNode {
-	expr := &ast.TypeAccessExpression{Token: prs.curToken, Left: left}
-
+func (prs *Parser) parseTypeCastAccessExpression(left ast.ExpressionNode) ast.ExpressionNode {
+	dotToken := prs.curToken
 	prs.expectPeek(token.LPAREN)
 
-	if !prs.expectPeek(token.TYPE) {
+	if prs.peekTokenIs(token.TYPE) {
+		expr := &ast.TypeAccessExpression{Token: prs.curToken, Left: left}
+		prs.nextToken()
+		prs.expectPeek(token.RPAREN)
+		expr.SemiToken = prs.curToken
+		return expr
+	}
+
+	expr := &ast.SafeTypeCastExpression{Token: dotToken, Left: left}
+	prs.nextToken()
+
+	expr.TargetType = prs.parseType(LOWEST)
+
+	if expr.TargetType == nil {
 		return nil
 	}
 
 	prs.expectPeek(token.RPAREN)
 
 	expr.SemiToken = prs.curToken
+	return expr
+}
 
+func (prs *Parser) parseUnsafeTypeCastExpression() ast.ExpressionNode {
+	expr := &ast.UnsafeTypeCastExpression{Token: prs.curToken}
+
+	prs.nextToken()
+
+	parsedType := prs.parseType(LOWEST)
+
+	if parsedType == nil {
+		return nil
+	}
+
+	if callExpr, isCall := parsedType.(*ast.CallExpression); isCall {
+		expr.TargetType = callExpr.Function
+		if len(callExpr.Arguments) != 1 {
+			prs.peekError(token.RPAREN)
+			return nil
+		}
+		expr.Value = callExpr.Arguments[0]
+		expr.SemiToken = callExpr.SemiToken
+	} else {
+		prs.peekError(token.LPAREN)
+		return nil
+	}
 	return expr
 }
 

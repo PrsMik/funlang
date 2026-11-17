@@ -42,7 +42,7 @@ func (prs *Parser) parseLetStatement() *ast.LetStatement {
 		statement.Type = nil
 	} else {
 		prs.nextToken()
-		statement.Type = prs.parseType()
+		statement.Type = prs.parseType(LOWEST)
 		if statement.Type == nil {
 			return nil
 		}

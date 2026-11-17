@@ -311,3 +311,10 @@ func (tae *TypeAccessExpression) String() string {
 	out.WriteString(".(type)")
 	return out.String()
 }
+
+func (stce *SafeTypeCastExpression) String() string {
+	return stce.Left.String() + ".(" + stce.TargetType.String() + ")"
+}
+func (utce *UnsafeTypeCastExpression) String() string {
+	return "." + utce.TargetType.String() + "(" + utce.Value.String() + ")"
+}

@@ -35,3 +35,29 @@ func (impInst *ImplInstantiationExpression) expressionNode()       {}
 func (impInst *ImplInstantiationExpression) TokenLiteral() string  { return impInst.Token.Literal }
 func (impInst *ImplInstantiationExpression) Start() token.Position { return impInst.Token.Start }
 func (impInst *ImplInstantiationExpression) End() token.Position   { return impInst.Fields.End() }
+
+// безопасное приведение
+type SafeTypeCastExpression struct {
+	Token      token.Token
+	Left       ExpressionNode
+	TargetType ExpressionNode
+	SemiToken  token.Token
+}
+
+func (stce *SafeTypeCastExpression) expressionNode()       {}
+func (stce *SafeTypeCastExpression) TokenLiteral() string  { return stce.Token.Literal }
+func (stce *SafeTypeCastExpression) Start() token.Position { return stce.Left.Start() }
+func (stce *SafeTypeCastExpression) End() token.Position   { return stce.SemiToken.End }
+
+// небезопасное приведение
+type UnsafeTypeCastExpression struct {
+	Token      token.Token
+	TargetType ExpressionNode
+	Value      ExpressionNode
+	SemiToken  token.Token
+}
+
+func (utce *UnsafeTypeCastExpression) expressionNode()       {}
+func (utce *UnsafeTypeCastExpression) TokenLiteral() string  { return utce.Token.Literal }
+func (utce *UnsafeTypeCastExpression) Start() token.Position { return utce.Token.Start }
+func (utce *UnsafeTypeCastExpression) End() token.Position   { return utce.SemiToken.End }

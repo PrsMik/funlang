@@ -43,10 +43,10 @@ func (prs *Parser) convertToTypeContext(fn parsExpr) parsExpr {
 	}
 }
 
-func (prs *Parser) parseType() ast.ExpressionNode {
+func (prs *Parser) parseType(precedence int) ast.ExpressionNode {
 	prs.typeDepth++
 	defer func() { prs.typeDepth-- }()
-	return prs.convertToTypeContext(prs.parseExpression)(LOWEST)
+	return prs.convertToTypeContext(prs.parseExpression)(precedence)
 }
 
 func (prs *Parser) parseTypeType() ast.ExpressionNode {
@@ -56,7 +56,7 @@ func (prs *Parser) parseTypeType() ast.ExpressionNode {
 func (prs *Parser) parseComptimeType() ast.ExpressionNode {
 	expr := &ast.ComptimeExpression{Token: prs.curToken}
 	prs.nextToken()
-	expr.Value = prs.parseType()
+	expr.Value = prs.parseType(LOWEST)
 	if expr.Value == nil {
 		return nil
 	}

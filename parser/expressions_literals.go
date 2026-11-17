@@ -41,7 +41,7 @@ func (prs *Parser) parseArrayPrefix() ast.ExpressionNode {
 
 	prs.nextToken()
 
-	elemType := prs.parseType()
+	elemType := prs.parseType(LOWEST)
 	if elemType == nil {
 		return nil
 	}
@@ -106,7 +106,7 @@ func (prs *Parser) parseHashMapPrefix() ast.ExpressionNode {
 
 	prs.nextToken()
 
-	keyType := prs.parseType()
+	keyType := prs.parseType(LOWEST)
 
 	if !prs.expectPeek(token.RBRACE) {
 		return nil
@@ -114,7 +114,7 @@ func (prs *Parser) parseHashMapPrefix() ast.ExpressionNode {
 
 	prs.nextToken()
 
-	elemType := prs.parseType()
+	elemType := prs.parseType(LOWEST)
 
 	hashMapType.KeyType = keyType
 	hashMapType.ElementType = elemType

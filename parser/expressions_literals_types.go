@@ -18,18 +18,9 @@ func (prs *Parser) parseInterfaceLiteral() ast.ExpressionNode {
 func (prs *Parser) parseImplLiteral() ast.ExpressionNode {
 	expr := &ast.ImplLiteral{Token: prs.curToken}
 
-	// if prs.peekTokenIs(token.LPAREN) {
-	// 	prs.expectPeek(token.LPAREN)
-	// 	expr.TargetType = prs.parseType()
-	// } else {
-	// 	expr.TargetType = nil
-	// }
-
-	// prs.expectPeek(token.LBRACE)
-
 	if !prs.peekTokenIs(token.LBRACE) {
 		prs.nextToken()
-		expr.TargetType = prs.parseType()
+		expr.TargetType = prs.parseType(LOWEST)
 	}
 
 	if !prs.curTokenIs(token.LBRACE) {

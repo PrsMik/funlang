@@ -28,7 +28,7 @@ func (prs *Parser) parseFunctionPrefix() ast.ExpressionNode {
 	if prs.peekTokenIs(token.RARROW) {
 		prs.nextToken()
 		prs.nextToken()
-		retType = prs.parseType()
+		retType = prs.parseType(LOWEST)
 		if retType == nil {
 			return nil
 		}
@@ -94,7 +94,7 @@ func (prs *Parser) parseFunctionParameter() (*ast.Identifier, ast.ExpressionNode
 		param := &ast.Identifier{Token: prs.curToken, Value: prs.curToken.Literal}
 		prs.nextToken()
 		prs.nextToken()
-		paramType := prs.parseType()
+		paramType := prs.parseType(LOWEST)
 		if paramType == nil {
 			return nil, nil
 		}
@@ -105,7 +105,7 @@ func (prs *Parser) parseFunctionParameter() (*ast.Identifier, ast.ExpressionNode
 		return &ast.Identifier{Token: prs.curToken, Value: prs.curToken.Literal}, nil
 	}
 
-	paramType := prs.parseType()
+	paramType := prs.parseType(LOWEST)
 	if paramType == nil {
 		return nil, nil
 	}

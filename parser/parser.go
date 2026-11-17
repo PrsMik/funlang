@@ -97,6 +97,8 @@ func (prs *Parser) registerPrefixParseFns() {
 	prs.registerPrefix(token.INTERFACE, prs.parseInterfaceLiteral)
 	prs.registerPrefix(token.IMPL, prs.parseImplLiteral)
 
+	prs.registerPrefix(token.DOT, prs.parseUnsafeTypeCastExpression)
+
 	prs.exprPrefixFns = prs.prefixParseFns
 }
 
