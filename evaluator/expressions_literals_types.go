@@ -54,6 +54,7 @@ func evalImplLiteral(node *ast.ImplLiteral, env *object.Environment, info *types
 	if !ok {
 		return &object.Error{Message: "runtime error. impl is not a type. in theory this should never happen :/"}
 	}
+
 	var dynamicImplType types.Type = implType
 	if statImplType, ok := implType.Underlying.(*types.ImplType); ok {
 		dynImplType := &types.ImplType{
@@ -86,17 +87,41 @@ func evalImplLiteral(node *ast.ImplLiteral, env *object.Environment, info *types
 					return newError("runtime error. impl block can only contain 'let' statements")
 				}
 
-				fieldType := Eval(letStmt.Type, env, info)
-				if isError(fieldType) {
-					return fieldType
+				var fieldType types.Type
+				if letStmt.Type != nil {
+					rtType := Eval(letStmt.Type, env, info)
+					if isError(rtType) {
+						return rtType
+					}
+
+					tObj, isType := rtType.(*object.TypeObject)
+					if !isType {
+						return newError("runtime error. type of field '%s' of impl is not a type", letStmt.Name.Value)
+					}
+					fieldType = tObj.TypeValue
+				} else if val, ok := letStmt.Value.(*ast.ComptimeExpression); ok {
+					rtType := Eval(val, env, info)
+					if isError(rtType) {
+						return rtType
+					}
+
+					objType := object.GetTypeFromObject(rtType)
+					if _, isIllegal := objType.(*types.IllegalType); isIllegal {
+						return newError("runtime error. error when inferring type of field '%s' in impl", letStmt.Name.Value)
+					}
+					fieldType = objType
+				} else {
+					tp, ok := info.TypesInfo[letStmt.Name]
+					if !ok || tp == nil {
+						tp, ok = info.TypesInfo[letStmt.Value]
+					}
+					if !ok || tp == nil {
+						return newError("runtime error. cannot resolve type of field '%s' of impl", letStmt.Name.Value)
+					}
+					fieldType = tp
 				}
 
-				tObj, isType := fieldType.(*object.TypeObject)
-				if !isType {
-					return newError("runtime error. type of field '%s' of impl is not a type", letStmt.Name.Value)
-				}
-
-				dynImplType.Fields[letStmt.Name.Value] = tObj.TypeValue
+				dynImplType.Fields[letStmt.Name.Value] = fieldType
 				dynImplType.FieldsOrder = append(dynImplType.FieldsOrder, letStmt.Name.Value)
 				dynImplType.FieldsDefaultValues[letStmt.Name.Value] = letStmt.Value
 			}

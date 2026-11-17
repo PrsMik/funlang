@@ -22,6 +22,7 @@ func evalHashMapType(node *ast.HashMapType, env *object.Environment, info *types
 	if isError(key) {
 		return key
 	}
+
 	elem := Eval(node.ElementType, env, info)
 	if isError(elem) {
 		return elem
