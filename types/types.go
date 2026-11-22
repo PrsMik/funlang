@@ -49,11 +49,11 @@ func (t *IllegalType) isType()           {}
 func (t *IllegalType) Signature() string { return "<illegal/none type>" }
 func (t *IllegalType) isPrintable()      {}
 
-type NullType struct{}
+type NilType struct{}
 
-func (n *NullType) isType()           {}
-func (n *NullType) Signature() string { return "<null>" }
-func (t *NullType) isPrintable()      {}
+func (n *NilType) isType()           {}
+func (n *NilType) Signature() string { return "<nil>" }
+func (t *NilType) isPrintable()      {}
 
 type TypeParam struct {
 	Name string

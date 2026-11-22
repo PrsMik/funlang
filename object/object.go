@@ -23,7 +23,7 @@ type Comparable interface {
 
 const (
 	ILLEGAL ObjectType = iota
-	NULL_OBJ
+	NIL_OBJ
 	INTEGER_OBJ
 	BOOLEAN_OBJ
 	STRING_OBJ
@@ -38,9 +38,10 @@ const (
 	ERROR_OBJ
 )
 
-type Null struct{}
+type Nil struct{}
 
-func (n *Null) Type() ObjectType { return NULL_OBJ }
+func (n *Nil) Type() ObjectType { return NIL_OBJ }
+func (n *Nil) IsComparable()    {}
 
 type TypeObject struct {
 	TypeValue types.Type

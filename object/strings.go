@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func (n *Null) Inspect() string { return "null" }
+func (n *Nil) Inspect() string { return "nil" }
 
 func (to *TypeObject) Inspect() string {
 	if to.TypeValue != nil {
@@ -80,7 +80,7 @@ func (b *Builtin) Inspect() string { return "builtin function" }
 func (e *Error) Inspect() string { return "RUNTIME ERROR: " + e.Message }
 
 var objectTypes map[ObjectType]string = map[ObjectType]string{
-	NULL_OBJ:          (&types.NullType{}).Signature(),
+	NIL_OBJ:           (&types.NilType{}).Signature(),
 	INTEGER_OBJ:       (&types.IntType{}).Signature(),
 	BOOLEAN_OBJ:       (&types.BoolType{}).Signature(),
 	STRING_OBJ:        (&types.StringType{}).Signature(),

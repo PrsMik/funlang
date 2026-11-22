@@ -26,6 +26,7 @@ func NewTypeEviroment() *TypeEviroment {
 	env.Set("int", &TypeType{Underlying: &IntType{}}, nil)
 	env.Set("string", &TypeType{Underlying: &StringType{}}, nil)
 	env.Set("bool", &TypeType{Underlying: &BoolType{}}, nil)
+	env.Set("nil", &TypeType{Underlying: &NilType{}}, nil)
 	return env
 }
 

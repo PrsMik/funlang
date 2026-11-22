@@ -6,6 +6,8 @@ import (
 
 func GetTypeFromObject(rawObj Object) types.Type {
 	switch object := rawObj.(type) {
+	case *Nil:
+		return &types.NilType{}
 	case *TypeObject:
 		return &types.TypeType{Underlying: object.TypeValue}
 	case *Integer:

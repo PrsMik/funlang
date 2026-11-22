@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	NULL  = &object.Null{}
+	NIL   = &object.Nil{}
 	TRUE  = &object.Boolean{Value: true}
 	FALSE = &object.Boolean{Value: false}
 )
@@ -66,6 +66,10 @@ func Eval(node ast.Node, env *object.Environment, info *types.Info) object.Objec
 		}
 		return Eval(node.Value, env, info)
 
+	case *ast.SafeTypeCastExpression:
+		return evalTypeCastExpression(node, env, info)
+	case *ast.UnsafeTypeCastExpression:
+		return evalUnsafeTypeCastExpression(node, env, info)
 	// литералы
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}

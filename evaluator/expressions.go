@@ -49,7 +49,7 @@ func evalHashIndexExpression(hash, index object.Object) object.Object {
 
 	pair, ok := hashObject.Pairs[key.HashKey()]
 	if !ok {
-		return NULL
+		return NIL
 	}
 
 	return pair.Value
@@ -72,10 +72,10 @@ func evalBangOperatorExpression(right object.Object) object.Object {
 		return FALSE
 	case FALSE:
 		return TRUE
-	case NULL:
+	case NIL:
 		return TRUE
 	default:
-		return NULL
+		return NIL
 	}
 }
 

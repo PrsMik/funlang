@@ -128,6 +128,9 @@ func Equals(rawLeftType, rawRightType Type) bool {
 		}
 
 		return Equals(leftType.Left, rightType.Left) && Equals(leftType.Right, rightType.Right)
+	case *NilType:
+		_, ok := rawRightType.(*NilType)
+		return ok
 
 	default:
 		return false
@@ -227,6 +230,10 @@ func EqualsSoft(rawLeftType, rawRightType Type) bool {
 		}
 
 		return Equals(leftType.Left, rightType.Left) && Equals(leftType.Right, rightType.Right)
+
+	case *NilType:
+		_, ok := rawRightType.(*NilType)
+		return ok
 
 	default:
 		return false

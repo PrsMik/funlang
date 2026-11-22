@@ -26,6 +26,7 @@ func NewEnvironment() *Environment {
 	env.Set("int", &TypeObject{TypeValue: &types.IntType{}})
 	env.Set("string", &TypeObject{TypeValue: &types.StringType{}})
 	env.Set("bool", &TypeObject{TypeValue: &types.BoolType{}})
+	env.Set("nil", &TypeObject{TypeValue: &types.NilType{}})
 	return env
 }
 

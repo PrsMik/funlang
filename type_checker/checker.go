@@ -63,6 +63,7 @@ func New(curEnv *types.TypeEviroment, info *types.Info) *TypeChecker {
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.GroupedExpression](), chk.checkGroupedExpression)
 
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.IfExpression](), chk.checkIfExpression)
+	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.SwitchExpression](), chk.checkSwitchExpression)
 
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.FunctionLiteral](), chk.checkFunctionLiteral)
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.CallExpression](), chk.checkCallExpression)
@@ -72,9 +73,12 @@ func New(curEnv *types.TypeEviroment, info *types.Info) *TypeChecker {
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.ImplLiteral](), chk.checkImplLiteral)
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.ImplInstantiationExpression](),
 		chk.checkImplInstantiationExpression)
+
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.MemberAccessExpression](), chk.checkMemberAccessExpression)
 	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.TypeAccessExpression](), chk.checkTypeAccessExpression)
-	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.SwitchExpression](), chk.checkSwitchExpression)
+
+	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.SafeTypeCastExpression](), chk.checkSafeTypeCastExpression)
+	chk.registerExpressionCheckFn(reflect.TypeFor[*ast.UnsafeTypeCastExpression](), chk.checkUnsafeTypeCastExpression)
 
 	return chk
 }

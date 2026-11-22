@@ -28,7 +28,7 @@ var builtins = map[string]*object.Builtin{
 			return &object.Array{Elements: newElements}
 		}
 
-		return NULL
+		return NIL
 	},
 	},
 	"push": {Fn: func(args ...object.Object) object.Object {
