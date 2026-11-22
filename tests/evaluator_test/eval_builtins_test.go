@@ -29,8 +29,8 @@ func TestEvalBuiltinFunctions(t *testing.T) {
 		case []int:
 			testArrayIntegerObject(t, evaluated, expected)
 		case nil:
-			if _, ok := evaluated.(*object.Null); !ok {
-				t.Errorf("test[%d] - object is not Null. got=%T (%+v)", i, evaluated, evaluated)
+			if _, ok := evaluated.(*object.Nil); !ok {
+				t.Errorf("test[%d] - object is not Nil. got=%T (%+v)", i, evaluated, evaluated)
 			}
 		case string:
 			errObj, ok := evaluated.(*object.Error)

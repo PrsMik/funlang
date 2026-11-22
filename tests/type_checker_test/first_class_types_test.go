@@ -280,6 +280,22 @@ func TestStructuralTyping(t *testing.T) {
 			expectedErr: "",
 		},
 		{
+			name: "Recursive impl with fields",
+			input: `
+				let impl1: type = impl {
+					let x: int = 1;
+					let y: int = 2;
+
+					let next: fn(impl1) -> impl1 = fn(prev) { 
+						return impl1.{x: prev.x * 2, y: prev.y * 2}; 
+					};
+				};
+
+				let l2: impl1 = impl1.{};
+		`,
+			expectedErr: "",
+		},
+		{
 			name: "Generic types",
 			input: `
 				let OkType: fn(T: type) -> type = comptime fn(T) {
@@ -635,6 +651,99 @@ func TestTypeAccessExpression(t *testing.T) {
 			input: `
 				let val: int | string = "hello";
 				let ValType: type = val.(type);
+			`,
+			expectedErr: "",
+		},
+	}
+	runTypeCheckerTests(t, tests)
+}
+
+func TestTypeCastExpression(t *testing.T) {
+	tests := []TestCase{
+		{
+			name: "Valid safe type cast: interface to impl",
+			input: `
+			let Animal: type = interface { let name: type = string; };
+			let Dog: type = impl Animal { let name: string = "Rex"; };
+			let a: Animal = Dog.{};
+			let maybeDog: Dog | nil = a.(Dog);
+			`,
+			expectedErr: "",
+		},
+		{
+			name: "Invalid safe type cast: missing nil in union type",
+			input: `
+			let Animal := interface { let name: type = string; };
+			let Dog := impl Animal { let name: string = "Rex"; };
+			let a: Animal = Dog.{};
+			let maybeDog: Dog = a.(Dog);
+			`,
+			expectedErr: "in let expected variable of type <impl Dog (<interface Animal>)>",
+		},
+		{
+			name: "Valid unsafe type cast: interface to impl",
+			input: `
+			let Animal := interface { let name: type = string; };
+			let Dog := impl Animal { let name: string = "Rex"; };
+			let a: Animal = Dog.{};
+			let dog: Dog = .Dog(a);
+			`,
+			expectedErr: "",
+		},
+		{
+			name: "Invalid unsafe type cast: target is not a type",
+			input: `
+			let x: int = 5;
+			let y := .5(x);
+			`,
+			expectedErr: "expected a type, but got a value of type <int>",
+		},
+		{
+			name: "Valid safe type cast: primitives (statically allowed)",
+			input: `
+			let x: int = 5;
+			let maybeStr: string | nil = x.(string);
+			`,
+			expectedErr: "",
+		},
+		{
+			name: "Valid safe type cast with type narrowing in switch",
+			input: `
+			let Animal := interface { let name: type = string; };
+			let Dog := impl Animal { let name: string = "Rex"; let sound: string = "woof"; };
+			let a: Animal = Dog.{};
+			let maybe := a.(Dog);
+			let s: string = switch maybe.(type) {
+				case Dog { return maybe.sound; }
+				default  { return "not a dog"; }
+			};
+			`,
+			expectedErr: "",
+		},
+		{
+			name: "Invalid safe type cast: accessing union field without narrowing",
+			input: `
+			let Animal := interface { let name: type = string; };
+			let Dog := impl Animal { let name: string = "Rex"; let sound: string = "woof"; };
+			let a: Animal = Dog.{};
+			let maybe := a.(Dog);
+			let s: string = maybe.sound;
+			`,
+			expectedErr: "union types fields cannot be accessed without narrowing",
+		},
+		{
+			name: "Valid unsafe type cast: primitive to primitive",
+			input: `
+			let x: int = 5;
+			let y: string = .string(x);
+			`,
+			expectedErr: "",
+		},
+		{
+			name: "Valid safe type cast: complex types (array)",
+			input: `
+			let x: []int = []int{1, 2, 3};
+			let maybe := x.([]string);
 			`,
 			expectedErr: "",
 		},

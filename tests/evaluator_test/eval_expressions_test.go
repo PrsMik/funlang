@@ -114,7 +114,7 @@ func TestEvalIfElseExpressions(t *testing.T) {
 		if ok {
 			testIntegerObject(t, evaluated, integer)
 		} else {
-			testNullObject(t, evaluated)
+			testNilObject(t, evaluated)
 		}
 	}
 }
@@ -305,7 +305,7 @@ func TestEvalArrayIndexExpressions(t *testing.T) {
 		if ok {
 			testIntegerObject(t, evaluated, integer)
 		} else {
-			testNullObject(t, evaluated)
+			testNilObject(t, evaluated)
 		}
 	}
 }
@@ -357,7 +357,7 @@ func TestEvalHashIndexExpressions(t *testing.T) {
 		if ok {
 			testIntegerObject(t, evaluated, integer)
 		} else {
-			testNullObject(t, evaluated)
+			testNilObject(t, evaluated)
 		}
 	}
 }

@@ -25,7 +25,7 @@ func TestTypeSignatures(t *testing.T) {
 		expected string
 	}{
 		{"Illegal", &types.IllegalType{}, "<illegal/none type>"},
-		{"Null", &types.NullType{}, "<null>"},
+		{"Nil", &types.NilType{}, "<nil>"},
 		{"Int", &types.IntType{}, "<int>"},
 		{"Bool", &types.BoolType{}, "<bool>"},
 		{"String", &types.StringType{}, "<string>"},

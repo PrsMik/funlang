@@ -68,9 +68,9 @@ func testBooleanObject(t *testing.T, n int, obj object.Object, expected bool) bo
 	return true
 }
 
-func testNullObject(t *testing.T, obj object.Object) bool {
-	if obj != evaluator.NULL {
-		t.Errorf("object is not NULL. got=%T (%+v)", obj, obj)
+func testNilObject(t *testing.T, obj object.Object) bool {
+	if obj != evaluator.NIL {
+		t.Errorf("object is not NIL. got=%T (%+v)", obj, obj)
 		return false
 	}
 	return true

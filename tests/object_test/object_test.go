@@ -14,10 +14,10 @@ func TestObjectTypesAndInspection(t *testing.T) {
 		expectedIns  string
 	}{
 		{
-			name:         "Null",
-			obj:          &object.Null{},
-			expectedType: object.NULL_OBJ,
-			expectedIns:  "null",
+			name:         "Nil",
+			obj:          &object.Nil{},
+			expectedType: object.NIL_OBJ,
+			expectedIns:  "nil",
 		},
 		{
 			name:         "Integer",
@@ -127,7 +127,7 @@ func TestLookUpObjSignature(t *testing.T) {
 		object.INTEGER_OBJ,
 		object.BOOLEAN_OBJ,
 		object.STRING_OBJ,
-		object.NULL_OBJ,
+		object.NIL_OBJ,
 		object.ARRAY_OBJ,
 		object.HASH_MAP_OBJ,
 	}

@@ -184,6 +184,154 @@ func TestEvalImplMethods(t *testing.T) {
 	}
 }
 
+func TestEvalTypeCast(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name: "Safe cast success interface -> impl",
+			input: `
+				let Animal := interface { let name: type = string; };
+				let Dog := impl Animal { let name: string = "Rex"; };
+				let a: Animal = Dog.{};
+				return a.(Dog);
+			`,
+			expected: "<impl Dog (<interface Animal>)>",
+		},
+		{
+			name: "Safe cast success to itself",
+			input: `
+				let x: int = 42;
+				return x.(int);
+			`,
+			expected: "42",
+		},
+		{
+			name: "Safe cast unsuccess interface -> wrong impl",
+			input: `
+				let Animal := interface { let name: type = string; };
+				let Dog := impl Animal { let name: string = "Rex"; };
+				let Cat := impl Animal { let name: string = "Felix"; };
+				let a: Animal = Dog.{};
+				return a.(Cat);
+			`,
+			expected: "nil",
+		},
+		{
+			name: "Safe cast unsuccess simple",
+			input: `
+				let x: int = 42;
+				return x.(string);
+			`,
+			expected: "nil",
+		},
+		{
+			name: "Unsafe cast unsuccess interface -> impl",
+			input: `
+				let Animal := interface { let name: type = string; };
+				let Dog := impl Animal { let name: string = "Rex"; };
+				let a: Animal = Dog.{};
+				return .Dog(a);
+			`,
+			expected: "<impl Dog (<interface Animal>)>",
+		},
+		{
+			name: "Unsafe cast success",
+			input: `
+				let x: int = 100;
+				return .int(x);
+			`,
+			expected: "100",
+		},
+		{
+			name: "Unsafe cast unsuccess interface -> wrong impl",
+			input: `
+				let Animal := interface { let name: type = string; };
+				let Dog := impl Animal { let name: string = "Rex"; };
+				let Cat := impl Animal { let name: string = "Felix"; };
+				let a: Animal = Dog.{};
+				return .Cat(a);
+			`,
+			expected: "RUNTIME ERROR: runtime error: cannot unsafe cast <impl Dog (<interface Animal>)> to <impl Cat (<interface Animal>)>",
+		},
+		{
+			name: "Unsafe cast unsuccess",
+			input: `
+				let x: int = 42;
+				return .string(x);
+			`,
+			expected: "RUNTIME ERROR: runtime error: cannot unsafe cast <int> to <string>",
+		},
+		{
+			name: "Safe cast with switch narrowing",
+			input: `
+				let Animal := interface { let name: type = string; };
+				let Dog := impl Animal { let name: string = "Rex"; let sound: string = "woof"; };
+				let Cat := impl Animal { let name: string = "Felix"; let sound: string = "meow"; };
+				
+				let getSound := fn(a: Animal) -> string {
+					let maybeDog := a.(Dog);
+					return switch maybeDog.(type) {
+						case Dog { 
+							return maybeDog.sound; 
+						}
+						default  { 
+							let maybeCat := a.(Cat);
+							return switch maybeCat.(type) {
+								case Cat { return maybeCat.sound; }
+								default  { return "unknown"; }
+							};
+						}
+					};
+				};
+				
+				let a: Animal = Dog.{};
+				return getSound(a);
+			`,
+			expected: "woof",
+		},
+		{
+			name: "Safe cast unsuccess switch default",
+			input: `
+				let Animal := interface { let name: type = string; };
+				let Dog := impl Animal { let name: string = "Rex"; };
+				let Bird := impl Animal { let name: string = "Tweety"; };
+				
+				let a: Animal = Bird.{};
+				let maybeDog := a.(Dog);
+				return switch maybeDog.(type) {
+					case Dog { return "is dog"; }
+					default  { return "not a dog"; }
+				};
+			`,
+			expected: "not a dog",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			evaluated := testEval(t, tt.input)
+
+			if len(tt.expected) >= 13 && tt.expected[:13] == "RUNTIME ERROR" {
+				errObj, ok := evaluated.(*object.Error)
+				if !ok {
+					t.Fatalf("object is not Error. got=%T (%+v)", evaluated, evaluated)
+				}
+				if errObj.Inspect() != tt.expected {
+					t.Errorf("expected error message %q, got %q", tt.expected, errObj.Inspect())
+				}
+				return
+			}
+
+			if evaluated.Inspect() != tt.expected {
+				t.Errorf("expected %q, got %q", tt.expected, evaluated.Inspect())
+			}
+		})
+	}
+}
+
 func TestEvalResultErrorHandlingAndTypeSwitch(t *testing.T) {
 	inputOk := `
 	let OkType: fn(T: type) -> type = comptime fn(T) {

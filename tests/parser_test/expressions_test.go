@@ -627,6 +627,55 @@ func TestParsingMemberAccessExpression(t *testing.T) {
 	}
 }
 
+func TestParsingSafeTypeCastExpression(t *testing.T) {
+	input := "let x: type = res.(MyType);"
+	l := lexer.New(input)
+	p := parser.New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	stmt, ok := program.Statements[0].(*ast.LetStatement)
+	if !ok {
+		t.Fatalf("stmt is not *ast.LetStatement. got=%T", program.Statements[0])
+	}
+
+	exp, ok := stmt.Value.(*ast.SafeTypeCastExpression)
+	if !ok {
+		t.Fatalf("stmt.Value is not ast.TypeCastExpression. got=%T", stmt.Value)
+	}
+
+	testIdentifierLiteral(t, exp.Left, "res")
+
+	// if exp.Left.Value != "error" {
+	// 	t.Errorf("exp.Property.Value is not 'error'. got=%s", exp.Property.Value)
+	// }
+}
+
+func TestParsingUnsafeTypeCastExpression(t *testing.T) {
+	input := "let x: type = .MyType(res);"
+	l := lexer.New(input)
+	p := parser.New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	stmt, ok := program.Statements[0].(*ast.LetStatement)
+	if !ok {
+		t.Fatalf("stmt is not *ast.LetStatement. got=%T", program.Statements[0])
+	}
+
+	exp, ok := stmt.Value.(*ast.UnsafeTypeCastExpression)
+	if !ok {
+		t.Fatalf("stmt.Value is not ast.TypeCastExpression. got=%T", stmt.Value)
+	}
+
+	testIdentifierLiteral(t, exp.TargetType, "MyType")
+	testIdentifierLiteral(t, exp.Value, "res")
+
+	// if exp.Left.Value != "error" {
+	// 	t.Errorf("exp.Property.Value is not 'error'. got=%s", exp.Property.Value)
+	// }
+}
+
 func TestParsingTypeAccessExpression(t *testing.T) {
 	input := "let x: type = res.(type);"
 	l := lexer.New(input)
